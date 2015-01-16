@@ -1,0 +1,228 @@
+# Manage user privileges
+# Keep a record of all permissions in non-system catalogs so they are preserved with regular backups
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#X- make privedit a sub-window of wysegi
+#- can also call privedit as a sub-window of entim
+#- implement priv_has()
+#- allow others besides dba to grant specified privs
+#- implement crt_by, mod_by for priv table
+#- 
+namespace eval base {
+    def priv_pk 	{grantee priv}
+    def priv_v_in 	{grantee priv level cmt}
+    def priv_v_up 	$priv_v_in
+    def priv_se 	[concat $priv_v_up priv_level]
+    def priv_roles	{}
+}
+
+# Levels describe how much of a given permission a user has
+#----------------------------------------------------------------
+other base_priv_level {} {
+    create type base_priv_level as enum ('role','limit','user','super');
+} {drop type base_priv_level}
+
+# Track which privs/levels and roles are granted to each user
+#----------------------------------------------------------------
+table base.priv {base.ent base_priv_level} {
+    grantee	varchar		references base.ent (username) on update cascade on delete cascade
+  , priv	varchar		
+  , level	base_priv_level	not null
+  , priv_level	varchar		not null
+  , cmt		varchar
+  , primary key (grantee, priv)
+}
+
+# Base view of user grants which includes expanded version of the username
+#----------------------------------------------------------------
+view base.priv_v {base.priv base.ent_v} {
+  select eval(fld_list $base::priv_se p)
+  , e.std_name
+  , e.username
+  , e.database
+  , g.priv_list
+  , p.oid as _oid
+
+    from	base.priv	p
+    join	base.ent_v	e on e.username = p.grantee
+    left join	(select member,array_agg(role) as priv_list from wm.role_members group by 1) g on g.member = p.priv_level;
+
+    eval(rule_insert base.priv_v base.priv $base::priv_v_in);
+    eval(rule_update base.priv_v base.priv $base::priv_v_up $base::priv_pk);
+    eval(rule_delete base.priv_v base.priv $base::priv_pk);
+} -grant {
+    public
+    {privedit	s {i u d}}
+}
+
+# Force grant all applicable permissions to all enabled users (used for new database instances)
+#----------------------------------------------------------------
+function base.priv_grants() {base.priv} {
+  returns int language plpgsql as $$
+    declare
+        erec	record;
+        trec	record;
+        cnt	int default 0;
+    begin
+        for erec in select * from base.ent where database and username is not null loop
+            if not exists (select usename from pg_shadow where usename = erec.username) then
+                execute 'create user ' || erec.username;
+            end if;
+            for trec in select * from base.priv where grantee = erec.username loop
+                execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
+                cnt := cnt + 1;
+            end loop;
+        end loop;
+        return cnt;
+    end;
+$$;}
+
+# When inserting/updating an entity, manage DB access correctly
+# bretb have altered trigger to create basic roles when a new user is added to database
+# this is a temporary step towars moving more responsibility to HR
+# this trigger is hard coded to ATI we need to make change to grab the right empler
+#----------------------------------------------------------------
+function base.ent_tf_iuacc() {base.ent} {
+  returns trigger language plpgsql security definer as $$
+    declare
+        trec	record;
+        dep	record;
+    begin
+        if new.username is null then		-- Can't have database access without a username
+            new.database := false;
+        end if;
+        if TG_OP = 'UPDATE' then
+            if new.username != old.username then	-- if trying to change the user's username
+-- raise notice 'Change drop: %', old.username;
+                execute 'drop user ' || '"' || old.username || '"';	-- drop the old name
+            end if;
+        end if;
+
+        if new.database and not exists (select usename from pg_user where usename = new.username) then
+-- raise notice 'Create: %', new.username;
+            execute 'create user ' || '"' || new.username || '"';
+            select into dep * from empl.role_link where dept = (select dept from empl.empl where emple = new.id and emplr = 1);
+            insert into base.priv (grantee,priv,level) values (new.username,dep.role,'role');
+--            for trec in select * from base.priv where grantee = new.username loop
+            execute 'grant "' || dep.role || '_role' || '" to ' || new.username;
+--            end loop;
+        elseif not new.database and exists (select usename from pg_shadow where usename = new.username) then
+-- raise notice 'Drop: %', new.username;
+            execute 'drop user ' || '"' || new.username || '"';
+        end if;
+        return new;
+    end;
+$$;}
+trigger base_ent_tr_iuacc {} {
+    before insert or update on base.ent for each row execute procedure base.ent_tf_iuacc();
+}
+
+# When deleting an entity, manage DB access correctly
+#----------------------------------------------------------------
+function base.ent_tf_dacc() {base.ent} {
+  returns trigger language plpgsql as $$
+    begin
+        if old.username is not null then
+            execute 'drop user ' || old.username;	-- drop the old name
+        end if;
+        return old;
+    end;
+$$;}
+trigger base_ent_tr_dacc {} {			-- do after individual grants are deleted
+    after delete on base.ent for each row execute procedure base.ent_tf_dacc();
+}
+
+# Before inserting/updating a new privilege
+#----------------------------------------------------------------
+function base.priv_tf_iugrp() {base.priv} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        new.priv_level := new.priv || '_' || new.level;		-- cache concatenated version of priv name
+        
+        if TG_OP = 'UPDATE' then
+            if new.grantee != old.grantee or new.priv != old.priv or new.level != old.level then
+                execute 'revoke "' || old.priv_level || '" from ' || old.grantee;
+            end if;
+        end if;
+        execute 'grant "' || new.priv_level || '" to ' || new.grantee;
+-- raise notice 'Iugrp: %', new.priv_level;
+        return new;
+    end;
+$$;}
+trigger base_priv_tr_iugrp {} {
+    before insert or update on base.priv for each row execute procedure base.priv_tf_iugrp();
+}
+
+# When deleting a privilege
+#----------------------------------------------------------------
+function base.priv_tf_dgrp() {base.priv} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        execute 'revoke "' || old.priv_level || '" from ' || old.grantee;
+        return old;
+    end;
+$$;}
+trigger base_priv_tr_ad {} {
+    before delete on base.priv for each row execute procedure base.priv_tf_dgrp();
+}
+
+# See if this role (starting with a username) has the specified privilege and level
+# If not, recurse into any role groups he belongs to to see if we can find the priv there
+# Usage: base.priv_role(rolename,priv,level)
+#----------------------------------------------------------------
+function {base.priv_role(name,varchar,varchar)} {base wm.role_members} {
+  returns boolean security definer language plpgsql stable as $$
+    declare
+      trec	record;
+    begin
+      for trec in 
+        select * from (select role, member, (regexp_split_to_array(role,'_'))[1] as rpriv,
+                                            (regexp_split_to_array(role,'_'))[2] as rlevel
+            from wm.role_members where member = $1) sq where sq.rpriv = $2 or sq.rlevel = 'role' order by sq.rlevel::base_priv_level desc loop
+-- raise notice 'Checking % % % % %', $1, trec.role, trec.rpriv, trec.rlevel, trec.member;
+          if trec.rpriv = $2 and trec.rlevel::base_priv_level >= $3::base_priv_level then
+              return true;
+          elsif trec.rlevel = 'role' then
+              if base.priv_role(trec.role,$2,$3) then return true; end if;
+          end if;
+        end loop;
+        return false;
+    end;
+$$;}
+
+# Determine if the current user has a certain privilege level
+# Usage: priv_has(priv,level)
+#----------------------------------------------------------------
+function {base.priv_has(varchar,varchar)} {base.priv_role(name,varchar,varchar)} {
+  returns boolean language sql stable as $$
+      select base.priv_role(session_user,$1,$2);
+$$}
+
+# Populate a new role with members according to records already in the base.priv table
+# Usage: base.pop_role(rolename)
+#----------------------------------------------------------------
+function {base.pop_role(rname varchar)} {base.priv_v} {
+  returns void security definer language plpgsql as $$
+    declare
+        trec	record;
+    begin
+        for trec in select username from base.priv_v where priv = rname and level = 'role' and username is not null loop
+            execute 'grant "' || rname || '_role" to ' || trec.username;
+        end loop;
+    end;
+$$;}
+
+# Create groups of permissions as roles (priv_role_basic...)
+#----------------------------------------------------------------
+foreach {role groups} $base::priv_roles {
+    set deps {base.priv base.pop_role(varchar)}
+    foreach sr $groups {			;# if a role contains another role, note the dependency
+        lassign [split $sr _] n r
+        if {$r == {role}} {lappend deps base_role_$n}
+    }
+#puts "base_role_$role deps:$deps"
+    other base_role_$role $deps \
+        "create role ${role}_role with in role [join $groups {,}]; select base.pop_role('$role');" \
+        "drop role if exists ${role}_role;"
+}

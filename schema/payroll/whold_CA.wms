@@ -1,0 +1,75 @@
+# Support for California State withholding
+#include(Copyright)
+# Valid for 2008
+#TODO:
+#- 
+
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+function {whold_CA(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+  returns numeric language plpgsql as $$
+    declare
+        marw2	boolean;
+        tval	numeric;
+        agross	numeric(14,2);
+        whold	numeric(14,2);
+        trec	record;
+    begin
+
+-- Try to approximate the 2 categories for California:
+-- 0- Single, dual-income married, married w/multiple employers, or married w/ less than 2 allowances
+-- 1- Married with 2 or more allowances, or unmarried head of household
+    if ms = 's' or al < 2 then marw2 := 'f'; else marw2 := 't'; end if;
+
+-- Step 1:
+-- If gross < "low income table" then no tax due
+    select into tval case when marw2 then v2 else v1 end from whold_dat where module = 'CA' and type = pc and code = 'lowin';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'CA', pc, 'lowin';		-- Lookup value not found
+    end if;
+    if gr <= tval then return 0.00; end if;
+
+-- Step 2:
+-- If "additional deductions specified, now subtract amount found in "estimated deduction table"
+-- We do not support this feature at this time
+    agross := gr;
+
+-- Step 3:
+-- Subtract the amount found in the "standard deduction table"
+    select into tval case when marw2 then v2 else v1 end from whold_dat where module = 'CA' and type = pc and code = 'stand';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'CA', pc, 'stand';		-- Lookup value not found
+    end if;
+    agross := gr - tval;
+    if agross < 0 then agross := 0.00; end if;				-- force any negative to 0.00
+
+-- Step 4:
+-- Look up the adjusted gross in the tables
+    if (select count(*) from whold_dat where module = 'CA' and type = pc and code = ms) != 7 then
+        raise exception '!whold.BMD: % % %', 'CA', pc, ms;		-- Bad or missing data (should be 7 entries)
+    end if;
+
+    select into trec * from whold_dat where module = 'CA' and type = pc and code = ms and v1 < agross order by v1 desc limit 1;
+    if found then
+        whold := trec.v2 + (trec.v3 * (agross - trec.v1));
+    else
+        whold := 0.00;
+    end if;
+raise notice 'whold_CA: marw2% agross:% v1:% v2:% v3:% whold:%', marw2, agross, trec.v1, trec.v2, trec.v3, whold;
+    
+-- Step 5:
+-- Subtract the tax credit shown in the "exemption allowance table" from the taxable amount
+    select into tval v1 from whold_dat where module = 'CA' and type = pc and code = 'allow';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'CA', pc, 'allow';		-- Lookup value not found
+    end if;
+    whold := whold - (tval * case when al > 10 then 10 else al end);
+    if whold < 0 then whold := 0.00; end if;				-- force any negative to 0.00
+raise notice '  adj: v1:% whold:%', tval, whold;
+
+    return whold;
+    end;
+$$;}

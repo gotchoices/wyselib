@@ -1,0 +1,320 @@
+# Structures to model Bill of Materials and Process Sequences
+#TODO:
+#- disallow proc/note entry for (and update_to) all product types except: sub, fin
+#- disallow boms entry for (and update_to) product type: raw
+#- 
+#- 
+
+namespace eval prod {
+    def proc_pk		{base_rr rev_r idx}
+    def proc_v_up	{oper_r next lab_time mach_time descr}
+    def proc_v_in	[concat {base_rr rev_r} $proc_v_up]
+    def proc_se		[concat $proc_v_in idx $glob::stampfn]
+    def proc_r_se	[concat $proc_se null::int null::int\[\] null::text]
+
+    def note_pk		{base_rrr rev_rr idx_r seq}
+    def note_v_up	{type doc_r descr}
+    def note_v_in	[concat {base_rrr rev_rr idx_r} $note_v_up]
+    def note_se		[concat $note_v_in seq $glob::stampfn]
+
+    def boms_pk		{base_rr rev_r idx}
+    def boms_v_up	{quant comp_base comp_parms cmt script proc}
+    def boms_v_in	[concat {base_rr rev_r} $boms_v_up]
+    def boms_se		[concat $boms_v_in idx $glob::stampfn]
+}    
+
+# Contains a row for each defined operation (typically a work cell type)
+# --------------------------------------------------
+table prod.oper {prod} {
+    oper	varchar		constraint "!prod.oper.ION" check (oper ~ '^[a-zA-Z][a-zA-Z_0-9]*$') primary key
+  , descr	varchar		not null
+} -grant {
+    {prodim     s s {i u d}}
+}
+
+# Contains an entry for each process defined for a given product family
+#----------------------------------------------------
+table prod.proc {prod.vers prod.oper} {
+    base_rr		varchar
+  , rev_r		int
+  , idx			int
+  , oper_r		varchar		not null references prod.oper
+  , next		int
+  , lab_time		real		constraint "!prod.proc.ILT" check (lab_time > 0)
+  , mach_time		real		constraint "!prod.proc.IMT" check (mach_time >= 0)
+  , descr		varchar
+  , constraint "proc_pkey" primary key (base_rr, rev_r, idx)
+  , foreign key (base_rr, rev_r) references prod.vers on update cascade on delete cascade
+  , foreign key (base_rr, rev_r, next) references prod.proc on update cascade on delete set null
+    subst($glob::stamps)
+}
+
+# Contains an entry for each manufacturing documentation chunk defined for a given product family process
+#----------------------------------------------------
+table prod.note {prod.proc} {
+    base_rrr		varchar
+  , rev_rr		int
+  , idx_r		int
+  , seq			int		constraint "!prod.note.IPN" check (seq >= 0) not null
+  , type		varchar		constraint "!prod.step.IDT" check (type in ('fig','step','qc'))
+  , doc_r		int		references doc.doc on update cascade
+  , descr		varchar
+  , foreign key (doc_r) references doc.doc on update cascade
+  , primary key (base_rrr, rev_rr, idx_r, seq)
+  , foreign key (base_rrr, rev_rr, idx_r) references prod.proc on update cascade on delete cascade
+    subst($glob::stamps)
+}
+
+# Contains a scripted entry for each possible component in a Bill of Materials
+#----------------------------------------------------------------
+table prod.boms {prod.vers prod.proc} {
+    base_rr		varchar
+  , rev_r		int
+  , idx			int		constraint "!prod.boms.IPN" check (idx >= 0) not null
+  , quant		varchar		not null
+  , comp_base		varchar		not null references prod.prod on update cascade
+  , comp_parms		varchar[]
+  , cmt			varchar
+  , script		varchar
+  , proc		int
+  , primary key (base_rr, rev_r, idx)
+  , foreign key (base_rr, rev_r) references prod.vers on update cascade on delete cascade
+  , foreign key (base_rr, rev_r, proc) references prod.proc on update cascade on delete cascade
+    subst($glob::stamps)
+}
+#index {} prod.boms base_cmp
+
+# Hierarchical view of the procedure sequence table
+# ---------------------------------------------------------------
+view prod.proc_v {prod.proc} {
+    with recursive proc_path(eval(fld_list $prod::proc_se), level, path, cycle) as (
+        select	eval(fld_list $prod::proc_se pp), 0, array[pp.idx], false
+        from	prod.proc	pp where next is null
+    union all
+        select	eval(fld_list $prod::proc_se pc), pp.level+1, path || pc.idx, pc.idx = any(path)
+        from	prod.proc	pc
+        join	proc_path	pp on pp.base_rr = pc.base_rr and pp.rev_r = pc.rev_r and pp.idx = pc.next and not cycle
+    ) 
+    select eval(fld_list $prod::proc_se pr), level, path
+      , repeat('.',case when pr.next isnull then 0 else pr.level end) || pr.descr as idescr
+
+    from	proc_path	pr;
+
+    eval(rule_insert prod.proc_v prod.proc $prod::proc_v_in {} $glob::stampin) returning eval(fld_list $prod::proc_r_se);
+    eval(rule_update prod.proc_v prod.proc $prod::proc_v_up $prod::proc_pk {} $glob::stampup) returning eval(fld_list $prod::proc_r_se);
+    eval(rule_delete prod.proc_v prod.proc $prod::proc_pk);
+} -grant {
+    {prodim  s {i u d}}
+}
+
+# View of the procedure notes table
+# ---------------------------------------------------------------
+view prod.note_v {prod.note} {
+    select eval(fld_list $prod::note_se pn)
+
+    from	prod.note	pn;
+
+    eval(rule_insert prod.note_v prod.note $prod::note_v_in {} $glob::stampin) returning eval(fld_list $prod::note_se);
+    eval(rule_update prod.note_v prod.note $prod::note_v_up $prod::note_pk {} $glob::stampup) returning eval(fld_list $prod::note_se);
+    eval(rule_delete prod.note_v prod.note $prod::note_pk);
+} -grant {
+    {prodim  s {i u d}}
+}
+
+#----------------------------------------------------------------
+function prod.proc_tf_bi() {prod.proc} {returns trigger language plpgsql as $$
+    begin
+        if new.idx is null then
+            select into new.idx coalesce(max(idx)+1, 1) from prod.proc where base_rr = new.base_rr and rev_r = new.rev_r;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_proc_tr_bi {} {before insert on prod.proc for each row execute procedure prod.proc_tf_bi();}
+
+#----------------------------------------------------------------
+function prod.note_tf_bi() {prod.note} {returns trigger language plpgsql as $$
+    begin
+        if new.seq is null then
+            select into new.seq coalesce(max(seq)+1, 1) from prod.note where base_rrr = new.base_rrr and rev_rr = new.rev_rr and idx_r = new.idx_r;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_note_tr_bi {} {before insert on prod.note for each row execute procedure prod.note_tf_bi();}
+
+# Move the specified parameter up or down in the parameter list
+#----------------------------------------------------------------
+function {prod.proc_move(b varchar, r int, oidx int, x int)} {prod.proc} {
+  returns setof prod.proc language plpgsql as $$
+    declare
+        nidx	int;		-- new index
+        cnt	int;		-- how many total records in this set
+        retv	record;		-- return record
+    begin
+        select into retv * from prod.proc where base_rr = b and rev_r = r and idx = oidx;
+        select into cnt count(*) from prod.proc where base_rr = b and rev_r = r;
+        nidx := oidx + x;				-- calculate new index
+        if nidx < 1 or nidx > cnt then			-- no place to move to
+            return;
+        end if;
+        update prod.proc set idx = 0    where base_rr = b and rev_r = r and idx = nidx;
+        update prod.proc set idx = nidx where base_rr = b and rev_r = r and idx = oidx;
+        update prod.proc set idx = oidx where base_rr = b and rev_r = r and idx = 0;
+        retv.idx := nidx;
+        return next retv;
+        return;
+    end;
+$$;}
+
+# Move the specified note element up or down in the sequence of steps
+#----------------------------------------------------------------
+function {prod.note_move(b varchar, r int, oi int, oseq int, x int)} {prod.note} {
+  returns setof prod.note language plpgsql as $$
+    declare
+        nseq	int;		-- new sequence
+        cnt	int;		-- how many total records in this set
+        retv	record;		-- return record
+    begin
+        select into retv * from prod.note where base_rrr = b and rev_rr = r and idx_r = i and seq = oseq;
+        select into cnt count(*) from prod.note where base_rrr = b and rev_rr = r and idx_r = i;
+        nseq := oseq + x;				-- calculate new sequence
+        if nseq < 1 or nseq > cnt then			-- no place to move to
+            return;
+        end if;
+        update prod.note set seq = 0    where base_rrr = b and rev_rr = r and idx = i and seq = nseq;
+        update prod.note set seq = nseq where base_rrr = b and rev_rr = r and idx = i and seq = oseq;
+        update prod.note set seq = oseq where base_rrr = b and rev_rr = r and idx = i and seq = 0;
+        retv.seq := nseq;
+        return next retv;
+        return;
+    end;
+$$;}
+
+# Move the specified line up or down in the BOM list
+#----------------------------------------------------------------
+function {prod.boms_move(b varchar, r int, oidx int, x int)} {prod.boms} {
+  returns setof prod.boms language plpgsql as $$
+    declare
+        nidx	int;		-- new index
+        cnt	int;		-- how many total records in this set
+        retv	record;		-- return record
+    begin
+        select into retv * from prod.boms where base_rr = b and rev_r = r and idx = oidx;
+        select into cnt count(*) from prod.boms where base_rr = b and rev_r = r;
+        nidx := oidx + x;				-- calculate new index
+        if nidx < 1 or nidx > cnt then			-- no place to move to
+            return;
+        end if;
+        update prod.boms set idx = 0    where base_rr = b and rev_r = r and idx = nidx;
+        update prod.boms set idx = nidx where base_rr = b and rev_r = r and idx = oidx;
+        update prod.boms set idx = oidx where base_rr = b and rev_r = r and idx = 0;
+        retv.idx := nidx;
+        return next retv;
+        return;
+    end;
+$$;}
+
+#----------------------------------------------------------------
+function prod.boms_tf_bi() {prod.boms} {returns trigger language plpgsql as $$
+    begin
+        if new.idx is null then
+            select into new.idx coalesce(max(idx)+1, 1) from prod.boms where base_rr = new.base_rr and rev_r = new.rev_r;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_boms_tr_bi {} {before insert on prod.boms for each row execute procedure prod.boms_tf_bi();}
+
+# View of the bill of materials source table
+# ---------------------------------------------------------------
+view prod.boms_v {prod.boms} {
+    select eval(fld_list $prod::boms_se pb)
+  , pb.comp_base || '(' || coalesce(array_to_string(pb.comp_parms,','),'') || ')'	as compname
+    from	prod.boms	pb;
+
+    eval(rule_insert prod.boms_v prod.boms $prod::boms_v_in {} $glob::stampin) returning eval(fld_list $prod::boms_se), null::text;
+    eval(rule_update prod.boms_v prod.boms $prod::boms_v_up $prod::boms_pk {} $glob::stampup) returning eval(fld_list $prod::boms_se), null::text;
+    eval(rule_delete prod.boms_v prod.boms $prod::boms_pk);
+} -grant {
+    {prodim  s {i u d}}
+}
+
+
+return
+
+
+
+
+# Vew of the prd_spread table with fields added for crt and mod names
+# ---------------------------------------------------------------
+view prod.boms_v {prod.boms prod.prod} {
+    select eval(fld_list $fields(prd_spread_v.se) sp)
+            , b.descr
+            , b.units
+            , ec.name       as crtname
+            , em.name       as modname
+            , sp.oid        as _oid
+
+    from prd_spread         sp
+    join prd_base           b   on b.base = sp.cbase
+    left join empl_v        ec  on sp.crt_by = ec.empl_id
+    left join empl_v        em  on sp.mod_by = em.empl_id;
+
+    eval(rule_insert prd_spread_v prd_spread $fields(prd_spread_v.se) {} $glob::stampin)
+    eval(rule_update prd_spread_v prd_spread $fields(prd_spread_v.up) $fields(prd_spread.pk) {} $glob::stampup)
+    eval(rule_delete prd_spread_v prd_spread $fields(prd_spread.pk))
+} -grant {
+    {doc     s}
+    {prodim  s {i u d}}
+    {ordtool s}
+} -primary {base pos}
+
+
+#For each base pos values should go from 1 to N.
+#These functions & triggers will ensure that pos go from 1 to N sequentially.
+#----------------------------------------------------------------
+function prd_spread_tf_iu() {prd_spread} {
+  returns trigger language plpgsql as $$
+    declare
+        trec record;
+    begin
+        select into trec min(pos) as n,max(pos) as m,count(*) as c
+            from prd_spread where base = new.base;
+        if trec.n != 1 or trec.m != trec.c then
+           raise exception 'Positions for base % not in order', new.base;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prd_spread_tr_iu {prd_spread prd_spread_tf_iu()} {
+    create constraint trigger prd_spread_tr_iu after insert or update on prd_spread
+        deferrable initially deferred
+        for each row execute procedure prd_spread_tf_iu();
+} {
+    select drop_contrig('prd_spread_tr_iu');
+  --drop constraint trigger prd_parm_tr_iu on prd_parm;
+}
+
+#----------------------------------------------------------------
+function prd_spread_tf_d() {prd_spread} {
+  returns trigger language plpgsql as $$
+    declare
+        trec record;
+    begin
+        select into trec min(pos) as n,max(pos) as m,count(*) as c
+            from prd_spread where base = old.base;
+        if trec.n != 1 or trec.m != trec.c then
+           raise exception 'Positions for base % not in order', old.base;
+        end if;
+        return old;
+    end;
+$$;}
+trigger prd_spread_tr_d {prd_spread prd_spread_tf_d()} {
+    create constraint trigger prd_spread_tr_d after delete on prd_spread
+        deferrable initially deferred
+        for each row execute procedure prd_spread_tf_d();
+} {
+    select drop_contrig('prd_spread_tr_d');
+  --drop constraint trigger prd_spread_tr_d on prd_parm;
+}

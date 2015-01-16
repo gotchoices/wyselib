@@ -1,0 +1,96 @@
+# Entity addresses
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+namespace eval base {
+    def addr_pk		{addr_ent addr_seq}
+    def addr_v_in	{addr_ent addr_spec city state zip country addr_cmt prime status shipable}
+    def addr_v_up	[lremove $addr_v_in addr_ent]
+    def addr_se		[concat $addr_pk $addr_v_up $glob::stampfn]
+    def addr_local	{}
+}
+
+# Contains an entry for each address for an entity
+#----------------------------------------------------------------
+table base.addr {base.ent} {
+    addr_ent	int		references base.ent on update cascade on delete cascade
+  , addr_seq	int	      , primary key (addr_ent, addr_seq)
+  , addr_spec	varchar		not null
+  , status	boolean		default false
+  , prime	boolean		default false constraint "!base.addr.CPA" check(case when status is false then prime is false end)
+  , shipable	boolean		default false
+  , addr_cmt	varchar
+ 
+  , city	varchar
+  , state	varchar
+  , zip		varchar
+  , country	varchar(3)	constraint "!base.addr.CCO" not null default 'US' references base.country on update cascade
+    subst($glob::stamps)
+    subst($base::addr_local)	-- locally defined columns
+}
+
+# Generate unique sequence for new address entry
+#----------------------------------------------------------------
+function base.addr_tf_seq() {base.addr} {
+  returns trigger language plpgsql security definer as $$
+    begin
+        if new.addr_seq is null then
+            select into new.addr_seq coalesce(max(addr_seq),0)+1 from base.addr where addr_ent = new.addr_ent;
+        end if;
+        return new;
+    end;
+$$;}
+trigger base_addr_tr_seq {} {
+    before insert on base.addr for each row execute procedure base.addr_tf_seq();
+}
+
+
+# Trigger on base.addr to make sure there is only one prime address
+# -----------------------------------------------------------------
+function base.addr_tf_biud() {base.addr} {
+  returns trigger language plpgsql security definer as $$
+    declare
+        cnt	int;
+    begin
+        if TG_OP = 'UPDATE' then
+            if new.prime != old.prime then
+                update base.addr set prime = false where addr_ent = new.addr_ent and addr_seq <> new.addr_seq and prime = true;
+            end if;
+        elsif TG_OP = 'INSERT' then
+            if new.prime is true then
+                update base.addr set prime = false where addr_ent = new.addr_ent and prime = true;
+            end if;
+        elsif TG_OP = 'DELETE' then
+            if old.prime = true then
+                raise exception '!base.addr.CPS';
+                return old;
+            else 
+		return old;
+            end if;
+        end if;
+      return new;
+    end;
+$$;}
+trigger base_addr_tr_biud {} {
+    before insert or update or delete on base.addr for each row execute procedure base.addr_tf_biud();
+}
+
+
+# Base address view
+#----------------------------------------------------------------
+view base.addr_v {base.addr base.ent_v} {
+    select eval(fld_list $base::addr_se a)
+      , oe.std_name
+      , a.oid			as _oid
+
+    from	base.addr	a
+    join	base.ent_v	oe	on oe.id = a.addr_ent;
+
+    eval(rule_insert base.addr_v base.addr $base::addr_v_in {} $glob::stampin);
+    eval(rule_update base.addr_v base.addr $base::addr_v_up $base::addr_pk {} $glob::stampup);
+    eval(rule_delete base.addr_v base.addr $base::addr_pk);
+} -grant {
+    {entim	s {i u} d}
+}
+

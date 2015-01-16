@@ -1,0 +1,248 @@
+# System parameters for configuring various modules across the ERP
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+
+namespace eval base {
+    def parm_pk		{module parm}
+    def parm_in		{module parm cmt}		;#value specified explicitly in triggers, fix in ins trig if not 3 values
+    def parm_up		{cmt}
+    def parm_audit	{value cmt}
+    def parm_se		[concat $parm_in value $glob::stampfn]
+}
+
+# Parameter values of date type
+#----------------------------------------------------------------
+table base.parm_date {base.ent} {
+    module	varchar
+  , parm	varchar		
+  , primary key (module, parm)
+  , value	date		not null
+  , cmt		varchar
+    subst($glob::stamps)
+}
+index {} base.parm_date value
+audit::audit base.parm_date $base::parm_audit glman
+
+# Parameter values of text type
+#----------------------------------------------------------------
+table base.parm_text {base.ent} {
+    module	varchar
+  , parm	varchar
+  , primary key (module, parm)
+  , value	text		not null
+  , cmt		varchar
+    subst($glob::stamps)
+}
+index {} base.parm_text value
+audit::audit base.parm_text $base::parm_audit glman
+
+# Parameter values of integer type
+#----------------------------------------------------------------
+table base.parm_int {base.ent} {
+    module	varchar
+  , parm	varchar
+  , primary key (module, parm)
+  , value	int		not null
+  , cmt		varchar
+    subst($glob::stamps)
+}
+index {} base.parm_int value
+audit::audit base.parm_int $base::parm_audit glman
+
+# Parameter values of float type
+#----------------------------------------------------------------
+table base.parm_float {base.ent} {
+    module	varchar
+  , parm	varchar
+  , primary key (module, parm)
+  , value	float		not null
+  , cmt		varchar
+    subst($glob::stamps)
+}
+index {} base.parm_float value
+audit::audit base.parm_float $base::parm_audit glman
+
+# Parameter values of boolean type
+#----------------------------------------------------------------
+table base.parm_boolean {base.ent} {
+    module	varchar
+  , parm	varchar
+  , primary key (module, parm)
+  , value	boolean		not null
+  , cmt		varchar
+    subst($glob::stamps)
+}
+index {} base.parm_boolean value
+audit::audit base.parm_boolean $base::parm_audit glman
+
+# Base view with limited access
+#----------------------------------------------------------------
+view base.parm_v {base.parm_date base.parm_text base.parm_int base.parm_float base.parm_boolean} {
+    select		parm, value::varchar, module, cmt, 'date'    as type, eval(join $glob::stampfn ,) from base.parm_date
+    union all select	parm, value,          module, cmt, 'text'    as type, eval(join $glob::stampfn ,) from base.parm_text
+    union all select	parm, value::varchar, module, cmt, 'int'     as type, eval(join $glob::stampfn ,) from base.parm_int
+    union all select	parm, value::varchar, module, cmt, 'float'   as type, eval(join $glob::stampfn ,) from base.parm_float
+    union all select	parm, value::varchar, module, cmt, 'boolean' as type, eval(join $glob::stampfn ,) from base.parm_boolean
+} -grant {
+    {glman	s {u} {i d}}
+} -primary {
+    module parm
+} -native {
+    parm_text {parm value module cmt}
+}
+
+# When inserting into the view
+#----------------------------------------------------------------
+function base.parm_v_tf_ins() {base.parm_v} {
+  returns trigger language plpgsql as $$
+    begin
+        case when new.type = 'int' then
+            insert into base.parm_int (eval(fld_list "$base::parm_in $glob::stampfn"),value) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::int);
+        when new.type = 'date' then
+            insert into base.parm_date (eval(fld_list "$base::parm_in $glob::stampfn"),value) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::date);
+        when new.type = 'text' then
+            insert into base.parm_text (eval(fld_list "$base::parm_in $glob::stampfn"),value) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::text);
+        when new.type = 'float' then
+            insert into base.parm_float (eval(fld_list "$base::parm_in $glob::stampfn"),value) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::float);
+        when new.type = 'boolean' then
+            insert into base.parm_boolean (eval(fld_list "$base::parm_in $glob::stampfn"),value) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::boolean);
+        end case;
+--        execute 'insert into base.parm_' || new.type || ' (eval(fld_list "$base::parm_in $glob::stampfn"),value) values (eval(join "\$1 \$2 \$3 $glob::stampva \$4::" ,)' || new.type || ');' using eval(ins_list $base::parm_in), new.value;
+        return new;
+    end;
+$$;}
+trigger base_parm_v_tr_ins {} {instead of insert on base.parm_v for each row execute procedure base.parm_v_tf_ins();}
+
+# When updating the view:
+#----------------------------------------------------------------
+function base.parm_v_tf_upd() {base.parm_v} {
+  returns trigger language plpgsql as $$
+    begin
+        case when old.type = 'int' then
+            update base.parm_int set eval(upd_list $base::parm_up $glob::stampup), value = new.value::int where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'date' then
+            update base.parm_date set eval(upd_list $base::parm_up $glob::stampup), value = new.value::date where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'text' then
+            update base.parm_text set eval(upd_list $base::parm_up $glob::stampup), value = new.value::text where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'float' then
+            update base.parm_float set eval(upd_list $base::parm_up $glob::stampup), value = new.value::float where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'boolean' then
+            update base.parm_boolean set eval(upd_list $base::parm_up $glob::stampup), value = new.value::boolean where eval(fld_list_eq $base::parm_pk old { and });
+        end case;
+        return new;
+    end;
+$$;}
+trigger base_parm_v_tr_upd {} {instead of update on base.parm_v for each row execute procedure base.parm_v_tf_upd();}
+
+# When deleting from the view
+#----------------------------------------------------------------
+function base.parm_v_tf_del() {base.parm_v} {
+  returns trigger language plpgsql as $$
+    begin
+        case when old.type = 'int' then
+            delete from base.parm_int where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'date' then
+            delete from base.parm_date where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'text' then
+            delete from base.parm_text where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'float' then
+            delete from base.parm_float where eval(fld_list_eq $base::parm_pk old { and });
+        when old.type = 'boolean' then
+            delete from base.parm_boolean where eval(fld_list_eq $base::parm_pk old { and });
+        end case;
+        return old;
+    end;
+$$;}
+trigger base_parm_v_tr_del {} {instead of delete on base.parm_v for each row execute procedure base.parm_v_tf_del();}
+
+# Return the specified parameter value in its native type
+#----------------------------------------------------------------
+function {base.parm_int(m varchar, p varchar)} {base.parm_int} {
+  returns int language plpgsql stable as $$
+    declare
+        retval	int;
+    begin
+        select into retval value from base.parm_int where module = m and parm = p;
+        if not found then raise exception '!base.parm_int.PNF % %', m, p; end if;
+        return retval;
+    end;
+$$;}
+
+# Return the specified parameter value in its native type
+#----------------------------------------------------------------
+function {base.parm_date(m varchar, p varchar)} {base.parm_date} {
+  returns date language plpgsql stable as $$
+    declare
+        retval	date;
+    begin
+        select into retval value from base.parm_date where module = m and parm = p;
+        if not found then raise exception '!base.parm_date.PNF % %', m, p; end if;
+        return retval;
+    end;
+$$;}
+
+# Return the specified parameter value in its native type
+#----------------------------------------------------------------
+function {base.parm_text(m varchar, p varchar)} {base.parm_text} {
+  returns text language plpgsql stable as $$
+    declare
+        retval	varchar;
+    begin
+        select into retval value from base.parm_text where module = m and parm = p;
+        if not found then raise exception '!base.parm_text.PNF % %', m, p; end if;
+        return retval;
+    end;
+$$;}
+
+# Return the specified parameter value in its native type
+#----------------------------------------------------------------
+function {base.parm_float(m varchar, p varchar)} {base.parm_float} {
+  returns float language plpgsql stable as $$
+    declare
+        retval	float;
+    begin
+        select into retval value from base.parm_float where module = m and parm = p;
+        if not found then raise exception '!base.parm_float.PNF % %', m, p; end if;
+        return retval;
+    end;
+$$;}
+
+# Return the specified parameter value in its native type
+#----------------------------------------------------------------
+function {base.parm_boolean(m varchar, p varchar)} {base.parm_boolean} {
+  returns boolean language plpgsql stable as $$
+    declare
+        retval	boolean;
+    begin
+        select into retval value from base.parm_boolean where module = m and parm = p;
+        if not found then raise exception '!base.parm_boolean.PNF % %', m, p; end if;
+        return retval;
+    end;
+$$;}
+
+# Return the specified parameter or a default value if the value is not found
+#----------------------------------------------------------------
+function {base.parm_int(m varchar, p varchar, d int)} {base.parm_int} {
+  returns int language sql stable as $$select coalesce((select value from base.parm_int where module = m and parm = p), d)$$;}
+
+# Return the specified parameter or a default value if the value is not found
+#----------------------------------------------------------------
+function {base.parm_date(m varchar, p varchar, d date)} {base.parm_date} {
+  returns date language sql stable as $$select coalesce((select value from base.parm_date where module = m and parm = p), d)$$;}
+
+# Return the specified parameter or a default value if the value is not found
+#----------------------------------------------------------------
+function {base.parm_text(m varchar, p varchar, d text)} {base.parm_text} {
+  returns text language sql stable as $$select coalesce((select value from base.parm_text where module = m and parm = p), d)$$;}
+
+# Return the specified parameter or a default value if the value is not found
+#----------------------------------------------------------------
+function {base.parm_float(m varchar, p varchar, d float)} {base.parm_float} {
+  returns float language sql stable as $$select coalesce((select value from base.parm_float where module = m and parm = p), d)$$;}
+
+# Return the specified parameter or a default value if the value is not found
+#----------------------------------------------------------------
+function {base.parm_boolean(m varchar, p varchar, d boolean)} {base.parm_boolean} {
+  returns boolean language sql stable as $$select coalesce((select value from base.parm_boolean where module = m and parm = p), d)$$;}

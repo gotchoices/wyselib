@@ -1,0 +1,8 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabdef acct.close_v -focus v_date -fields [concat {
+    {parm		ent	16	{0 1}		-state readonly -write 0 -hide 1}
+    {module		ent	16	{1 1}		-state readonly -write 0 -takefocus 0}
+    {v_date		ent	12	{2 1}		-spf cal}
+    {cmt		ent	40	{1 2 2}		-spf edw}
+} $glob::stampd]

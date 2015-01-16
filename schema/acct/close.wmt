@@ -1,0 +1,13 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext acct.close_v	{Closing Dates}		{A view of the system parameter table which shows just date values with parameter key of 'close'.  These are used to accounting periods for various modules.} {
+    {parm		{Name}			{The name of the parameter setting}}
+    {v_date		{Close Date}		{The last date in the period you are closing.  Transactions on or before this date will not be modifyable.}}
+    {module		{Module}		{The system within the ERP this setting is applicable to.  For close dates, there is a 'master' module which assures that all other close dates are later or equal to it.}}
+    {cmt		{Comment}		{Notes you may want to add about why the setting is set to a particular date}}
+} -errors {
+    {MDE		{Module Dates}		{All modules must have a date which is greater than or equal to the master close date record}}
+    {NMR		{No Master Found}	{There needs to be a record for the 'master' module before any other module close dates can be inserted}}
+    {NEP		{No Such Parameter}	{The specified close date parameter is not yet defined.  You must first insert it into system parameters table.}}
+}

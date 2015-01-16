@@ -1,0 +1,98 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext prod.unit	{Units of Measure}	{Native table containing defined unit of measure.  These entries must exist in order to be referenced by the columns in both the base table and the parameter table.} {
+    {abbr		{Abbreviation}		{The standard abbreviation for this unit of measure (i.e. ft, cuft, lb, rpm, pc, etc.)}}
+    {descr		{Description}		{A brief name for the unit of measure (Inches, Kilograms, Volts, etc)}}
+    {cmt		{Comment}		{More lengthy comments about how/when to use this unit of measure}}
+} -errors {
+    {IMC		{Invalid Character}	{The specified abbreviation for a unit of measure contained a disallowed character}}
+}
+
+tabtext prod.type	{Product Types}		{Native table containing one entry for each defined product type.  Type typically indicates how the material might be organized in a warehouse.  For example, all electronic parts might be kept together and steel stock would be kept in a different way.} {
+    {type		{Type}			{A single letter code used to represent the product type}}
+    {descr		{Description}		{A brief description of this type of product (i.e Steel Stock or Reeled Products)}}
+    {level		{Category}		{An indication of how products of this type relate to the manufacturing process} {
+        {raw		{Raw Material}		{This product is typically purchased from the outside (rather than being manufactured in-house) and is typically used as a component in the manufacturing process}}
+        {sub		{Subassembly}		{This is a manufactured assembly but is typically not sold alone (except perhaps as a replacement part)}}
+        {fin		{Finished Good}		{This is a manufactured assembly which is typically sold as a unit to the end user}}
+        {pkg		{Package}		{This represents a set of parts and assemblies which are stocked separately but sold as a group or kit}}
+        {sys		{System}		{This represents a set of parts and/or packages.  This level differs from a package in that packages will typically resolve to a single order line whereas a system will execute until if finds an included part or package and will create a separate line item for each such inclusion.}}
+    }}
+    {cmt		{Comment}		{More lengthy comments if applicable about how this product type should be used}}
+} -errors {
+    {IPT		{Invalid Product Type}	{Product types should be a single alphabetic character, or @, which is reserved to mean a package (a product which has a bill of materials but which is sold and shipped as its components rather than being assembled in-house as a manufacturing process).}}
+}
+
+tabtext prod.prod	{Products}		{Native table containing one entry for each defined product family.  Each defined family should reasonably be representable by a single set of specifications, drawings, and so forth though the individual parts within the family differ by a defined set of variable parameters.} [concat {
+    {base		{Basename}		{This column is created by the computer and is formed by joining the product code, a colon separator, and the product name}}
+    {type_r		{Type}			{A link to the product type table (typically indicating how the item is stored)}}
+    {name		{Name}			{A brief name for this product family.  This should star with an alpha character and thereafter may also include numbers and underscores.}}
+    {curr		{Current}		{This number indicates the current major production revision in use.  It refers to the revision code in the product version table.  Orders involving parts in the product family will reference specifications and bill of materials solely for this version.  Other versions will not be readily accessible to others in the system.  Set this value to null to disable access to the product family altogether.}}
+    {maxv		{Latest}		{This number indicates the latest existing revision of the specified product family.  If this number is larger than the current production version, then it points to a development version.  If there is no development version in process, this number should be the same as the current version number.}}
+    {units		{Units}			{The standard units of measure for this product.  This entry must already exist in the table of standard units: prod.unit.}}
+    {descr		{Description}		{A brief description of the product to appear as a title on orders, stock shelves and so forth}}
+} $glob::stampt] -errors {
+    {IPN		{Invalid Name}		{Product name must consist of an alpha character followed by alphanumeric characters or underscores}}
+    {IPV		{Bad Curr Version}	{Product version must be a positive integer}}
+    {IMV		{Bad Max Version}	{Product maximum version must be a positive integer}}
+    {ICV		{Version Not Found}	{The product version specified as current must exist in the version table}}
+    {IVS		{Bad Version Spread}	{The current production version should point either to the latest existing version, or the one just before that}}
+}
+
+tabtext prod.vers	{Versions}		{Native table containing one entry for each version of a product family.  Different versions may have different specifications and a different bill of materials.} [concat {
+    {base_r		{Basename}		{A link to the product type table indicating the basename (type:name) this version is defined on}}
+    {rev		{Revision}		{A positive integer indicating the revision number for this record}}
+    {spec		{Specification}		{A more lengthy description of the specifications for this part family.  This specification should be enough (in combination with any notes or drawings that may be included) to clearly specify to a vendor whether his part will or will not meet our requirements.  If it is difficult to simultaneously describe all the parts in a family with a single specification, it is possible that you are attempting to group too many parts together in a single family.}}
+    {change		{Changes}		{Record here a description of the changes that make this version distinct from the prior version.  Note that if no changes have been made to the bom, the specifications or the parameters, your changes should be made simply by revising the documentation (i.e. a minor version change).}}
+    {bom		{BOM Script}		{This contains a TCL script that will be executed prior to the Bill of Material lines being executed.  After executing this script, it should be possible to execute any single line from the Bill of Materials without having executed the lines before it.}}
+} $glob::stampt] -errors {
+    {IPV		{Invalid Version}	{Product version must be a positive integer}}
+    {TMW		{Bad Work Version}	{There should only be one development version and it should be the next integer above the current production version}}
+    {CEV		{Locked Version}	{It is illegal to change versions before or equal to the current production version}}
+}
+
+tabtext prod.parm	{Parameters}		{Native table containing one entry for each parameter for a product family} [concat {
+    {base_rr		{Base}			{The part family this parameter belongs to}}
+    {rev_r		{Revision}		{The revision number of the product this parameter is applicable to}}
+    {pos		{Position}		{Parameters are specified in order 1, 2, 3 ...}}
+    {var		{Variable}		{A variable name to use when referring to this parameter.  By convention, this should be in all CAPS and should be short (1 or characters).}}
+    {ptyp		{Type}			{Variables can have one of several different types} {
+        {num		{Numeric}		{The parameter can have any value that is a number or an expression (1/4, 5*6, etc.  It will be converted and stored to a value with at least one digit before the decimal and 0 to 4 digits after the (optional) decimal point.}}
+        {str		{String}		{The parameter is a short word representing some differing option for the part.  This should not contain spaces and would be well to keep to 1 to 3 characters.  Since these are codes representing different options, the user will not automatically know what they mean.  If this kind of parameter is used, the different options should be described in the spec section of prd_base.}}
+        {eng		{Engineering}		{These values will be reduced to a number less than 1000 followed by one of: p,n,u,m,K,M,G,T to represent the multiplier.}}
+    }}
+    {units		{Units}			{The standard units of measure for this parameter.  This entry must already exist in the table of standard units: prod.unit.}}
+    {def		{Default}		{The value to use for this parameter if no other value is explicitly given.}}
+    {descr 		{Description}		{A description of what this parameter means or is used for}}
+} $glob::stampt] -errors {
+    {IPP		{Invalid Position}	{Parameter position must be a positive integer}}
+    {IVN		{Invalid Variable}	{Parameter variable name must be an alpha character followed by alphanumerics}}
+    {POO		{Parameter Order}	{The parameters should be numbered exactly 1..N with no gaps in the numbering}}
+    {IPT		{Parameter Type}	{The parameter must be of type 'num', 'str' or 'eng'}}
+    {IUN		{Parameter Units}	{Numeric parameter types (num, eng) must have a valid type selected from type standard type table.  String type parameters must have a null value for the units.}}
+}
+tabtext prod.parm_v	{Parameters}		{A view of the table containing one entry for each parameter for a product family}
+
+tabtext prod.sval	{String Definitions}	{Native table containing one entry for each allowable value of each string type product parameter to explain what the value means and/or is used for} {
+    {base_rrr		{Base}			{Reference to the part family this parameter definition belongs to}}
+    {rev_rr		{Revision}		{Reference to the version of the part family this parameter definition belongs to}}
+    {var_r		{Variable}		{Reference to the variable name of the part family this parameter definition belongs to}}
+    {ptyp_r		{Parameter Type}	{A dummy value that should always have the value 'str' to make sure this table is populated only for parameters that have str type.}}
+    {value		{Base}			{Reference to the part family this parameter definition belongs to}}
+    {descr		{Base}			{Reference to the part family this parameter definition belongs to}}
+}
+
+tabtext prod.minr	{Minor Revisions}	{Native table containing one entry for each time a minor revision has been made to a product family.  Minor revisions involve changing the documentation but not the Specifications, Bill of Materials or Sequencing} [concat {
+    {base_r		{Base}			{The part family being revised}}
+    {rev_r		{Revision}		{The major revision number of the product being revised}}
+    {seq		{Sequence}		{A sequential number automatically assigned by the computer to show which minor revision this is}}
+    {descr 		{Description}		{A complete description of what was changed in this minor revision}}
+} $glob::stampt] -errors {
+    {XYZ		{ABC}	{DEF}}
+}
+
+tabtext prod.prod_v_vers {Product Versions}	{This view joins the product table and the product version table.  The product table contains a record for each product basename created.  The product version gets a new record each time a new version of that base is created.} {
+    {locked		{Locked}		{This version of the product family is locked either because it is in current or past production.  It can not be modified.}}
+    {current		{Production}		{This is the current production version of the product family.  It can not be modified and it is the only version accessible for ordering.}}
+    {lateset		{Latest}		{This is the latest version that has been created for this product family.}}
+}

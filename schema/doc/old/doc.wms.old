@@ -1,0 +1,285 @@
+# Store and retrieve documents
+#TODO:
+#X- Make unique on path, name
+#X- Implement update trigger, replace large object if necessary
+#X- Implement delete trigger
+#X- Can't update/delete a locked object
+#- Delete (and archive) large objects that are not found in doc.doc
+#- Create maintenance stored procedure to check file/object integrity
+#-  Recover from lost large object
+#-  Recover from lost or corrupted external file
+#- 
+#- 
+#- Move to prod.doc:
+#- Implement link table for use with prodim
+#- Implement major/minor version numbers
+#- Build path as: product basename major minor
+#- All files unlocked on working
+#- All files locked when committed to production
+#- 
+
+namespace eval doc {
+    def cksum		{/bin/cksum}
+    def doc_root	{/usr/local/share/wyatt-docs}		;#store all docs under here
+    def doc_del		"$doc_root/.deleted"			;#any docs deleted or updated out of place
+    def logfile		"$doc_root/.vacuum.log"			;#log progress of cleaning/checking
+    def doc_stray	"$doc_root/.stray"			;#move files here that don't have a metafile with them
+    def doc_pk		{doc_id}
+    def doc_in		{doc_id path name version format cmt locked par blob}
+    def doc_up		$doc_in
+    def doc_se		[concat $doc_up size cksum $glob::stampfn]
+}
+schema doc -grant public
+
+sequence doc.doc_seq {doc} {minvalue 1000}
+
+# Contains an entry for each document
+#----------------------------------------------------------------
+table doc.doc {doc.doc_seq base.ent} {
+    doc_id	int		primary key default nextval('doc.doc_seq')
+  , path	varchar[]	not null constraint "doc.doc.IPS" check (path[1] is not null and path[1] != '' and substring(path[1],0,1) != '.')
+  , name	varchar		not null constraint "doc.doc.IFN" check (name != '' and name ~ '[^\\*/<>]' and substring(name[1],0,1) != '.')
+  , version	int		not null constraint "doc.doc.IVN" check (version >= 0)
+  , exten	varchar		not null default ''
+  , cmt		varchar
+  , locked	boolean		default 'f'
+  , size	int		not null
+  , cksum	int		not null
+  , par		int		references doc.doc on update cascade
+  , blob	oid		not null unique
+  , constraint "!doc.doc.UFN"	unique	(path,name,version,exten)
+    subst($glob::stamps)
+}
+
+# When inserting a new document
+#----------------------------------------------------------------
+function doc.doc_tf_ins() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    declare
+        tiar	int[];
+    begin
+raise notice 'doc_ins:%', new.doc_id;
+        if new.version is null then
+            new.version := (select coalesce(max(version)+1,0) from doc.doc where path = new.path and name = new.name and exten = new.exten);
+        end if;
+        tiar := doc.archive(new,1);
+        new.size := tiar[1];
+        new.cksum := tiar[2];
+        return new;
+    end;
+$$;}
+trigger doc_doc_tr_ins {} {before insert on doc.doc for each row execute procedure doc.doc_tf_ins();}
+
+# When updating a document
+#----------------------------------------------------------------
+function doc.doc_tf_upd() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    declare
+        tiar	int[];
+    begin
+        if session_user != 'dbadmin()' and old.locked then
+            raise exception '!doc.doc.DLK %', old.doc_id;	-- Can't modify locked docs
+        end if;
+
+        if not eval(samelist path name version exten) then	-- if we are changing where the file is archived
+            if exists (select * from doc.doc where path = new.path and name = new.name and version = new.version and exten = new.exten) then
+                raise exception '!doc.doc.CFN % % % %', new.path, new.name, new.version, new.exten;		-- Conflicting record found
+            end if;
+            tiar := doc.archive(new, 1);
+            perform doc.archive(old, 0);
+        elseif new.blob != old.blob then			-- same archive name but new file contents
+            tiar := doc.archive(new, 1);
+            perform lo_unlink(old.blob);			-- get rid of the old large object
+        elseif not eval(samelist size cksum) then		-- if trying to change size or checksum
+            tiar := doc.archive(new, 1);			-- rearchive, fresh copy
+        end if;
+        if tiar is not null then
+            new.size  := tiar[1];
+            new.cksum := tiar[2];
+        end if;
+        return new;
+    end;
+$$;}
+trigger doc_doc_tr_upd {} {before update on doc.doc for each row execute procedure doc.doc_tf_upd();}
+
+# When deleting a document
+#----------------------------------------------------------------
+function doc.doc_tf_del() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    begin
+        if session_user != 'dbadmin()' and old.locked then
+            raise exception '!doc.doc.DLK %', old.doc_id;	-- Can't modify locked docs
+        end if;
+        perform doc.archive(old, 0);
+        return old;
+    end;
+$$;}
+trigger doc_doc_tr_del {} {before delete on doc.doc for each row execute procedure doc.doc_tf_del();}
+
+# Store (or delete) a backup copy of the large object in the filesystem
+# $1: doc record (new/old)
+# $2: 0=delete, 1=store
+#----------------------------------------------------------------
+function doc.archive(doc.doc,int) {doc.doc} {
+  returns int[] language pltclu as $$
+ 
+    set path "subst($doc::doc_root)/[join [split [lindex $1(path) 0] ,] /]"
+    if {![file exists $path]} {file mkdir $path}
+    set base "$1(name)"
+    if {$1(version) > 0} {append base "($1(version))"}
+    if {$1(exten) != {}} {append base ".$1(exten)"}
+    set fname "$path/$base"
+    set mfname "$path/.$base"
+#elog NOTICE "doc_id:$1(doc_id) path:$path fname:$fname"
+    if {!$2} {				;#if deleting
+        if {"subst($doc::doc_del)" != {}} {		;#if a delete directory specified
+            set dpath "subst($doc::doc_del)/[join [split [lindex $1(path) 0] ,] /]"
+            if {![file exists $dpath]} {file mkdir $dpath}
+            set suff {}
+            set sver 0
+            while {[file exists $dpath/$base$suff]} {set suff "-[incr sver]"}
+            file rename -force $mfname $dpath/.$base$suff
+            file rename -force $fname $dpath/$base$suff
+        } else {
+            file delete -force $mfname
+            file delete -force $fname
+        }
+        return_null
+    }
+
+    spi_exec "select lo_export($1(blob),'$fname')"
+
+    regsub -all {'} $1(cmt) {''} 1(cmt)		;#escape quotes in comment
+    set fp [open $mfname w]			;#create file for metadata
+    puts $fp [array get 1]
+    close $fp
+    
+    lassign [exec subst($doc::cksum) $fname] cksum size
+#elog NOTICE " cksum:$cksum size:$size"
+    return "{$size,$cksum}"
+$$;}
+
+# Check the integrity of the document database
+#----------------------------------------------------------------
+# lg_obj	doc	arch	meta	case	action
+#     no	 no	 no	yes	1	No recovery possible.  Log and move the meta-file
+#     no	 no	yes	 no	2	Stray file in archive.  Log and move it
+#     no	 no	yes	yes	3	Import doc to LO, re-create doc record from meta-file
+#     no	yes	 no	  ?	4,5	No recovery possible.  Log and delete the doc record
+#     no	yes	yes	  ?	6,7	Import doc to LO, re-create meta-data
+#    yes	 no	  ?	 no	8,A	No recovery possible.  Save the LO by its OID as an orphan.
+#    yes	 no	 no	yes	9	Re-create doc record, export LO to archive file if size,cksum match
+#    yes	 no	yes	yes	B	Re-create doc record, keep LO or arch, whichever matches meta-file size,cksum
+#    yes	yes	 no	  ?	C,D	Re-archive the LO, re-write meta-data
+#    yes	yes	yes	 no	E	Re-create meta-data
+#    yes	yes	yes	yes	F	Check doc against LO size and meta-data
+#----------------------------------------------------------------
+function doc.vacuum() {doc.doc} {
+  returns int language pltclu as $$
+
+    proc logit {msg} {					;#post to the log file
+        set fp [open subst($doc::logfile) a]
+        puts $fp "[clock format [clock seconds] -format "%Y-%b-%d_%H:%M:%S"]: $msg"
+        close $fp
+    }
+    proc read_file {fname} {				;#return the contents of a file
+        set fp [open fname r]
+        set data [read $fp]
+        close $fp
+        return $data
+    }
+
+    proc check_folder {root dir} {				;#look at all the archive files in dir
+logit "Folder: $root $dir"
+        foreach sub [glob -nocomplain -tails -types d -directory $root/$dir *] {
+            check_folder $root $dir/$sub			;#recurse through sub-directories
+        }
+        foreach file [glob -nocomplain -tails -types f -directory $root/$dir * .*] {
+            if {[string range $file 0 0] == {.}} {
+                lappend meta_list [string range $file 1 end]
+            } else {
+                lappend meta_list $file
+            }
+            set ffile "$dir/$file"				;#make full filename
+            set mfile "$dir/.$file"				;#and name of meta-data file
+            if {[file type $ffile] == {directory}} {
+                check_folder $ffile				;#recurse through sub-directories
+            } elseif {[file type $ffile] == {file}} {
+                if {![file exists $mfile]} {			;#if no meta-file found, move the file out
+                    logit "  Moving stray: $ffile to subst($doc::doc_stray)"
+                    file rename -force $ffile subst($doc::doc_stray)
+                    continue
+                }
+                array set meta [read_file $mfile]		;#get the meta-data
+                set got [spi_exec -array drec "select * from doc.doc where doc_id = meta(doc_id)"]
+                if {$got < 1} {					;#no match in the doc table
+                    logit "  Restoring lost doc record: [array get meta]"
+#                    spi_exec "insert into doc.doc (doc_id,path,name,version,exten,cmt,locked,size,cksum,par,blob,crt_by,crt_date,mod_by,mod_date) values ($meta(doc_id),'$meta(path)','$meta(name)',$meta(version),'$meta(exten)','$meta(cmt)','$meta(locked)',$meta(size),$meta(cksum),$meta(par),$meta(blob),'$meta(crt_by)','$meta(crt_date)','$meta(mod_by)','$meta(mod_date)');"
+                } elseif {$meta(size) == $drec(size)} {
+                    
+                }
+            }
+        }
+    }
+
+    logit {Starting}
+    set changes 0
+
+#    spi_exec {
+#        create temporary table doc.vac unlogged (did oid, ok boolean default 'f');
+#        insert into doc.vac (did) select doc_id from doc.doc;
+#    }
+#    spi_exec {
+#        create temporary table doc.arch_tmp unlogged (did oid, ok boolean default 'f');
+#        insert into doc.vac (did) select doc_id from doc.doc;
+#    }
+    foreach dir [glob -nocomplain -tails -directory subst($doc::doc_root) -types d *] {
+        check_folder subst($doc::doc_root) $dir
+    }
+
+    logit "Finished with changes: $changes"
+    return $changes
+$$;}
+
+return
+
+# After any change
+#----------------------------------------------------------------
+function doc.doc_tf_chk() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    declare
+        trec	doc.doc;
+        tid	int;
+    begin
+        trec.version := 0;
+        trec.exten := '';
+        trec.path := array['_orphan'];		-- for each orphan, store it in the _orphan folder
+        for tid in select loid from pg_largeobject lo where pageno = 0 and not exists (select blob from doc.doc where blob = lo.loid) loop
+            trec.name := tid::varchar;		-- Make a name from its oid
+            perform doc.archive(trec, 1);	-- Archive it
+raise notice 'Orphan:%', tid;
+--            perform lo_unlink(tid);		-- and delete the large object from the database
+        end loop;
+        return old;
+    end;
+$$;}
+trigger doc_doc_tr_chk {} {after insert or update or delete on doc.doc for each statement execute procedure doc.doc_tf_chk();}
+
+
+# Basic view including data external blob
+#----------------------------------------------------------------
+view doc.doc_v {doc.doc base.ent} {select
+  , eval(fld_list $doc::doc_se d)
+  , doc.doc_fetch(d.doc_id)	as data
+    
+    from	doc.doc		d
+}
+
+# Fetch a document from the filesystem
+#----------------------------------------------------------------
+function doc.doc_fetch() {doc.doc} {
+  returns varchar language plpgsql as $$
+    begin
+        return old;
+    end;
+$$;}

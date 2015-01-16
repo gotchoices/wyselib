@@ -1,0 +1,81 @@
+# Copyright WyattERP all rights reserved
+
+#----------------------------------------------------
+tabtext prod.oper	{Operations}		{Table containing an entry for each type of manufacturing operation defined for the site.  Examples might include welding, machining, painting, etc.} [concat {
+    {oper		{Operation}		{A brief code to represent the operation}}
+    {descr		{Description}		{A more complete description of this operation}}
+} $glob::stampt] -errors {
+    {ION		{Illegal Operation}	{The name chosen for the operation should start with an alpha character and be followed by alphanumerics or underscores}}
+}
+
+#----------------------------------------------------
+tabtext prod.proc	{Processes}		{Table containing an entry for each process defined within a given product family.  A hierarchy of processes are typically defined to indicate the series of steps} [concat {
+    {base_rr		{Base}			{The product family (basename) this process is being defined for}}
+    {rev_r		{Revision}		{The major revision number of the product family (basename) this process is being defined for}}
+    {idx		{Index}			{An arbitrary index number assigned by the computer for this process.  Note that the index number does not imply the order of processes.}}
+    {oper_r		{Operation}		{The type of operation (typically a work cell) which performs this process}}
+    {next		{Next}			{The index number of the next process to follow after this one.  This forms a hierarchical organization where various process feed into other ones.  The last process in the part has a null value for this field.}}
+    {lab_time		{Labor Time}		{The number of minutes of labor it is expected to take to complete this process for a single unit}}
+    {mach_time		{Machine Time}		{The number of minutes of (unattended) machine time it is expected to take to complete this process for a single unit}}
+    {descr		{Description}		{A description of this process.  This will be displayed at the beginning of the notes for this process.}}
+} $glob::stampt] -errors {
+    {ILT		{Illegal Labor}		{The estimated labor time should be greater than zero}}
+    {IMT		{Illegal Machine}	{The estimated machine time should be greater than zero}}
+}
+
+#----------------------------------------------------
+tabtext prod.note	{Process Notes}		{Table containing an entry for each item or step within the documentation for a given process defined within a product family.} [concat {
+    {base_rrr		{Base}			{The product family (basename) this process document item is for}}
+    {rev_rr		{Revision}		{The major revision number of the product family (basename) this process document is for}}
+    {idx_r		{Index}			{The index number of the process this document is for}}
+    {seq		{Sequence}		{A sequential number indicating the step or item defined by this record}}
+    {type		{Type}			{Each documentation item has a specific type} {
+        {fig		{Figure}		{The item is a figure from the production external document database.  It will be imported into the notes at this location.}}
+        {step		{Step}			{The item describes a step in the procedure that should be completed.}}
+        {qc		{Quality Check}		{The item describes a quality control check that should be done at this point in the procedure}}
+    }}
+    {doc_r		{Document}		{In the case of a type "doc" item, this is a pointer to a document ID number in the external document storage system}}
+    {descr		{Description}		{The text description for this item.  In the case of a step or QC check, this describes what the manufacturing personnel should perform.  In the case of a figure, it describes a caption for the figure.}}
+} $glob::stampt] -errors {
+    {IDT		{Illegal Type}		{A type was specified for the documentation item which is not allowed}}
+}
+
+#----------------------------------------------------
+tabtext prod.boms	{BOM Source}		{Table containing an entry for each possible item appearing in a product bill of material (BOM).  The items are not fully resolved to quantities and part numbers.  Rather parameters need to be applied to each line in orer to fully resolve it.} [concat {
+    {base_rr		{Assembly}      	{The product family (basename) built by this Bill of Materials}}
+    {rev_r		{Revision}		{The major revision number of the product family (basename) built by this Bill of Materials}}
+    {idx		{Line}			{The sequential position in the Bill of Materials of this component.  This is an integer assigned by the computer in order to make the record unique.}}
+    {quant		{Quantity}		{The quantity (or number of units) needed of this component.  This can be a TCL expression.}}
+    {comp_base		{Base}			{The basename for this component in the Bill of Materials}}
+    {comp_parms		{Parameters}		{The parameter list for this component.  Like in a part, this is a comma-separated list of values.  But in addition each parameter (or the whole list) can be a TCL expression which will resolve to the actual desired value(s).}}
+    {cmt		{Comment}		{Any additional comments about this component in the Bill of Materials}}
+    {script		{Script}		{A TCL script to execute before evaluating this line in the Bill of Materials.  This is typically used to do additional processing which might be required in order to determine the proper quantity or parameter list for the line.  If it invokes the TCL "skip" command, the current line will not be included in the final Bill of Materials.}}
+    {proc		{Procedure}		{This points to the index of a procedure in the sequence table, indicating where these materials should be routed during the manufacturing process}}
+} $glob::stampt] -errors {
+    {IPN		{Illegal Position}	{The position column must be a positive integer}}
+}
+
+#----------------------------------------------------
+tabtext prod.bomc	{BOM Cache}		{Table containing an entry for each component item in a part's bill of material (BOM)} [concat {
+    {base_rrr		{Assy Base}      	{The product family (basename) built by this Bill of Materials}}
+    {rev_rr		{Assy Rev}		{The major revision number of the product family (basename) built by this Bill of Materials}}
+    {pos_r		{Line}			{The sequential position in the Bill of Materials of this component}}
+    {pnum_r		{Assy Part}		{The quantity (or number of units) needed of this component.  This can be a TCL expression.}}
+    {quant		{Quantity}		{The quantity (or number of units) needed of this component.  This can be a TCL expression.}}
+    {comp		{Component}		{The part number for this component in the Bill of Materials}}
+} $glob::stampt] -errors {
+    {IPN		{Illegal Position}	{The position column must be a positive integer}}
+}
+
+#----------------------------------------------------
+tabtext prod.proc_v	{Processes}		{A view showing the sequence of processes for a specified product family.  A hierarchy of processes are typically defined to indicate the series of steps culminating in the finished part.} {
+    {level		{Level}			{A number indicating how many steps away this procedure is from the final procedure in the sequence}}
+    {path		{Path}			{This is an array with elements showing, in reverse order, the index numbers between this procedure and the final procedure in the sequence.  If you sort the sequence of procedures by this column, and display the indended description, the list will display in 'tree' order.}}
+    {idescr		{Ind Description}	{This view of the description column is indented according to the depth level.  This gives a more intuitive view of the sequence structure when sorted by the path column (in tree order).}}
+}
+
+#----------------------------------------------------
+tabtext prod.note_v	{Process Notes}		{A view of the table containing a record for each item or step within the documentation for a given process defined within a product family.}
+
+#----------------------------------------------------
+tabtext prod.boms_v	{BOM Source}		{A view of the table containing an entry for each possible item appearing in a product bill of material (BOM).  The items are not fully resolved to quantities and part numbers.  Rather parameters need to be applied to each line in orer to fully resolve it.}

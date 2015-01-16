@@ -1,0 +1,288 @@
+# Database of customers
+#----------------------------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+
+namespace eval cust {
+    def cust_pk		{selr_id cust_id}
+#    def cust_v_up	{cust_type cust_stand cust_cmt prox_id supr_id hire_date term_date pay_type pay_rate allow ins_code}
+#    def cust_v_in	[concat $cust_pk [lremove $cust_v_up term_date]]
+#    def cust_se		[concat $cust_pk $cust_v_up $glob::stampfn]
+#    def cust_local	{}
+#    def ent_se		[concat $base::ent_pk $base::ent_v_in std_name frm_name cas_name]
+#    def ent_v_in	$base::ent_v_in
+#    def ent_v_up	[lremove $base::ent_v_up ent_type username]
+#    def cust_v_se	[concat $ent_se $cust_se supr_name prox_name current level ind_name birthday hour_rate norm_rate org_id mem_id role supr_path full_path mplr_name]
+#    def cust_v_pub_se	{mplr_id cust_id title pref_name ent_name fir_name role supr_id supr_name prox_id prox_name username std_name current level birthday hire_date supr_path full_path}
+#    def cust_v_pub_up	{prox_id}
+#    def cust_v_sup_se	[lremove $cust_v_se bank]
+#    def cust_v_sup_up	{pref_name role cust_stand cust_cmt prox_id supr_id term_date pay_type pay_rate}
+}
+schema cust -grant public
+
+# Data about customer's relationship with a particular company
+#----------------------------------------------------------------
+table cust.cust {base.ent base.ent_link} {
+    selr_id	int
+ ,  cust_id	int
+ ,  primary key (selr_id, cust_id)
+
+ ,  cust_type	varchar	not null default 'regular' constraint "!cust.cust.CET" check (cust_type in ('regular','part','temp','season','train','contract','other'))
+ ,  cust_cmt	varchar
+
+ ,  cust_stand	varchar	not null default 'good' constraint "!cust.cust.CST" check (cust_stand in ('good','hold','probat'))
+    pay_terms	varchar not null,
+
+ ,  terr_in	int4 references cust_terr (terr_id) on update cascade,
+ 
+ 
+ 
+ ,  hire_date	date		not null default current_date
+ ,  term_date	date
+
+ ,  pay_type	varchar		not null constraint "!cust.cust.CPT" check (pay_type in ('annual', 'monthly', 'weekly', 'hourly', 'commis', 'piece', 'other'))
+ ,  pay_rate	numeric(14,2)	not null
+ ,  allow	int
+ ,  ins_code	varchar(18)
+
+    eval(s $cust::cust_local)	-- locally defined columns
+    eval(s $glob::stamps)
+}
+index {} cust.cust supr_id
+index {} cust.cust prox_id
+
+# Base view of custoyees linked to entity fields
+#----------------------------------------------------------------
+view cust.cust_v {cust.cust base.ent_v} {select 
+    eval(fld_list $cust::ent_se		ee)
+  , eval(fld_list $cust::cust_se	em)
+
+  , (select std_name from base.ent_v where ent_id = em.supr_id)			as supr_name
+  , (select std_name from base.ent_v where ent_id = em.prox_id) 		as prox_name
+  , em.mplr_id is not null and em.term_date is null				as current
+  , case when em.supr_id isnull then 1 else array_upper(el.supr_path,1)+1 end	as level
+  , repeat('.',case when em.supr_id isnull then 0 else array_upper(el.supr_path,1) end) || ee.std_name as ind_name
+  , to_char(ee.born_date,'Mon-dd')						as birthday
+  , case when em.pay_type in ('annual','commis') then 
+        (em.pay_rate / 2000)::numeric(14,2)
+    when pay_type = 'monthly' then
+        (em.pay_rate / 167)::numeric(14,2)
+    when pay_type = 'weekly' then
+        (em.pay_rate / 40)::numeric(14,2)
+    else 
+        em.pay_rate
+    end									as hour_rate
+  , case when em.pay_type in ('annual','commis') then 
+        (em.pay_rate / 52)::numeric(14,2)
+    when em.pay_type = 'monthly' then
+        (em.pay_rate * 12 / 52)::numeric(14,2)
+    else 
+        em.pay_rate
+    end									as norm_rate
+  , el.org_id
+  , el.mem_id
+  , el.role
+  , el.supr_path
+  , array_append(coalesce(el.supr_path,'{}'::int[]),em.cust_id)		as full_path
+  , ec.std_name								as mplr_name
+  , em.oid as _oid
+
+    from	base.ent_v	ee				-- custoyee
+    left join	base.ent_link	el on el.mem_id = ee.ent_id	-- membership
+    left join	base.ent_v	ec on ec.ent_id = el.org_id	-- company
+    left join	cust.cust	em on em.mplr_id = el.org_id and em.cust_id = el.mem_id
+    where	ee.ent_type = 'p';
+
+    eval(rule_inmulta cust.cust_v "
+        {base.ent	{$base::ent_v_in}	ent_id			{ent_type 'p' activ 't' inside 't' $glob::stampin}}
+        {base.ent_link	{$base::ent_link_v_in}	mem_id			{org_id coalesce(new.org_id,new.mplr_id) $glob::stampin}}
+        {cust.cust	{$cust::cust_v_in}	cust_id			{mplr_id coalesce(new.mplr_id,new.org_id) cust_type coalesce(new.cust_type,'regular') cust_stand coalesce(new.cust_stand,'good') hire_date coalesce(new.hire_date,'today') $glob::stampin}}
+    ");
+    eval(rule_upmulti cust.cust_v "
+        {base.ent	{$cust::ent_v_up}	{$base::ent_pk}		{$glob::stampup}}
+        {base.ent_link	{$base::ent_link_v_up}	{$base::ent_link_pk}	{$glob::stampup}	{old.org_id is not null}	{$base::ent_link_v_up}	{mem_id coalesce(new.mem_id,new.cust_id,new.ent_id) org_id coalesce(new.org_id,new.mplr_id)}}
+        {cust.cust	{$cust::cust_v_up}	{$cust::cust_pk}	{$glob::stampup}	{old.cust_id is not null}	{$cust::cust_v_in}	{mplr_id coalesce(new.mplr_id,new.org_id) cust_id coalesce(new.cust_id,new.mem_id,new.ent_id) $glob::stampin}}
+    ");
+    eval(rule_demulti cust.cust_v "
+        {base.ent_link	{$base::ent_link_pk}	{(crt_by = session_user and (current_timestamp - crt_date) < '24 hours'::interval) or base.priv_has('custim','super')}}
+    ");
+} -primary {
+    ent_id mplr_id
+} -grant {
+    {custim	{} {} {s i u}}
+    {payroll	{} {s}}
+}
+#        {cust.cust	{$cust::cust_pk}	{crt_by = session_user and (current_timestamp - crt_date) < '24 hours'::interval}}
+
+# Data integrity.  For heirarchical custoyee structure:
+#----------------------------------------------------------------
+#- There should only be one custoyee per custoyer with a null supervisor
+#- A non-current custoyee can not be the supervisor of a current custoyee
+#- When inserting a record, build the supr_path of only that record
+#- When updating a record:
+#-   if supr_id changed, rebuild the supr_path of that record and its subordinates
+#- Always rebuild any/all records with null supr_paths
+#- Detect supervisor loops (custoyees with no path to the root)
+
+# Build a path of supervisors starting with a given supervisor
+#----------------------------------------------------------------
+function {cust.supr_path(eid int, mid int)} {cust} {
+  returns int[] language plpgsql as $$
+    declare 
+        e	int;
+        eids	int[] default '{}'::int[];
+        trec	record;
+    begin
+        e := eid;
+        while e is not null loop
+            if e = any(eids) then 
+                raise exception '!cust.cust.SLF %', eid;	-- supervisor loop found
+            end if;
+            if eids is null then
+                eids := array[e];
+            else
+                eids := array_cat(array[e],eids);
+            end if;
+            select into trec * from cust.cust where mplr_id = mid and cust_id = e;
+            e := trec.supr_id;
+        end loop;
+        return eids;
+    end;
+$$;}
+
+# Before updating an custoyee record
+#----------------------------------------------------------------
+function cust.tf_dirty() {cust.cust cust.cust_v base.ent_link} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        if not same(new.supr_id,old.supr_id) then		-- if supervisor changed, mark cache as dirty
+            update base.ent_link set supr_path = null where org_id = old.mplr_id and mem_id in (select cust_id from cust.cust_v where mplr_id = old.mplr_id and old.cust_id = any(full_path));
+        end if;
+        return new;
+    end;
+$$;}
+trigger cust_tr_burec {} {
+    before update on cust.cust for each row execute procedure cust.tf_dirty();
+}
+
+# After an insert or update statement, update cached information
+#----------------------------------------------------------------
+function cust.tf_check() {cust.cust_v base.ent_link cust.supr_path(int,int)} {
+  returns trigger security definer language plpgsql as $$
+    declare
+        trec	record;
+        sp	int4[];
+    begin
+        if exists (select mplr_id,count(*) from cust.cust where supr_id is null group by 1 having count(*) > 1) then
+            raise exception '!cust.cust.TMB';	-- There can be only one supervisor per org
+        end if;
+
+        if exists (select * from cust.cust_v ee join cust.cust_v es on es.mplr_id = ee.mplr_id and es.cust_id = ee.supr_id where ee.current and not es.current) then
+            raise exception '!cust.cust.SNC';	-- current custoyees can't work for non-current ones
+        end if;
+
+        -- update supervisor path cache        
+        for trec in select * from cust.cust e join base.ent_link l on l.org_id = e.mplr_id and l.mem_id = e.cust_id where l.supr_path is null loop
+            update base.ent_link set supr_path = cust.supr_path(trec.supr_id,trec.org_id) where org_id = trec.org_id and mem_id = trec.mem_id;
+-- raise notice 'Caching supr_path for %-%: %', trec.cust_id, trec.mplr_id, cust.supr_path(trec.supr_id,trec.org_id);
+        end loop;
+        return new;
+    end;
+$$;}
+trigger cust_tr_check {} {
+    after insert or update on cust.cust for each statement execute procedure cust.tf_check();
+}
+
+# Return the cust_id of the custoyee if he has a login or his lowest 
+# supervisor who has a login
+#----------------------------------------------------------------
+function {cust.boss_user(eid int)} {cust.cust_v_pub} {
+  returns int language plpgsql as $$
+    declare
+        trec	record;
+    begin
+        for trec in select * from cust.cust_v_pub where eid = any(full_path) order by level desc loop
+            if trec.database then return trec.ent_id; end if;
+        end loop;
+        return null;
+    end;
+$$;}
+
+# Determine if an custoyee has another custoyee as his supervisor at any level
+# Usage: cust_ancest(custoyee, ancest)
+#----------------------------------------------------------------
+function cust.ancest(int4,int4) {cust.cust_v} {
+  returns boolean language sql security definer stable as $$
+    select exists (select cust_id from cust.cust_v where cust_id = $1 and $2 = any(full_path));
+$$;}
+
+# A view that everyone can have read access to (non-sensitive information)
+#----------------------------------------------------------------
+view cust.cust_v_pub {cust.cust_v} {
+    select eval(fld_list $cust::cust_v_pub_se) from cust.cust_v;
+
+    eval(rule_update cust.cust_v_pub cust.cust $cust::cust_v_pub_up $cust::cust_pk {where old.username = session_user} $glob::stampup);	-- a person can update his own proxy
+} -grant {
+    public
+    {eim	s u}
+}
+
+# View with limited privileges for supervisors to see their own people
+#----------------------------------------------------------------
+view cust.cust_v_sup {cust.cust_v base.priv base.curr_eid()} {
+    select	eval(fld_list $cust::cust_v_sup_se e)
+    from	cust.cust_v e
+    where	base.curr_eid() = any(full_path)
+    	or	base.priv_has('custim','super')
+    	or	base.priv_has('payroll','limit')
+    	or	base.priv_has('admin','limit');
+
+-- Supervisors can update limited info on their people (but not themselves)
+    eval(rule_update cust.cust_v_sup cust.cust_v $cust::cust_v_sup_up $cust::cust_pk {where old.cust_id != base.curr_eid()} $glob::stampup);
+} -grant {
+    {custim	s {i u}}
+}
+
+# Return an custoyee ID number from his database username
+#----------------------------------------------------------------
+#function cust.cust_id(varchar) {cust.cust} {
+#  returns int security definer language sql stable as $$
+#    select cust_id from cust.cust where username = $1;
+#$$;}
+
+# Return an custoyee username from an custoyee ID number
+#----------------------------------------------------------------
+#function cust.username(int) {cust.cust} {
+#  returns varchar security definer language sql stable as $$
+#    select username from cust.cust where cust_id = $1;
+#$$;}
+
+# Return an custoyee name from an custoyee number
+# Usage: cust.name(cust_id)
+#----------------------------------------------------------------
+#function cust.name(int) {cust.cust_v_pub} {
+#  returns varchar language sql stable as $$
+#    select std_name from cust_v_pub where cust_id = $1;
+#$$;}
+
+# Return the ID of a particular custoyee's proxy
+#----------------------------------------------------------------
+#function cust.proxy(int) {cust.cust} {
+#  returns int security definer language sql stable as $$
+#    select prox_id from cust.cust where cust_id = $1;
+#$$;}
+
+# When only the boss can have a null supervisor, it is difficult to change
+# who is the boss.  This function will set a new person to be the top of the
+# hierarchy in a single statement so the after trigger won't fire until the
+# change has been made to both the old and the new boss.
+# Usage: cust_boss(new_boss_cust_id)
+#----------------------------------------------------------------
+#function cust.boss(int) {cust.cust} {
+#  returns int as $$
+#    update cust.cust set supr_id = case when cust_id = $1 then null else $1 end where cust_id in
+#    	(select distinct cust_id from cust.cust where cust_id = $1 or supr_id is null);
+#    select cust_id from cust.cust where supr_id is null;
+#  $$ language sql;
+#}

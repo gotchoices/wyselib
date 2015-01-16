@@ -1,0 +1,51 @@
+X- Implement new menu method in acct
+X- Refine column names
+X- Finish verify section of doc checker
+X- Check that docs get cyclically checked
+X- Test importing docs into prodim
+- GUI for linking docs
+-   drag-n-drop?
+- Review TODO's in pdoc.tcl
+- Try documenting water gate and/or cattle guard
+-   bom
+-   process
+-   notes
+-   documents
+- 
+- Get rid of current asset model (move to project type)
+X- How does part table get updated when changing parameters for a new base version?
+X- Make split view for prod/vers tables
+X- Make basic prodim GUI
+X-  BOM/Sequence GUI
+X-  Notes GUI
+X-  String parameter GUI
+X- Make backend BOM parser
+- Does the bom cache contain only current basenames or all versions?
+- Make way to determine nested parameter lists for any part/package
+- Function to return BOM for part or parameterized basename
+- 
+- Triggers to update BOM cache when BOM items inserted, updated, deleted
+- Triggers to update BOM cache when parts inserted, updated, deleted
+- 
+- Implement link between projects and entities (business units)
+- 
+- Implement cattle asset/project view
+- 
+- Implement mvc wylib
+- 
+- Implement material transfer register
+- Can now summ inventories?
+- Implement inventories for fuel, hay, misc parts
+- 
+- Implement project reconciliation (bankrec)
+- 
+- Implement vendim
+- Implement potool/invoicing/ap
+- Implement disbursements (ACH, direct deposit)
+- Implement vendor bids
+- Implement payroll?
+- 
+- Finish customer model
+- Implement price lists
+- Implement ordtool/invoicing/deposits
+- 

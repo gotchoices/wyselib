@@ -1,0 +1,110 @@
+# Routines to evaluate a Bill of Materials
+#TODO:
+#- implement error call from TCL
+#- how to do a bom on a package (where we don't resolve to a part number)
+#- test packages
+#- test systems
+#- how to generate BOM report compatible with old front-end code
+#- expanded view of bom
+#- make recursive view for bom cache?
+#- 
+
+# Contains the fully instantiated Bill of Materials for each defined parameter set
+#----------------------------------------------------------------
+table prod.bomc {prod.boms prod.part} {
+    base_rrr		varchar
+  , rev_rr		int
+  , idx_r		int
+  , pnum_r		int		references prod.part on update cascade on delete cascade
+  , quant		float		not null
+  , comp		int		not null references prod.part on update cascade
+  , primary key (base_rrr, rev_rr, idx_r, pnum_r)
+  , foreign key (base_rrr, rev_rr, idx_r) references prod.boms on update cascade on delete cascade
+    subst($glob::stamps)
+}
+
+# Run a bill of materials on the specified base/rev
+#----------------------------------------------------------------
+function {prod.bom_init(varchar,int,varchar[])} {prod.vers} {
+  returns varchar language pltcl as $$
+    set i [interp create -safe]
+    $i alias skip return {_skip_}
+    $i alias end return {_end_}
+    set parms [split [lindex $3 0] ,]
+#elog NOTICE "bom_init base:$1 rev:$2 parms:$parms interp:$i"
+
+    if {[spi_exec "select bom from prod.vers where base_r = '$1' and rev = $2"] < 1} {elog ERROR "Product: $1, version $2 not found"}
+    if {[info exists bom]} {eval $bom}
+
+    spi_exec -array r "select * from prod.parm_v where base_rr = '$1' and rev_r = $2 order by pos" {
+        $i eval [list set $r(var) [lindex $parms [expr $r(pos) - 1]]]
+#elog NOTICE "  [list set $r(var) [lindex $parms [expr $r(pos) - 1]]]"
+    }
+    return $i
+$$;}
+  
+# Evaluate a numeric expression in a given TCL interpretor
+#----------------------------------------------------------------
+function {prod.bom_ex(varchar,varchar)} {prod} {
+  returns float language pltcl as $$
+    return [$1 eval expr $2]
+$$;}
+  
+# Evaluate a TCL script
+#----------------------------------------------------------------
+function {prod.bom_ev(varchar,varchar)} {prod} {
+  returns varchar language pltcl as $$
+    return [$1 eval $2]
+$$;}
+  
+# Substitute variables in a string
+#----------------------------------------------------------------
+function {prod.bom_su(varchar,varchar)} {prod} {
+  returns varchar language pltcl as $$
+    return [$1 eval subst $2]
+$$;}
+  
+# Substitute variables in a parameter array
+#----------------------------------------------------------------
+function {prod.bom_sp(varchar,varchar[])} {prod} {
+  returns varchar[] language pltcl as $$
+    set ret "{[$1 eval subst $2]}"
+$$;}
+  
+# Run a bill of materials on the specified base/rev
+#----------------------------------------------------------------
+function {prod.bom(b varchar, r int, p varchar[], dev boolean)} {prod.boms prod.bomc prod.bom_init(varchar,int,varchar[]) prod.bom_ex(varchar,varchar) prod.bom_su(varchar,varchar) prod.bom_ev(varchar,varchar)} {
+  returns setof prod.bomc language plpgsql as $$
+    declare
+        brow		prod.boms;		-- source record
+        retv		prod.bomc;		-- return record
+        interp		varchar;
+        quant		float;
+        parr		varchar[];
+        sret		varchar;
+        prec		record;
+    begin
+        interp := prod.bom_init(b, r, p);		-- initialize interpretor, variables
+        retv.base_rrr := b;				-- will be returned
+        retv.rev_rr := r;
+        for brow in select * from prod.boms where base_rr = b and rev_r = r order by idx loop
+            if brow.script is not null then
+                sret := prod.bom_ev(interp, brow.script);	-- evaluate the line script
+                if sret = '_skip_' then continue; end if;
+                if sret = '_end_' then return; end if;
+            end if;
+            retv.idx_r := brow.idx;
+            retv.quant := prod.bom_ex(interp, brow.quant);
+            parr := prod.bom_sp(interp, brow.comp_parms);
+raise NOTICE '  line:% % % %', brow.idx, retv.quant, brow.comp_base, parr;
+
+            select into prec * from prod.part p where p.base_r = brow.comp_base and p.parms = parr;
+            if not found then
+                raise exception '!prod.boms.PNF %(%)', brow.comp_base, array_to_string(parr,',');
+            end if;
+            retv.comp := prec.pnum;
+            return next retv;
+        end loop;
+        return;
+    end;
+$$;}

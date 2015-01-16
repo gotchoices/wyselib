@@ -1,0 +1,98 @@
+# Miscellaneous functions and operators needed for wylib
+#include(Copyright)
+#TODO:
+#- 
+
+# Return the number of fields in a string delimited by a given character
+# Usage: field_count(string,delimiter)
+#-------------------------------------------
+function field_count(varchar,varchar) {} {
+  returns int4 language pltcl as $$
+    return [llength [split $1 $2]]
+$$;}
+
+# Convert a boolean to the values yes or no
+#-------------------------------------------
+function norm_bool(boolean) {} {
+  returns text immutable strict language sql as $$
+    select case when $1 then 'yes' else 'no' end;
+$$;}
+
+# Convert a numeric to a comma separated dollar amount
+#-------------------------------------------
+function comma_dollar(numeric) {} {
+  returns text immutable language sql as $$
+    select to_char($1,'999,999,999.99');
+$$;}
+
+# Convert a float to a comma separated dollar amount
+#-------------------------------------------
+function comma_dollar(float8) {} {
+  returns text immutable language sql as $$
+    select to_char($1,'999,999,999.99');
+$$;}
+
+# Format a float to display exactly 2 decimal places
+# Usage: norm_dollar(value)
+#----------------------------------------------------------------
+function norm_dollar(float8) {} {
+  returns text language pltcl as $$
+    if {$1 == {(null)} || $1 == {}} {return 0.00}
+    return [format {%#.2f} [expr floor($1 * 100 + 0.5) / 100.00]]
+$$;}
+	
+# Convert the month to an alpha string
+#-------------------------------------------
+function norm_date(date) {} {
+  returns text immutable language sql as $$
+    select to_char($1,'YYYY-Mon-DD');
+$$;}
+
+# Convert the month to an alpha string
+#-------------------------------------------
+function norm_date(timestamp) {} {
+  returns text immutable language sql as $$
+    select to_char($1,'YYYY-Mon-DD HH24:MI:SS');
+$$;}
+
+# Convert a date to Year-Quarter format
+#-------------------------------------------
+function date_quart(date) {} {
+  returns text language sql as $$
+    select to_char($1,'YYYY-Q');
+$$;}
+
+# Convert a date to absolute seconds (according to tcl)
+#-------------------------------------------
+function date_seconds(text) {} {
+  returns int4 immutable strict language pltcl as $$
+    return [clock scan $1]
+$$;}
+
+# Return a digit 0 - n based on where a value falls in a predefined list
+# Usage: ordinal(value,list)
+#-------------------------------------------
+function ord(text,text) {} {
+  returns int4 immutable language pltcl as $$
+    set idx [lsearch -exact $2 $1]
+    if {$idx >= 0} {return $idx}
+    return [llength $2]
+$$;}
+
+#Case insensitive operators (for consistency with other operators)
+#-------------------------------------------
+function eqnocase(text,text) {} {
+  returns boolean language plpgsql immutable as $$
+    begin return upper($1) = upper($2); end;
+$$;}
+other eqnocase_o eqnocase(text,text) {
+    create operator =* (leftarg = text,rightarg = text,procedure = eqnocase, negator = !=*);
+} {drop operator =* (text,text);}
+
+function neqnocase(text,text) {} {
+  returns boolean language plpgsql immutable as $$
+    begin return upper($1) != upper($2); end;
+$$;}
+other neqnocase_o neqnocase(text,text) {
+    create operator !=* (leftarg = text,rightarg = text,procedure = neqnocase, negator = =*);
+} {drop operator !=* (text,text);}

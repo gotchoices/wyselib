@@ -1,0 +1,626 @@
+#Projects and assocated objects
+#TODO:
+#- re-test password structure
+#- re-test password gui
+#- how to give quick access to my project tree?		(try a recursive view)
+#- installable modules for each individual project type?
+#-   check for valid parent types
+#-   what to do on open/close
+#- 
+#- implement method-c ledger for project status changes
+#-   force budget to zero on project close
+#-   cache summary totals on project close (or always?)
+#-   force budget to zero on parent change
+#- 
+#- trigger when any ledger transaction is logged to a project anywhere, check for open project
+#- check for any open orders before closing a project (in order module)
+#- check for any open payroll before closing a project (PPW can accrue after job closed)
+#- 
+#- From ATI TODO's:
+#- test indexing proj_passwd.passwd and proj.passwd
+#- 
+#- 
+
+namespace eval proj {
+    def proj_pk		{code}
+    def proj_v_in	{type numb name descr bdate status owner par passwd}
+    def proj_v_up	{name descr bdate status owner par passwd}
+    def proj_se		[lremove [concat code $proj_v_in cdate tpid $glob::stampfn] passwd]
+    def proj_local	{}
+    def proj_top_tp	h		;#type and
+    def proj_top_nm	0		;#numb of top parent of all project
+    def proj_type_e	e		;#reserved entity type
+    def proj_audit	"$proj_v_in"
+    def proj_base	1000
+}
+
+# Contains an entry for each defined project type
+#----------------------------------------------------------------
+table acct.proj_type {acct.acct} {
+    code	char		primary key constraint "!acct.proj_type.IVT" check (code ~ '[a-z]')
+  , name	varchar		not null
+  , descr	varchar
+  , ptypes	char[]
+  , funding	boolean		not null default 'true'
+  , acct	varchar		references acct.acct on update cascade
+} -grant {
+    {glman	{} {} {s i u d}}
+}
+
+# Contains an entry for each defined project number
+#----------------------------------------------------------------
+table acct.proj {base.ent acct.proj_type base.curr_eid()} {
+    code	varchar		primary key check (code = type || numb)
+  , type	char		references acct.proj_type on update cascade
+  , numb	int		constraint "!acct.proj.PNG" check (numb >= 0)
+  
+  , name	varchar(64)	not null constraint "!acct.cat.IPN" check (name ~ '[A-Za-z][A-Za-z0-9_ ]*')
+  , descr	varchar
+  , bdate	date		not null default current_date
+  , cdate	date		constraint "!acct.proj.CBO" check (cdate >= bdate)
+  , status	varchar(4)	not null default 'open' constraint "!acct.proj.SOC" check (status in ('open','clsd'))
+  , passwd	varchar
+
+  , owner	int		not null default base.curr_eid() references base.ent on update cascade
+  , par		varchar		references acct.proj on update cascade
+  , constraint "!acct.proj.PNP" check ((par is not null and (type != 'subst($proj::proj_top_tp)'  or numb != subst($proj::proj_top_nm))) or 
+                                       (par is     null and  type  = 'subst($proj::proj_top_tp)' and numb  = subst($proj::proj_top_nm)))
+  , tpid	serial		-- Temporary field for porting gnucash files
+    subst($proj::proj_local)
+    subst($glob::stamps)
+}
+index {} acct.proj status
+#audit::audit acct.proj $proj::proj_audit
+
+# Contains cached statistical information which could be computed (but more slowly) from the existing data
+#----------------------------------------------------------------
+table acct.proj_st_c {acct.proj} {
+    code_r	varchar references acct.proj on update cascade on delete cascade
+  , level	int
+  , entity	varchar
+  , ppath	varchar[]
+  , idx		int
+  , mxc		int
+  , rauth	varchar[]
+  , wauth	varchar[]
+}
+index {} acct.proj_st_c idx
+index {} acct.proj_st_c mxc
+
+# Contains an entry for each person who registers themselves with some password for a particular project
+#----------------------------------------------------------------
+table acct.proj_pwd {acct.proj base.ent} {
+    ent		int	references base.ent on update cascade on delete cascade
+  , proj	varchar references acct.proj on update cascade on delete cascade
+  , passwd	varchar
+  , primary key (ent, proj)
+}
+#index {} proj_passwd passwd
+audit::audit acct.proj_pwd passwd
+
+# View to produce indexes for materialized path and nested sets.
+# This should always agree with the information cached in acct.proj_st_c
+#----------------------------------------------------------------
+view acct.proj_st_v {acct.proj} {
+    with proj_idxs as (
+        with recursive proj_path(code, type, numb, level, entity, path, ord, cycle) as (		-- generate materialized path
+            select	p.code, p.type, p.numb,	0, null::varchar, array[p.code],	array[array[ascii(p.type), p.numb]], false
+            from	acct.proj p where code = 'subst($proj::proj_top_tp$proj::proj_top_nm)'		-- h0 must be the top project
+        union all
+            select	p.code, p.type, p.numb,	pp.level + 1, case when p.type = 'subst($proj::proj_type_e)' then p.code else pp.entity end,
+            		path || p.code,	ord || array[ascii(p.type), p.numb],	p.code = any(path)
+            from	acct.proj	p 
+            join	proj_path	pp on pp.code = p.par and not cycle
+        ) 
+        select	code
+            ,	pc.level
+            ,	pc.entity
+            ,	pc.path
+            ,	pc.ord
+            ,	row_number() over (order by pc.ord) as idx			-- generate sequential numbering
+        from	proj_path	pc
+        )
+    select	pi.code					as code_r
+        ,	pi.level
+        ,	pi.entity
+        ,	pi.path[1:array_upper(pi.path,1)-1]	as ppath	-- includes only parents
+        ,	pi.path					as fpath	-- includes self
+        ,	pi.ord
+        ,	pi.idx
+        ,	(select max(idx) from proj_idxs where path @> pi.path)	as mxc	-- generate max child as a sub-query
+    from	proj_idxs	pi;
+} -primary {ptyp proj}
+
+#Base view which includes additional helpful fields
+#----------------------------------------------------------------
+view acct.proj_v {acct.proj acct.proj_st_c base.ent_v} {
+    select eval(fld_list $proj::proj_se p)
+      , pp.name				as par_name
+      , co.std_name			as own_name
+      , case when p.passwd isnull then null else '******'::varchar end		as passwd
+      , repeat('. ',case when p.par isnull then 0 else c.level end) || p.name	as iname
+      , c.wauth
+      , c.rauth
+      , c.ppath
+      , c.ppath || (p.code)		as fpath
+      , c.level
+      , c.entity
+      , c.idx
+      , c.mxc
+--      , p.oid				as _oid
+    from		acct.proj	p
+        join		base.ent_v	co	on co.id = p.owner
+        join		acct.proj_st_c	c	on c.code_r = p.code
+        left join	acct.proj	pp	on pp.code = p.par;
+
+--    e#val(rule_insert acct.proj_v acct.proj $proj::proj_v_in {} "status 'open' $glob::stampin");
+--    e#val(rule_update acct.proj_v acct.proj $proj::proj_v_up $proj::proj_pk {where old.status = 'open' or new.status = 'open'} $glob::stampup);
+--    e#val(rule_delete acct.proj_v acct.proj $proj::proj_pk {where old.status = 'open'});
+} -grant {
+    {projman	{} {} {s i u d}}
+}
+view::triggers acct.proj_v acct.proj $proj::proj_pk \
+	-ins [list -c $proj::proj_v_in -f "status 'open' $glob::stampin"] \
+	-upd [list -c $proj::proj_v_up -f $glob::stampup -w {old.status = 'open' or new.status = 'open'}] \
+	-del [list -w {old.status = 'open'}] \
+
+# View for exception testing only.  This should ideally contain no rows.
+# Rows present indicate an incorrect or missing cache item.
+#----------------------------------------------------------------
+view acct.proj_ex_v {acct.proj acct.proj_st_v acct.proj_st_c} {
+    select	p.code, p.name,
+    		hc.level, hc.entity, hc.ppath, hc.idx, hc.mxc,
+    		hv.level as level_v, hv.entity as entity_v, hv.ppath as ppath_v, hv.idx as idx_v, hv.mxc as mxc_v
+    from	acct.proj	p
+    left join	acct.proj_st_c	hc on hc.code_r = p.code
+    left join	acct.proj_st_v	hv on hv.code_r = p.code
+    where	(hc.level	is distinct from	hv.level)	or
+    		(hc.entity	is distinct from	hv.entity)	or
+    		(hc.ppath	is distinct from	hv.ppath)	or
+    		(hc.idx		is distinct from	hv.idx)		or
+    		(hc.mxc		is distinct from	hv.mxc)
+}
+
+# Validity checks - make sure this one fires first (before caching triggers)
+#----------------------------------------------------------------
+function acct.proj_tf_check() {acct.proj acct.proj_type} {
+  returns trigger security definer as $$
+    declare
+        prec	record;
+        do_chk	boolean;
+        types	char[];
+    begin
+-- raise notice 'tf_check %', new.code;
+        if new.numb is null then	-- generate a unique project number
+            select into new.numb coalesce(max(numb)+1,subst($proj::proj_base)) from acct.proj where type = new.type;	-- Go one bigger than last project, ignoring any holes in the sequence
+--            select into new.numb min(p1.numb)+1 from acct.proj p1 where type = new.type and not exists (select numb from proj p2 where p2.type = new.type and p2.numb = p1.numb + 1);	-- to re-use missing numbers in the proj table
+        end if;
+        new.code := new.type || new.numb;		-- Generate primary key from type and number
+
+        if TG_OP = 'UPDATE' then
+            do_chk := (new.par != old.par);
+        else
+            do_chk := (new.par is not null);
+        end if;
+             
+        if do_chk then
+            select into types ptypes from acct.proj_type where code = new.type;
+            select into prec * from acct.proj where code = new.par;
+            if types is not null and not prec.type = any(types) then
+                raise exception '!acct.proj.IPT % %', new.type, prec.type;		-- Incompatible with parent type
+            end if;
+        end if;
+        if new.par = new.code then
+            raise exception '!acct.proj.POP';		-- Project can't be its own parent
+        end if;
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_proj_tr_check {} {before insert or update on acct.proj for each row execute procedure acct.proj_tf_check();}
+
+# Rebuild stale cache entries and do other table-wide checks
+#----------------------------------------------------------------
+function acct.proj_tf_tabchk() {acct.proj acct.proj_st_v} {
+  returns trigger security definer language plpgsql as $$
+    declare
+        trec	record;
+        pp	int[];
+        fp	int[];
+        tint	int;
+    begin
+-- raise notice 'tf_tabchk';
+        if not exists (select code from acct.proj where type = 'subst($proj::proj_top_tp)' and numb = subst($proj::proj_top_nm)) then
+            raise exception '!acct.proj.NP0';			-- Project h0 must exist
+        end if;
+        
+        select count(*) into tint from acct.proj p1, acct.proj p2 where p1.par = p2.code and p1.status = 'open' and p2.status = 'clsd';
+        if tint > 0 then
+            raise exception '!acct.proj.PNO';			-- open projects can't be under closed ones
+        end if;
+
+        insert into acct.proj_st_c (code_r)		        -- Create any missing entries in cache table
+            select p.code from acct.proj p where not exists (select code_r from acct.proj_st_c where code_r = p.code);
+
+        update acct.proj_st_c
+            set level = hv.level, entity = hv.entity, ppath = hv.ppath, idx = hv.idx, mxc = hv.mxc
+            from	acct.proj_st_v	hv
+            where	hv.code_r = acct.proj_st_c.code_r
+            and		acct.proj_st_c.idx is null;		-- null idx marks cache entries that need updating
+
+--FIXME: How to implement fast method for read/write permissions?
+--        update proj_paths set wauth = (select array_agg(empl_id) from proj_v_auth where priv = 'w' and prog_id = proj_paths.proj_id) where wauth is null;
+--        update proj_paths set rauth = (select array_agg(empl_id) from proj_v_auth where                prog_id = proj_paths.proj_id) where rauth is null;
+
+        return new;
+    end;
+$$;}
+trigger acct_proj_tr_tabchk {} {after insert or update or delete on acct.proj for each statement execute procedure acct.proj_tf_tabchk();}
+
+# Maintain cached data as well as a few other consistency checks
+#----------------------------------------------------------------
+function acct.proj_tf_i_cache() {acct.proj_st_c acct.proj_v} {
+  returns trigger security definer as $$
+    declare
+        new_idx		int;
+    begin
+-- raise notice 'tf_i_cache %', new.code;
+--FIXME: add this back in?
+--        execute proj_parcheck(new);
+        
+        select mxc into new_idx from acct.proj_v where par = new.par and (type < new.type or (type = new.type and numb < new.numb)) order by type desc, numb desc limit 1;	-- get the largest sibling smaller than me that may already exist
+        if not found then
+            select mxc into new_idx from acct.proj_v where code = new.par;		-- get from the parent account
+        end if;
+        update acct.proj_st_c set idx = null where idx >= new_idx or mxc >= new_idx;			-- mark dirty
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_proj_tr_i_cache {} {before insert on acct.proj for each row execute procedure acct.proj_tf_i_cache();}
+
+# Maintain cached data
+#----------------------------------------------------------------
+function acct.proj_tf_u_cache() {acct.proj_st_c acct.proj_v} {
+  returns trigger security definer as $$
+    declare
+        orec		record;		-- old cache record for this project
+        oprec		record;		-- cache record for the old parent
+        nprec		record;		-- cache record for the new parent
+        min		int;
+        max		int;
+        tmp		int;
+    begin
+-- raise notice 'tf_u_cache % -> %', old.code, new.code;
+        if eval(samelist par code type numb) then return new; end if;	-- if no change to parent or code
+        select * into orec from acct.proj_st_c where code_r = old.code;	-- get record as before update
+        select * into oprec from acct.proj_st_c where code_r = old.par;	-- get previous parent
+
+        if new.par != old.par then					-- if moving to new parent
+            select * into nprec from acct.proj_st_c where code_r = new.par; -- get new parent
+            
+            if nprec.idx > oprec.idx then				-- moving up the tree (to a larger parent idx)
+                min := orec.idx;					-- min is our old slot
+                select idx-1 into max from acct.proj_v where par = new.par and (type > new.type or (type = new.type and numb > new.numb)) order by type, numb limit 1;	-- get the smallest sibling larger than me that may already exist at this parent
+                if not found then max := nprec.mxc; end if;		-- or just get mxc from new parent
+
+            else							-- moving down the tree (to a smaller parent idx)
+                max := orec.mxc;					-- max is our max child
+                select idx+1 into min from acct.proj_v where par = new.par and (type < new.type or (type = new.type and numb < new.numb)) order by type desc, numb desc limit 1;	-- get the largest sibling smaller than me that may already exist at this parent
+                if not found then min := nprec.idx+1; end if;		-- or just get idx from new parent
+            end if;
+
+            if max < min then						-- We will actually move opposite of what the parent indexes made it seem
+                tmp := min;						-- So swap min and max
+                min := max;
+                max := tmp;
+            end if;
+
+-- raise notice 'Update opar.idx:% npar.idx:% min:% max:%', oprec.idx, nprec.idx, min, max;
+            update acct.proj_st_c set idx = null where (idx between min and max) or (mxc between min and max);	-- mark dirty
+        end if;
+
+        if not eval(samelist type numb code) then	-- if PK changed, update everyone below my parent (should do this after the dirty-marking above)
+            update acct.proj_st_c set idx = null where idx >= oprec.idx and idx <= oprec.mxc;	-- refresh all children to update path lists
+        end if;
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_proj_tr_u_cache {} {before update on acct.proj for each row execute procedure acct.proj_tf_u_cache();}
+
+# Maintain cached data
+#----------------------------------------------------------------
+function acct.proj_tf_d_cache() {acct.proj_st_c acct.proj_v} {
+  returns trigger security definer as $$
+    declare
+        old_idx		int;
+    begin
+        select idx into old_idx from acct.proj_st_c where code_r = old.code;		-- get index of record we will delete
+        update acct.proj_st_c set idx = null where idx >= old_idx or mxc >= old_idx;	-- mark dirty
+        return old;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_proj_tr_d_cache {} {before delete on acct.proj for each row execute procedure acct.proj_tf_d_cache();}
+
+# Return the index of a given project.  Useful to make sure it doesn't change before our transaction fires.
+# Usage: acct.proj_idx(code)
+#----------------------------------------------------------------
+function acct.proj_idx(varchar) {acct.proj_v} {
+  returns int language sql security definer stable as $$
+    select idx from acct.proj_v where code = $1;
+$$;}
+
+# Return the max child of a given project.  Used in conjunction with proj_idx() above
+# Usage: acct.proj_mxc(code)
+#----------------------------------------------------------------
+function acct.proj_mxc(varchar) {acct.proj_v} {
+  returns int language sql security definer stable as $$
+    select mxc from acct.proj_v where code = $1;
+$$;}
+
+# Force a clean update of the project index cache
+#----------------------------------------------------------------
+function {acct.proj_recache()} {acct.proj_st_c} {
+  returns void language plpgsql as $$
+    begin
+        update acct.proj_st_c set idx = null;
+        update acct.proj set status = 'open' where type = 'subst($proj::proj_top_tp)' and numb = subst($proj::proj_top_nm);
+    end;
+$$;}
+
+return
+xxxxxxxxxxxxxxxxxxxxxxx end of insert from acct xxxxxxxxxxxxxxxxx
+
+#View showing who has various permissions to each project
+#----------------------------------------------------------------
+#view proj.auth_v {acct.proj proj.passwd proj_rel empl empl_v} {
+#    select					-- has a password
+#        pr.prog_id		as prog_id,
+#        pw.empl_id		as empl_id,
+#        ee.name			as empname,
+#        'r'			as priv,
+#        'passwd'		as reason,
+#        pr.anst_id		as anst_id,
+#        pr.rel
+#        from		proj_rel	pr
+#            join	proj		pp	on pp.proj_id = pr.anst_id
+#            join	proj_passwd	pw	on pw.passwd  = pp.passwd
+#            join	empl_v		ee	on ee.empl_id  = pw.empl_id
+#    union all select				-- is a proxy
+#        pr.prog_id		as prog_id,
+#        em.proxy		as empl_id,
+#        ee.name			as empname,
+#        'w'			as priv,
+#        'proxy'			as reason,
+#        pr.anst_id		as anst_id,
+#        pr.rel
+#        from		proj_rel	pr
+#            join	proj		pp	on pp.proj_id = pr.anst_id
+#            join	empl		em	on em.empl_id = pp.owner and em.proxy is not null
+#            join	empl_v		ee	on ee.empl_id  = em.proxy
+#    union all select				-- is the owner
+#        pr.prog_id		as prog_id,
+#        pp.owner		as empl_id,
+#        ee.name			as empname,
+#        'w'			as priv,
+#        'owner'			as reason,
+#        pr.anst_id		as anst_id,
+#        pr.rel
+#        from		proj_rel	pr
+#            join	proj		pp	on pp.proj_id = pr.anst_id
+#            join	empl_v		ee	on ee.empl_id  = pp.owner
+#} -grant {
+#    {projman	s}
+#} -native {{proj_v_auth empl_id} {proj_rel prog_id}} -primary {prog_id empl_id reason anst_id}
+
+return
+xxxxxxxxxxxxxxxxxxxx
+
+# View that shows only projects I am authorized for
+#----------------------------------------------------------------
+view acct.proj_v_me {acct.proj_v proj_passwd_v} {
+    select pr.* from acct.proj_v pr where
+        session_user = any (pr.rauth);
+
+    eval(rule_insert acct.proj_v_me acct.proj $acct.proj_in) {where exists (select proj_id from proj_v where proj_id = new.par and session_user = any(wauth))} {status 'open' $glob::stampin});		-- anyone can insert a new project if they have write auth on the parent
+    eval(rule_update acct.proj_v_me acct.proj $acct.proj_up) $fields(proj.pk) {where old.status = 'open' and session_user = any(old.wauth)} $glob::stampup);		-- can update only if they have write auth on this project and its open
+} -grant {
+    {projman	s {i u}}
+}
+
+# Base view which includes additional helpful fields
+#----------------------------------------------------------------
+view proj.passwd_v {acct.proj proj.passwd base.ent_v} {
+    select eval(fld_list $proj.passwd_se) pw)
+      , ee.name			as emp_name
+      , pp.title		as pro_name
+      , '******'::varchar	as passwd
+      , pw.passwd = (select passwd from acct.proj where proj_id = pw.proj) as valid
+      , pw.oid			as _oid
+    from	proj.passwd	pw
+      join	base.ent_v	ee	on ee.id = pw.ent
+      join	acct.proj	pp	on pp.proj_id = pw.proj
+}
+
+# View that shows only my passwords and my projects
+#----------------------------------------------------------------
+view proj.passwd_v_me {proj.passwd_v proj.proj_st_c} {
+    select pp.*
+    from		proj.passwd_v	pp
+        join		proj.proj_st_c	pc	on pc.proj = pp.proj_id
+    where 
+        session_user = any(pc.wauth);
+
+--    e#val(rule_insert proj_passwd_v_me proj_passwd $fields(proj_passwd.in));    -- anyone can insert a new password for themselves
+--    e#val(rule_update proj_passwd_v_me proj_passwd $fields(proj_passwd.up) $fields(proj_passwd.pk) {where old.empl_id = curr_uid()});	-- can only update my own passwords
+--    e#val(rule_delete proj_passwd_v_me proj_passwd $fields(proj_passwd.pk));	-- but I can delete any passwords in the view
+} -grant {
+    {projman	{s i u d}}
+}
+
+xxxxxxxxxxxxxxxxxxxx
+
+#Determine if a user has privilege for a project.
+#Usage: proj_priv(project,empl_id)
+#----------------------------------------------------------------
+function proj_priv(int4,int4) {proj_v} {
+  returns boolean language sql security definer stable as $$
+    select exists (select proj_id from proj_v where proj_id = $1 and $2 = any(wauth));
+$$;}
+
+#Determine if a project has another project as its ancestor.
+#Usage: proj_ancest(project,ancest)
+#----------------------------------------------------------------
+function proj_ancest(int4,int4) {proj_v} {
+  returns int4 language sql security definer stable as $$
+    select case when
+        $1 = $2 or exists (
+          select proj_id from proj_v where proj_id = $1 and $2 = any(ppath)
+        ) then 1 else 0 end;
+$$;}
+
+# Data integrity triggers 
+#----------------------------------------------------------------
+#For hierarchical project structure:
+#X- A closed project can not be the parent (or ancestor) of an open project
+#X- When	inserting a record, do nothing with the cache
+#X- When updating a record:
+#X-   if par changed, nullify the ppath and wauth for that record and all its subordinates
+#X-   if owner changed, nullify the wauth for that record and all its subordinates
+#X- When updating an employee record:
+#X-   if proxy changed, nullify the wauth for all records the boss is authorized on
+#X- Rebuild any records with null ppath, wauth as the fields are being read in the view
+#X- No one should have a null parent except the root (proj_id = 1)
+#X- Detect parent loops (no path to the root)
+#
+#Other:
+#X- Can open projects have a closed date? (OK)
+#X- Open projects should have a valid begin date (OK, not null)
+#X- Closed projects should have a valid closed date
+#X- Make sure the project's parent is of a valid type
+
+# Check project type against parent project type
+#----------------------------------------------------------------
+function {proj_parcheck(ch proj)} {proj} {
+  returns void language plpgsql as $$
+    declare
+        prec	record;
+    begin
+    if session_user = 'dbadmin()' then return; end if;
+    select * into prec from proj where proj_id = ch.par;	--fetch parent record
+
+    if (prec.ptype in ('inv','ots')) then
+        raise exception 'Projects of type: % should not have children projects', prec.ptype;
+    end if;
+
+    if (prec.par is null) then		-- use pseudo project type: cor for project 1
+        prec.ptype := 'cor';
+    end if;
+
+    if (ch.ptype in ('inv','bsh')) and (prec.par is not null) then 
+        raise exception 'Projects of type: % should be children of corporate (1)', ch.ptype;
+    end if;
+
+    if (ch.ptype = 'job' 	and prec.ptype not in ('job','pcb'))		or
+       (ch.ptype = 'adm'	and prec.ptype not in ('cor','adm','ccb'))	or
+       (ch.ptype = 'war'	and prec.ptype not in ('cor','ccb','war'))	or
+       (ch.ptype = 'cap'	and prec.ptype not in ('cap','ccb'))		or
+       (ch.ptype = 'ots'	and prec.ptype !=      'pcb')			or
+       (ch.ptype = 'pcb'	and prec.ptype not in ('cor','pcb'))		or
+       (ch.ptype = 'ccb'	and prec.ptype not in ('cor','ccb'))		or
+       (ch.ptype = 'inv'	and prec.ptype !=      'cor')			or
+       (ch.ptype = 'bsh'	and prec.ptype !=      'cor')			or
+       (ch.ptype = 'wip'	and prec.ptype not in ('cor','wip'))		then
+
+        raise exception 'Project % of type % should not be the child of a project of type %', ch.proj_id, ch.ptype, prec.ptype;
+    end if;
+    end;
+$$;}
+
+# Before updating a project record
+#----------------------------------------------------------------
+function proj_tf_burec() {acct.proj acct.proj_st_c proj_parcheck(proj)} {
+  returns trigger security definer language plpgsql as $$
+    declare
+        prec	record;
+    begin
+
+        if old.status = 'open' and new.status = 'clsd' and new.cdate is null then	-- if the project is being closed with this update
+            new.cdate := current_date;							-- default the closed date to today
+        elsif new.status = 'open' then
+            new.cdate := null;			-- open projects should always have null cdate
+        end if;
+
+        if (new.par != old.par or new.ptype != old.ptype) and (new.par is not null) then	-- if parent or type changed, check for valid parent type
+            execute proj_parcheck(new);
+--            select * into prec from proj where proj_id = new.par;	--fetch parent record
+--
+--            if (prec.ptype in ('inv','ots')) then
+--                raise exception 'Projects of type: % should not have children projects', prec.ptype;
+--            end if;
+--        
+--            if (prec.par is null) then		-- use pseudo project type: cor for project 1
+--                prec.ptype := 'cor';
+--            end if;
+--            
+--            if (new.ptype in ('inv','bsh')) and (prec.par is not null) then 
+--                raise exception 'Projects of type: % should be children of corporate (1)', new.ptype;
+--            end if;
+--
+--            if (new.ptype = 'job' 	and prec.ptype not in ('job','pcb'))		or
+--               (new.ptype = 'adm'	and prec.ptype not in ('cor','adm','ccb'))	or
+--               (new.ptype = 'war'	and prec.ptype not in ('cor','ccb','war'))	or
+--               (new.ptype = 'cap'	and prec.ptype not in ('cap','ccb'))		or
+--               (new.ptype = 'ots'	and prec.ptype !=      'pcb')			or
+--               (new.ptype = 'pcb'	and prec.ptype not in ('cor','pcb'))		or
+--               (new.ptype = 'ccb'	and prec.ptype not in ('cor','ccb'))		or
+--               (new.ptype = 'inv'	and prec.ptype !=      'cor')			or
+--               (new.ptype = 'bsh'	and prec.ptype !=      'cor')			or
+--               (new.ptype = 'wip'	and prec.ptype not in ('cor','wip'))		then
+--
+--                raise exception 'Project % of type % should not be the child of a project of type %', new.proj_id, new.ptype, prec.ptype;
+--            end if;
+        end if;
+        
+        if new.owner != old.owner then		-- if owner changed, nullify cached auth values
+            update acct.proj_st_c set wauth = null,rauth = null where old.proj_id = any (fpath);
+        end if;
+
+        if new.par != old.par or new.proj_id != old.proj_id  then	-- if parent or project ID changed, delete any cached info about ancestor/progeny relationships
+            delete from acct.proj_st_c where old.proj_id = any (fpath);
+            delete from proj_rel where prog_id = any (select prog_id from proj_rel where anst_id = old.proj_id);
+        end if;
+
+        return new;
+    end;
+$$;}
+trigger proj_tr_burec {} {
+    before update on proj for each row execute procedure proj_tf_burec();
+}
+
+# After updating an employee record
+#----------------------------------------------------------------
+function proj_tf_au_empl() {proj_paths empl proj_v_auth array_agg_i} {
+  returns trigger security definer as $$
+    begin
+
+	-- if the proxy changed, nullify all wauth records the owner is on
+        if (new.proxy != old.proxy) or (old.proxy is null and new.proxy is not null) or (old.proxy is not null and new.proxy is null) then
+            update proj_paths set wauth = null where old.empl_id = any (wauth);
+--            update proj_paths set wauth = a.warr from (select prog_id,array_agg(empl_id) as warr from proj_v_auth where priv = 'w' group by 1) a where a.prog_id = proj_paths.proj_id and wauth is null;
+            update proj_paths set wauth = (select array_agg(empl_id) from proj_v_auth where priv = 'w' and prog_id = proj_paths.proj_id) where wauth is null;
+
+            update proj_paths set rauth = null where old.empl_id = any (rauth);
+--            update proj_paths set rauth = a.rarr from (select prog_id,array_agg(empl_id) as rarr from proj_v_auth                  group by 1) a where a.prog_id = proj_paths.proj_id and rauth is null;
+            update proj_paths set rauth = (select array_agg(empl_id) from proj_v_auth where                prog_id = proj_paths.proj_id) where rauth is null;
+        end if;
+
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger proj_tr_au_empl {} {
+    after update on empl for each row execute procedure proj_tf_au_empl();
+}

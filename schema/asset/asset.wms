@@ -1,0 +1,148 @@
+# Assets
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- Link an asset to a project/account
+#- Link each event to a project/account
+#- Use this for tracking fuel
+#- Use this for tracking hay
+#- Use this for tracking livestock
+#- 
+
+namespace eval asset {
+    def asset_pk	{asset_id}
+    def asset_v_in	{asset_type asset_class asset_stat asset_cmt acqu_date own_id descr units location proj}
+    def asset_v_up	[concat $asset_v_in disp_date]
+    def asset_se	[concat $asset_pk $asset_v_up $glob::stampfn]
+    def asset_v_se	[concat $asset_se x y z]
+    def asset_local	{}
+    def asset_min	{1000}
+#    def asset_v_pub_se	[concat asset_id std_name asset_type username activ inside $glob::stampfn]
+#    def asset_link_pk	{org_id mem_id}
+#    def asset_link_v_in	[concat $asset_link_pk role]
+#    def asset_link_v_up	{role}
+#    def asset_link_se	[concat $asset_link_v_in supr_path $glob::stampfn]
+}
+schema asset -grant public
+
+# Any kind of item you might want to track whether capitalized or not
+#----------------------------------------------------------------
+table asset.asset {base.ent acct.proj} {
+    asset_id	int		check (asset_id > 0) primary key
+  , asset_type	varchar(3)	not null check (asset_type in ('cap','tol','inv','sec','liv','oth'))
+  , asset_class	varchar
+  , asset_stat	varchar(5)	not null check (asset_stat in ('curr','disp','void'))
+  , asset_cmt	varchar
+
+  , acqu_date	date		not null default current_date
+  , disp_date	date		check (disp_date is null or asset_stat = 'clsd')
+
+  , own_id	int		not null references base.ent on update cascade
+  , descr	varchar		not null
+  , units	varchar		not null
+  , location	varchar
+
+  , proj	varchar		references acct.proj on update cascade
+  
+--  , tid		int		-- Transaction ID
+--  , tseq	int		-- dummy field, just leave null
+--  , foreign key (tid, tseq) references acct.tj_hdr match simple on update cascade
+
+    subst($asset::asset_local)	-- locally defined columns
+    subst($glob::stamps)
+}
+#index {} asset.ent asset_type
+#index {} asset.ent username
+
+# Track acquisition, disposition, value changes of an asset
+#----------------------------------------------------------------
+table asset.event {asset.asset} {
+    asset_ref	int		references asset.asset on update cascade on delete cascade
+  , seq		int		not null
+  , primary key (asset_ref, seq)
+
+  , event_date	date		not null default current_date
+  , event_type	varchar(3)	not null check (event_type in ('app','dep','con','rep','obs'))
+  , event_cmt	varchar
+  
+  , quant	int
+  , value	numeric(14,2)
+  , currency	varchar
+    subst($glob::stamps)
+}
+
+# Make a unique ID for each new asset
+#----------------------------------------------------------------
+function asset.asset_tf_id() {asset.asset} {
+  returns trigger language plpgsql as $$
+    begin
+        if new.asset_id is null then
+            select into new.asset_id coalesce(max(asset_id)+1,subst($asset::asset_min)) from asset.asset;
+        end if;
+        return new;
+    end;
+$$;}
+trigger asset_asset_tr_id {} {
+    before insert or update on asset.asset for each row execute procedure asset.asset_tf_id();
+}
+
+# Make a unique sequence for each new event
+#----------------------------------------------------------------
+function asset.event_tf_id() {asset.event} {
+  returns trigger language plpgsql as $$
+    begin
+        if new.seq is null then
+            select into new.seq coalesce(max(seq)+1,0) from asset.event where asset_ref = new.asset_ref;
+        end if;
+        return new;
+    end;
+$$;}
+trigger asset_event_tr_id {} {
+    before insert or update on asset.event for each row execute procedure asset.event_tf_id();
+}
+
+return
+
+
+
+
+
+
+# Base entity view
+#----------------------------------------------------------------
+view asset.asset_v {asset.ent} {
+    select eval(fld_list $asset::asset_se e)
+      , case when e.fir_name is null then e.asset_name else e.asset_name || ', ' || coalesce(e.pref_name,e.fir_name) end	as std_name
+      , e.asset_name || case when e.fir_name is not null then ', ' || 
+                case when e.title is null then '' else e.title || ' ' end ||
+                e.fir_name ||
+                case when e.mid_name is null then '' else ' ' || e.mid_name end
+            else '' end												as frm_name
+      , case when e.fir_name is null then '' else coalesce(e.pref_name,e.fir_name) || ' ' end || e.asset_name	as cas_name
+      , e. oid as _oid
+    from	asset.asset	e;
+
+    eval(rule_insert asset.asset_v asset.asset $asset::asset_v_in {} $glob::stampin);
+    eval(rule_update asset.asset_v asset.asset $asset::asset_v_up $asset::asset_pk {} $glob::stampup);
+    eval(rule_delete asset.asset_v asset.asset $asset::asset_pk);
+} -grant {
+    {asim	s {i u} d}
+}
+
+# Base link view
+#----------------------------------------------------------------
+view asset.event_v {asset.event asset.asset_v} {
+    select eval(fld_list $asset::event_se el)
+      , oe.name			as org_name
+      , me.name			as mem_name
+      , el. oid as _oid
+    from	asset.event	el
+    join	asset.asset_v	oe on oe.asset_id = el.org_id
+    join	asset.asset_v	me on me.asset_id = el.mem_id;
+
+    eval(rule_insert asset.event_v asset.event $asset::event_v_in {} $glob::stampin);
+    eval(rule_update asset.event_v asset.event $asset::event_v_up $asset::event_pk {} $glob::stampup);
+    eval(rule_delete asset.event_v asset.event $asset::event_pk);
+} -grant {
+    {asim	s {i u d}}
+}

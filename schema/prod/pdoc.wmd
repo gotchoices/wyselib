@@ -1,0 +1,13 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabdef prod.doc_type -focus type -fields {
+    {type	ent	5	{0 0}		}
+    {autolock	chk	2	{1 0}		-ini false -onvalue t -offvalue f}
+    {public	pdm	4	{2 0}		-ini yes}
+    {descr	ent	50	{0 1 3}		-hot 1}
+}
+
+#tabdef prod.doc_v -focus type -fields {
+#    {doc	ent	5	{0 0}		}
+#}

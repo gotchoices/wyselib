@@ -1,0 +1,367 @@
+# Manufacturing production module
+#TODO:
+#- 
+
+# Contains an entry for each defined part number
+#----------------------------------------------------------------
+table prod.part {prod.prod prod.parm} {
+    pnum	int		primary key
+  , base_r	varchar		references prod.prod on update cascade on delete cascade
+  , parm	varchar[]
+  , parm_c	varchar[]
+  , weight	real		constraint "!prod.part.IWT" check (weight >= 0)
+  , height	real		constraint "!prod.part.IHT" check (height >= 0)
+  , width	real		constraint "!prod.part.IWD" check (width  >= 0)
+  , length	real		constraint "!prod.part.ILN" check (length >= 0)
+  , stack	real		constraint "!prod.part.IST" check (stack > 0) not null default 1
+  , recbuy	int		constraint "!prod.part.IRB" check (recbuy > 0)
+  , cost	real		constraint "!prod.part.ICT" check (cost > lcost) not null
+  , lcost	real		constraint "!prod.part.ILC" check (lcost >= 0) not null default 0
+  , cmt		varchar
+    subst($glob::stamps)
+}
+#index {prod_part_x_base_parm} prod.part {create unique index prod_part_x_base_parm on prod_part (base parm)}
+
+# Base view with derived fields
+#----------------------------------------------------------------
+view prod.part_v {prod.part} {select
+    eval(fld_list $prod::part_se pt)
+  , pt.base_r || '(' || coalesce(array_to_string(pt.parm,','),'') || ')'	as partname
+  , pt.height * pt.width * pt.length						as volume
+    from	prod.part	pt;
+
+    eval(rule_insert prod.part_v prod.part $prod::part_v_iu {} $glob::stampin) returning eval(fld_list $prod::part_se), null::text, null::real;
+    eval(rule_update prod.part_v prod.part $prod::part_v_iu $prod::part_pk {} $glob::stampup) returning eval(fld_list $prod::part_se), null::text, null::real;
+    eval(rule_delete prod.part_v prod.part $prod::part_pk);
+} -grant {
+    {prodim	s {i u d}}
+}
+
+#----------------------------------------------------------------
+view prod.prod_v_part {prod.prod_v_vers prod.part_v} {select
+    eval(fld_list $prod::vers_prod_se pv)
+  , eval(fld_list $prod::part_v_se pt)
+  , pv.base || '(' || coalesce(array_to_string(pt.parm,','),array_to_string(pm.vars,','),'') || ')'	as partname
+  , pm.vars
+
+    from	prod.prod_v_vers	pv
+    left join	prod.part_v		pt on pt.base_r = pv.base
+    left join	(select base_rr,rev_r,array_agg(var order by pos) as vars, count(*) as count from prod.parm group by 1,2) pm on pm.base_rr = pv.base_r and pm.rev_r = pv.rev;
+
+--    e#val(rule_insert prd_part_v_prodim prd_part $fields(prd_part_v_prodim.in) {} {mod_by curr_uid() mod_date current_timestamp crt_by curr_uid() crt_date current_timestamp})
+--    e#val(rule_update prd_part_v_prodim prd_part $fields(prd_part_v_prodim.up) $fields(prd_part.pk) {} {mod_by curr_uid() mod_date current_timestamp})
+--    e#val(rule_delete prd_part_v_prodim prd_part $fields(prd_part.pk))
+} -grant {
+    {prodim	s {i u d}}
+}
+
+# Create a part number
+#----------------------------------------------------------------
+function prod.part_tf_bi() {prod.part} {returns trigger security definer language plpgsql as $$
+    begin
+        if new.pnum is null then
+            select into new.pnum coalesce(max(pnum)+1, subst($prod::part_pnum_min)) from prod.part;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_part_tr_bi {} {before insert on prod.part for each row execute procedure prod.part_tf_bi();}
+
+# Keep cache copy of parameter list
+#----------------------------------------------------------------
+function prod.prod_tf_parmc() {prod.prod prod.part} {returns trigger security definer language plpgsql as $$
+    begin
+        if new.curr is distinct from old.curr and new.curr = old.maxv then	--If product moving to next (or latest) version
+            update prod.part set parm_c = parm where base_r = old.base;		--(leave it alone if restoring curr from null to maxv-1)
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_prod_tr_parmc {} {before update on prod.prod for each row execute procedure prod.prod_tf_parmc();}
+
+return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# FIXME -- This trigger should become obsolete once potool.old is no longer used...
+#This trigger will sync the updates of inventory independent values to the old table fields
+#----------------------------------------------------------------
+function prd_part_inv_tf_au() {prd_part} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        if TG_OP = 'UPDATE' then
+            update prd_part set buylev=new.buylev, reclev=new.reclev, recbuy=new.recbuy, docount=new.docount, lastcnt=new.lstcnt where pnum=new.pnum;
+            return new;
+        end if;
+        return null;
+    end;
+$$;}
+trigger prt_part_inv_tr_au {} {
+    after update on prd_part_inv for each row execute procedure prd_part_inv_tf_au();
+}
+
+
+# FIXME -- Is this trigger correct for use with multiple inventories? 
+#          How should parts be added to an inventory?
+#This trigger adds/deletes parts into/from prd_part_inv as parts are created or deleted in prd_part
+#----------------------------------------------------------------
+function prd_part_tf_aid() {prd_part_inv} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        if TG_OP = 'DELETE' then
+            delete from prd_part_inv where pnum=old.pnum and inv=50;   
+            return old;
+        elsif TG_OP = 'INSERT' then
+            insert into prd_part_inv (pnum,inv,docount,lstcnt)  values (new.pnum,50,new.docount, new.lastcnt);
+            return new;
+        end if;
+        return null;
+    end;
+$$;}
+trigger prt_part_tr_aid {} {
+    after insert or delete on prd_part for each row execute procedure prd_part_tf_aid();
+}
+
+#----------------------------------------------------------------
+view prd_part_v_potool {prd_part curr_uid() empl_v} {
+  select 	eval(fld_list $fields(prd_part_v_potool.se) pp)
+    , pp.base || '(' || pp.parm || ')'	as partname
+    , pp.height * pp.width * pp.length	as volume
+    , c.name                            as crtname
+    , m.name                            as modname
+    , pp.oid				            as _oid
+
+  from		prd_part	pp
+  left join empl_v      m       on pp.mod_by = m.empl_id
+  left join empl_v      c       on pp.crt_by = c.empl_id;
+
+} -grant {
+    {potool 	s}
+}
+
+
+#--------------------------------------------------------------
+view prd_part_inv_v {prd_part prd_part_inv mtr_pn_recstk(int4,float8,float8) vend_pn_lead(int4) mtr_pn_lead(int4)} {
+    select p.pnum, i.inv
+        ,p.base,p.parm,p.weight,p.height,p.width,p.length,p.stack
+        ,i.buylev,i.reclev,i.recbuy
+        ,p.cost,p.lcost,p.price,p.gsa,p.gprice,p.elevel
+        ,i.docount,i.lstcnt as lastcnt
+        ,p.cmt
+        ,p.crt_by
+        ,p.crt_date
+        ,p.mod_by
+        ,p.mod_date
+        ,p.location
+        ,p.base|| '(' || p.parm || ')'	as partname
+        ,p.height * p.width * p.length	as volume
+--        ,mtr_pn_recstk(p.pnum,10,0.15)   as cgrlev
+--        ,vend_pn_lead(p.pnum)            as vlead    
+--        ,mtr_pn_lead(p.pnum)             as mlead
+        ,p.oid				as _oid
+    from prd_part p
+        left join prd_part_inv i on p.pnum=i.pnum;
+} -grant {
+    {prodim	s {i u d}}
+    {purchase	s u}
+	{potool s}
+} -primary {pnum inv
+} -native {{prd_part pnum }}
+
+
+#--------------------------------------------------------------
+view prd_part_inv_v_prodim {prd_part prd_part_inv mtr_reg mtr_reg_v_orpp proj mtr_pn_recstk(int4,float8,float8) vend_pn_lead(int4) mtr_pn_lead(int4) conf_pn(int4) summtr_c(int4,int4) summtr_k(int4,int4) summtr_fr(int4,int4,text) summtr_to(int4,int4,text) summtr_oc(int4,int4) summtr_ocp(int4,int4) summtr_woc(int4,int4) summtr_wocp(int4,int4) mtr_pn_stress(int4,int4,int4,float8) mtr_pn_ddead(int4,int4,int4)} {
+    select p.pnum, i.inv, t.title
+        ,p.base,p.parm,p.weight,p.height,p.width,p.length,p.stack
+        ,i.buylev,i.reclev,i.recbuy
+        ,p.cost,p.lcost,p.price,p.gsa,p.gprice,p.elevel
+        ,i.docount,i.lstcnt
+        ,p.cmt
+        ,p.crt_by
+        ,p.crt_date
+        ,p.mod_by
+        ,p.mod_date
+        ,p.location
+        ,p.base|| '(' || p.parm || ')'	                            as partname
+        ,p.height * p.width * p.length	                            as volume
+        ,mtr_pn_recstk(p.pnum,10,0.15)                              as cgrlev
+        ,vend_pn_lead(p.pnum)                                       as vlead    
+        ,mtr_pn_lead(p.pnum)                                        as mlead
+        ,conf_pn(p.pnum)                                            as confidence
+        ,summtr_c(p.pnum,i.inv)::int4                               as stock
+        ,summtr_k(p.pnum,i.inv)::int4                               as packed
+        ,(summtr_c(p.pnum,i.inv) + summtr_k(p.pnum,i.inv))::int4  as shelf
+        ,summtr_fr(p.pnum,i.inv,'open')::int4                       as openo
+        ,summtr_to(p.pnum,i.inv,'open')::int4                       as openi
+        ,summtr_oc(p.pnum,i.inv)::int4                              as available
+        ,summtr_ocp(p.pnum,i.inv)::int4                             as availp
+--        ,summtr_fr(p.pnum,i.inv,'work')                         as worko
+--        ,summtr_to(p.pnum,i.inv,'work')                         as worki
+--        ,summtr_woc(p.pnum,i.inv)                               as projected
+--        ,summtr_wocp(p.pnum,i.inv)                              as projp
+--        ,mtr_pn_stress(p.pnum,i.inv,0,0.11)                     as stress
+--        ,mtr_pn_ddead(p.pnum,i.inv,0)                           as ddead
+--        ,(select sum(m.pquant) from mtr_reg_v_orpp m where m.pnum = p.pnum and m.fr_proj = i.inv)   as projb
+--        ,(select sum(m.tquant) from mtr_reg m where m.pnum = p.pnum and m.fr_proj = i.inv and m.status = 'clsd' and m.tdate > current_date - '1 year'::interval) as peryear
+        ,p.oid				                                        as _oid
+
+    from prd_part p
+        join prd_part_inv i on p.pnum = i.pnum
+        join proj       t on i.inv = t.proj_id;
+
+    eval(rule_insert prd_part_inv_v_prodim prd_part_inv {pnum inv buylev reclev recbuy docount})
+    eval(rule_update prd_part_inv_v_prodim prd_part_inv {buylev reclev docount recbuy lstcnt} {pnum inv})
+    eval(rule_delete prd_part_inv_v_prodim prd_part_inv {pnum inv})
+} -grant {
+    {prodim	s {i u d}}
+    {potool s}
+} -primary {pnum inv
+} -native {{prd_part pnum }}
+ 
+
+#This view will join the part table and the base table
+#----------------------------------------------------------------
+view prd_part_v_base {prd_part_v prd_base} {
+    select	p.*,
+    b.units, b.descr, b.spec, b.revision, b.price as pricing, b.status
+
+    from	prd_part_v	p
+    join	prd_base	b on b.base = p.base;
+} -grant {
+    {doc	s}
+    {invman	s}
+    {ordtool	s}
+    {potool	s}
+    {prodim	s}
+    {vendbid	s}
+    {shopman	s}
+}
+
+#-----------------------------------------------------------------
+view prd_part_inv_v_base {prd_part_inv_v prd_base_v} {
+    select      
+        p.*
+--     , mtr_pn_supply(p.pnum,p.inv) as stress
+      , b.units, b.descr, b.spec, b.revision, b.price as pricing, b.status
+--     , i.buylev
+--     , i.reclev
+--     , i.recbuy
+
+    from        prd_part_inv_v     p
+--    join 	prd_part_inv	   i on p.pnum = i.pnum
+    join        prd_base     	   b on b.base = p.base;
+} -grant {
+    {invman     s}
+    {ordtool    s}
+    {potool     s}
+    {prodim     s}
+    {vendbid    s}
+    {shopman    s}
+} -native {
+    {prd_part_inv pnum inv}
+} -primary {pnum inv}
+
+
+
+#The parameter field is not really a foreign key as it has multiple values
+#in it.  We want a consistency check here to make sure that it always has
+#the same number of parameters as the number of parameters listed in prd_parm.
+
+#TCL/PL seems to have a problem evaluating the function when a null is passed
+#in as a parameter.  We have a patch here to not evaluate field_count unless
+#the parm is non-null.  Perhaps this can be taken out in the future.
+
+#----------------------------------------------------------------
+function prd_part_tf_iu() {prd_part prd_parm prd_base} {
+  returns trigger language plpgsql as $$
+    declare
+        parms int4;
+        fcnt int4 default 0;
+        trec record;
+        oparm varchar default null;
+        olevel int default null;
+    begin
+        if TG_OP = 'UPDATE' then
+            oparm := old.parm;
+            olevel := old.elevel;
+        end if;
+--raise debug 'prd_part_tf_iu oparm=% olevel=%', oparm, olevel;
+        if olevel is null or new.parm != oparm then
+            if not new.parm isnull then
+                fcnt := field_count(new.parm,',');
+            end if;
+            select into parms count(*) from prd_parm where base = new.base;
+            if parms != fcnt then
+                raise exception 'Invalid parameter list % on base %', new.parm, new.base;
+            end if;
+        end if;
+        if olevel is not null and new.elevel = olevel then return new; end if;
+
+        select into trec b.status as s, p.elevel as e from prd_part p, prd_base b
+            where b.base = p.base and pnum = new.pnum;
+--raise debug 'status=% pnum=%', trec.s, new.pnum;
+        if trec.s = 'd' and trec.e > 1 then
+            raise exception 'Part % must have an elevel of 1, 0, or -1 for development status', new.pnum;
+        end if;
+        if trec.s = 'c' and trec.e > 0 then
+           raise exception 'Part % must have an elevel of 0 or -1 for custom status.', new.pnum;
+        end if;
+        if trec.s = 'o' and trec.e >= 0 then
+            raise exception 'Part % must have an elevel of -1 for obsolete status', new.pnum;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prd_part_tr_iu {prd_part prd_part_tf_iu()} {
+    create constraint trigger prd_part_tr_iu after insert or update on prd_part
+        deferrable initially deferred
+        for each row execute procedure prd_part_tf_iu();
+} {
+    select drop_contrig('prd_part_tr_iu');
+  --drop constraint trigger prd_part_tr_iu on prd_part;
+}
+
+#FIXME: would be nice to eliminate this if possible (use partname field in prd_part_v)
+#Return a part name from a part number
+#Usage: part_name(part_number)
+#----------------------------------------------------------------
+function part_name(int4) {prd_part} {
+  returns varchar language sql stable as $$
+    select base || '(' || parm || ')' from prd_part where pnum = $1;
+$$;}
+
+#Return a part cost from a part number
+#Usage: part_value(part_number)
+#----------------------------------------------------------------
+function part_value(int4) {prd_part} {
+  returns float8 language sql as $$
+    select cost from prd_part where pnum = $1;
+$$;}
+
+#Return a part description from a part basename
+#Usage: part_desc(basename)
+#----------------------------------------------------------------
+function part_desc(varchar) {prd_base} {
+  returns varchar language sql as $$
+--	select descr from prd_base where base = $1;
+    select descr from prd_base where base = (case when position('(' in $1) = 0 then $1 else substring($1 from 1 for position('(' in $1)-1) end);
+$$;}
+
+#Return a part description from a part number
+#Usage: part_descp(pnum)
+#----------------------------------------------------------------
+function part_descp(int4) prd_part_v_base {
+  returns varchar language sql as $$
+    select descr from prd_part_v_base where pnum = $1;
+$$;}

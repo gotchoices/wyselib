@@ -1,0 +1,31 @@
+#!/usr/bin/wish
+# Employee information manager.
+#------------------------------------------
+#Copyright WyattERP, all other rights reserved
+package require wyselib
+
+#TODO:
+#- 
+
+#Preferences control array {tag title display_type user_edit}
+set cnf(pref) {\
+    -f {myext	ent	{Telephone Extension:}	::cnf(myext)	-help {The extension number of your office phone} -width 4}\
+}
+set cnf(table)	{base::empl_v_sup}
+
+# Main
+#----------------------------------------------------
+base::priv_run
+pref::init {*}$cnf(pref)
+if {[base::priv_has super]} {set cnf(table) empl.empl_v}
+#cdoc::init empl {} {cont_id empl_id}
+set w [top::top m empl::build $cnf(table) -main 1]
+
+argform {load} argv
+argnorm {{load 1} {macro 1}} argv
+prargs $argv {
+    -load	{m emple load {%v}}
+    -debug	{#debug::command}
+    -macro	{#if {[catch {%v} msg]} {dia::err "In command line macro: %v\n\nMessage:\n$msg"}}
+}
+m emplp menu menu invoke def

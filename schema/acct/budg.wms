@@ -1,0 +1,5 @@
+# Build budgeting journal
+#----------------------------------------------------------------
+
+#schema budg -grant public
+#tran::journal budg glman 1000

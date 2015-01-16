@@ -1,0 +1,29 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext base.comm		{Communication}		{Communication points (phone, email, fax, etc.) for entities} [concat {
+    {comm_ent			{Entity}			{The ID number of the entity this communication point belongs to}}
+    {comm_seq			{Sequence}		{A unique number assigned to each new address for a given entity}}
+    {comm_type			{Medium}		{The method of communicactive} {
+        {phone          {Phone}                 {A way to contact the entity via telephone}}
+        {email          {Email}                 {A way to contact the entity via email}}
+        {cell           {Cell}                  {A way to contact the entity via cellular telephone}}
+        {fax            {FAX}                   {A way to contact the entity via faxsimile}}
+        {text           {Text Message}          {A way to contact the entity via email to text messaging}}
+        {web            {Web Address}           {A World Wide Web address URL for this entity}}
+        {pager          {Pager}                 {A way to contact the entity via a mobile pager}}
+        {other          {Other}                 {Some other contact method for the entity}}
+    }}
+    {comm_spec			{Num/Addr}		{The number or address to use when communication via this method and communication point}}
+    {comm_cmt			{Comment}		{Any other notes about this communication point}}
+	{status				{Inactive}		{This box is checked to indicate that this record is no longer active}}
+	{comm_label		{Label}			{Lable identifing the sub-category for this record} {
+			{work			{Work}}
+			{home			{Home}}
+			{other		{Other}}
+	 }}
+} $glob::stampt]
+
+tabtext base.comm_v		{Communication}		{View of users' communication points (phone, email, fax, etc.) with additional helpful fields} {
+    {std_name			{Entity Name}		{The name of the entity this communication point pertains to}}
+}
+

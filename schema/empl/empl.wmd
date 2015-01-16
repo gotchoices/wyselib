@@ -1,0 +1,119 @@
+# Copyright Action Target Inc. all rights reserved
+#------------------------------------------
+tabdef empl.empl -focus ent_name -fields [concat {
+<<<<<<< empl.wmd
+=======
+    {emple		ent	5	{11 1}		-hide 1 -just r}
+    {emplr		ent	5	{12 1}		-hide 1 -just r}
+    {title		ent	8	{1 1}		-spf exs}
+    {ent_name		ent	15	{2 1}		-spf edw}
+    {fir_name		ent	14	{3 1}		-spf edw -bg lightblue}
+    {mid_name		ent	9	{4 1}		-spf edw}
+    {role		ent	10	{3 1}		-spf exs}
+    {id			ent	5	{4 1}		-hide 1}
+    {pref_name		ent	12	{3 2}		-spf edw}
+    {gender		pdm	2	{4 2}		-ini m}
+    {born_date		ent	11	{3 3}		-spf cal -title {Birth Date}}
+    {country		ent	4	{4 3}		-ini US -spf scm -data country}
+    {username		ent	20	{1 5 2}		-state readonly -write 1}
+    {database		chk	3	{2 5}		-ini f -onv t -offv f}
+    {hire_date		ent	11	{2 6}		-ini {[date::date]} -tem date -spf cal}
+    {term_date		ent	11	{3 6}		-tem date -spf cal}
+    {stand		pdm	6	{4 6}		-ini good}
+    {superv		ent	5	{1 7 2}		-bg pink -spf scm -data empl -just r}
+    {proxy		ent	5	{3 7 2}		-spf scm -data empl -just r}
+    {empl_type		pdm	40	{1 9 2}		-ini regular}
+    {tax_id		ent	11	{3 9}		}
+    {pay_type		pdm	6	{1 10}		-ini hourly}
+    {pay_rate		ent	12	{2 10}		-spf clc -just r}
+    {allow		ent	3	{3 11}		-spin {int {0 99}} -just r}
+    {marital		pdm	2	{4 11}		-ini s}
+    {empl_cmt		mle	{90 2}	{1 14 4 4}	-spf edw}
+    {ins_code		ent	6	{2 11}		-just r}
+    {ent_cmt		ent	40	{1 97 2}	-opt 1 -state readonly -write 0}
+    {level		ent	3	{3 97}		-opt 1 -state readonly -write 0 -just r}
+    {hour_rate		ent	8	{3 98}		-opt 1 -state readonly -write 0 -just r}
+    {norm_rate		ent	8	{3 99}		-opt 1 -state readonly -write 0 -just r}
+} $glob::stampd $empl::empl_local_wmd]
+#    {bank		ent	21	{3 10 2}	-tem {{{} {^[0-9]+:[0-9]+$}} {^[0-9]+:[0-9]+:[a-z]$} "####:#### or ####:####:s"}}
+
+#A view with some additional pseudo fields
+tabdef empl.empl_v -fields {
+    {current		chk	2	{1 6}		-state disabled -write 0 -onvalue t -offvalue f}
+    {prox_name		ent	20	{}		-depend proxy -title {:} -gmc {pack %w -in %p.proxy}}
+    {supr_name		ent	20	{}		-depend superv -title {:} -gmc {pack %w -in %p.superv}}
+    {std_name		ent	40	{1 2 2}		-state readonly -wr 0}
+} -inherits empl.empl
+
+#A view for supervisors to see their own subordinates
+tabdef empl.empl_v_sup -focus ent_name -fields [concat {
+>>>>>>> 1.10
+    {emple		ent	5	{11 1}		-hide 1 -just r}
+    {emplr		ent	5	{12 1}		-hide 1 -just r}
+    {ent_name		ent	20	{1 1}		}
+    {fir_name		ent	14	{2 1}		-bg lightblue}
+    {role		ent	10	{3 1}		-spf exs}
+    {id			ent	5	{4 1}		-hide 1}
+    {title		ent	8	{1 2}		-spf exs}
+    {pref_name		ent	12	{2 2}		}
+    {mid_name		ent	12	{3 2}		}
+    {born_date		ent	11	{1 4}		-spf cal}
+    {gender		pdm	2	{2 4}		-ini m}
+    {marital		pdm	2	{3 4}		-ini s}
+    {username		ent	12	{2 5}		-state readonly -write 0}
+    {database		chk	3	{3 5}		-ini f -onv t -offv f}
+    {current		ent	2	{1 6}		-state readonly -write 0}
+    {tax_id		ent	11	{2 6}		}
+    {country		ent	4	{3 6}		-ini US -spf scm -data country}
+    {empl_type		pdm	6	{1 7}		-ini regular}
+    {stand		pdm	6	{2 7}		-ini good}
+    {superv		ent	5	{1 8}		-bg pink -spf scm -data empl -just r}
+    {level		ent	3	{2 8}		-state readonly -write 0 -just r}
+    {proxy		ent	5	{1 9}		-spf scm -data empl -just r}
+    {empl_cmt		ent	40	{2 9 2}		-spf edw}
+    {pay_type		pdm	6	{1 10}		-ini hourly}
+    {pay_rate		ent	12	{2 10}		-spf clc -just r}
+    {allow		ent	3	{3 10}		-spin {int {0 99}} -just r}
+    {hire_date		ent	11	{1 11}		-ini {[date::date]} -tem date -spf cal}
+    {term_date		ent	11	{2 11}		-tem date -spf cal}
+    {ins_code		ent	6	{3 11}		-just r}
+    {ent_cmt		ent	14	{3 12}		-opt 1 -state readonly -write 0}
+    {prox_name		ent	12	{}		-depend proxy -title {:} -gmc {pack %w -in %p.proxy}}
+    {supr_name		ent	12	{}		-depend superv -title {:} -gmc {pack %w -in %p.superv}}
+    {hour_rate		ent	8	{1 12}		-opt 1 -state readonly -write 0 -just r}
+    {norm_rate		ent	8	{2 12}		-opt 1 -state readonly -write 0 -just r}
+    {std_name		ent	14	{1 13}		-opt 1 -sta readonly -wr 0}
+    {birthday		ent	6	{2 13}		-opt 1 -state readonly -write 0}
+} $glob::stampd]
+
+
+tabdef empl.empl_v_pub -fields {
+    {empl_id		ent	5	{0 0}		-state readonly -bg yellow -just r -write 0}
+    {current		ent	2	{1 0}		-state readonly -write 0}
+    {std_name		ent	20	{0 1 2}		-state readonly -write 0}
+    {role		ent	20	{0 2 2}		-state readonly -write 0}
+    {supr_name		ent	20	{0 3 2}		-state readonly -write 0}
+    {phon_work		ent	16	{2 0}		-state readonly -write 0}
+    {phon_home		ent	12	{2 1}		-state readonly -write 0}
+    {phon_cell		ent	12	{2 2}		-state readonly -write 0}
+    {email		ent	20	{2 3}		-state readonly -write 0}
+    {tmail		ent	20	{2 4}		-state readonly -write 0}
+    {username		ent	10	{3 1}		-state readonly -write 0 -hide 1}
+}
+
+tabdef empl.addr_v -fields [concat {
+    {addr_seq		ent	5	{10 1}		-state readonly -just r -hide 1 -write 0}
+    {zip		ent	10	{1 1}		-spf zip}
+    {state		ent	2	{2 1}		-spf scm -data state}
+    {city		ent	14	{3 1}		}
+    {country		ent	3	{3 2}		-spf scm -data country}
+    {addr_spec		ent	30	{1 2 2}		-spf edw}
+    {prime		chk	2	{1 3}		-ini false -onvalue t -offvalue f}
+    {status		chk	2	{2 3}		-ini false -onvalue t -offvalue f}
+    {addr_cmt		ent	50	{1 5 4}		-spf edw}
+    {addr_ent		ent	5	{1 6 2}		-opt 1 -sta readonly -just r}
+} $glob::stampd]
+
+tabdef empl.comm_v -fields {
+    {std_name           ent     14      {}              -opt 1 -depend comm_ent -title {:} -gmc {pack %w -in %p.comm_ent}}
+} -inherits base.comm

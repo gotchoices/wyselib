@@ -1,0 +1,24 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext base.parm	{System Parameters}	{Contains parameter settings of several types for configuring and controlling various modules across the database} [concat {
+    {module		{Module}		{The system or module within the ERP this setting is applicable to}}
+    {parm		{Name}			{The name of the parameter setting}}
+    {cmt		{Comment}		{Notes you may want to add about why the setting is set to a particular value}}
+    {type		{Data Type}		{Indicates the native data type of this paramter (and hence the particular underlying table it will be stored in.)} {
+        {int		{Integer}		{The parameter can contain only values of integer type (... -2, -1, 0, 1, 2 ...}}
+        {date		{Date}			{The parameter can contain only date values}}
+        {text		{Text}			{The parameter can contain any text value}}
+        {float		{Float}			{The parameter can contain only values of floating point type (integer portion, decimal, fractional portion)}}
+        {boolean	{Boolean}		{The parameter can contain only the values of true or false}}
+    }}
+    {v_int		{Integer Value}		{The parameter value in the case when the type is an integer}}
+    {v_date		{Date Value}		{The parameter value in the case when the type is a date}}
+    {v_text		{Text Value}		{The parameter value in the case when the type is a character string}}
+    {v_float		{Float Value}		{The parameter value in the case when the type is a real number}}
+    {v_boolean		{Boolean Value}		{The parameter value in the case when the type is a boolean (true/false) value}}
+} $glob::stampt]
+
+tabtext base.parm_v	{Parameters}		{System parameters are stored in different tables depending on their data type (date, integer, etc.).  This view is a union of all the different type tables so all parameters can be viewed and updated in one place.  The value specified will have to be entered in a way that is compatible with the specified type so it can be stored natively in its correct data type.} {
+    {value		{Value}			{The value for the parameter setting, expressed as a string}}
+}

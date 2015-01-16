@@ -1,0 +1,191 @@
+# Link external documents to the production schema
+#TODO:
+#X- Make GUI for production documents
+#X- Make prod.doc_v writable
+#X- Try storing docs relational to basenames
+#- Are doc links between distinct docs (doc.id) or files (base,name,ext) so they move with the version
+#- What do I link to in prod.note?  
+#- Should it follow the latest version?
+#- 
+#- 
+#- 
+#- Make a way to check out a document (set)
+#- Add a new doc to a document set
+#- Remove a doc from a document set
+#- Check a set back in and refresh all dependencies
+#- Try documenting water gate
+#- How to increase to a new doc version even if base revision already in production
+#- 
+
+namespace eval prod {
+    def doc_pk		{doc}
+    def doc_v_in	{base_r type_r}
+    def doc_v_up	{type_r}
+    def doc_se		[concat $doc_pk $doc_v_in chkout]
+    def doc_j_se	[lremove $doc_se doc]
+}
+
+#----------------------------------------------------------------
+table prod.doc_type {prod} {
+    type	varchar(8)	primary key check (type ~ '^[a-zA-Z_]+$')
+  , descr	varchar
+  , autolock	boolean		not null default false
+  , public	varchar		not null default 'yes' check (public in ('yes','no','lock'))
+}
+
+#----------------------------------------------------------------
+table prod.doc {prod.vers prod.doc_type doc.doc} {
+    doc		int		primary key references doc.doc on update cascade on delete cascade
+  , base_r	varchar		not null references prod.prod on update cascade on delete cascade
+  , type_r	varchar		not null references prod.doc_type on update cascade
+  , chkout	name		references base.ent (username) on update cascade
+} -grant {
+    {doc	s {i u}}
+}
+
+# Standard view
+#----------------------------------------------------------------
+view prod.doc_v {prod.doc doc.doc} {select 
+    eval(fld_list $doc::doc_se d)
+  , eval(fld_list $prod::doc_j_se pd)
+  , array_to_string(d.path,'/') || '/' || d.name || case when d.version <= 0 then '' else '(' || d.version || ')' end || '.' || d.exten	as relname
+  , dt.descr
+    
+    from	prod.doc	pd
+    join	doc.doc		d on d.id = pd.doc
+    join	prod.doc_type	dt on dt.type = pd.type_r
+
+} -grant {
+    {doc	s {i u d}}
+}
+splitview::triggers prod.doc_v {id} \
+    [list doc.doc $doc::doc_pk $doc::doc_v_in "path array\['prod',new.base_r\] locked {case when (select autolock from prod.doc_type where type = new.type_r) then true else coalesce(new.locked,false) end} $glob::stampin" $glob::stampup $doc::doc_v_up] \
+    [list prod.doc $prod::doc_pk $prod::doc_v_in] \
+    {not old.locked}
+
+# Prevent other users from accessing the document until the same user checks it back in
+#----------------------------------------------------------------
+function {prod.doc_checkout(d int)} {prod.doc base.priv_has(varchar,varchar)} {
+  returns name language plpgsql as $$
+    declare
+        lk_un	name;
+        my_un	name;
+    begin
+        my_un := session_user;
+        select into lk_un chkout from prod.doc where id = $1 for update;
+        if lk_un is not null and lk_un != my_un and (not base.priv_has('doc','super')) and session_user != 'dbadmin()' then
+            raise exception '!prod.doc.CHK % %', $1, lk_un;
+            return null;
+        end if;
+        update prod.doc set chkout = my_un where doc = $1;
+        return my_un;
+    end;
+$$;}
+
+# Check a document back in, allowing others to modify it
+#----------------------------------------------------------------
+function prod.doc_checkin(int) {prod.doc base.priv_has(varchar,varchar)} {
+  returns boolean language plpgsql as $$
+    declare
+        lk_un	name;
+        my_un	name;
+    begin
+        my_un := session_user;
+        select into lk_un chkout from prod.doc where doc = $1 for update;
+        if lk_un != my_un and (not base.priv_has('doc','super')) and session_user != 'dbadmin()' then
+            raise exception '!prod.doc.CHK % %', $1, lk_un;
+            return false;
+        end if;
+        update prod.doc set chkout = null where doc = $1;
+        return true;
+    end;
+$$;}
+
+#This trigger will check to see if this document is currently checked out to some user
+#----------------------------------------------------------------
+function prod.doc_tf_chk() {prod.doc base.priv_has(varchar,varchar)} {
+  returns trigger language plpgsql as $$
+    begin
+        if old.chkout is not null and old.chkout != session_user and session_user != 'dbadmin()' and (not base.priv_has('doc','super')) then
+            raise exception '!prod.doc.CHK % %', old.doc, lk_un;
+        end if;
+        if TG_OP = 'DELETE' then return old; else return new; end if;
+    end;
+$$;}
+trigger prod_doc_tr_chk {} {before update or delete on prod.doc for each row execute procedure prod.doc_tf_chk();}
+
+return
+
+
+
+
+
+
+#Store the specified document data, slicing it into pieces small enough
+#to fit into a tuple.  Update prd_doc_v to show the modified date.
+#Usage: prd_doc_store(base,type,class,annot,format,data)
+#----------------------------------------------------------------
+function prd_doc_store(varchar,varchar,varchar,varchar,varchar,text) {prd_doc_v prd_doc_data} {
+  returns varchar language pltcl as $$
+    set odata $6
+    set _oid {}
+    spi_exec "select _oid from prd_doc_v where base = '$1' and type = '$2' and class = '$3' and annot = '$4'"
+    if {$_oid == {}} {
+        spi_exec "insert into prd_doc_v (base,type,class,annot,format) values ('$1','$2','$3','$4','$5')"
+    } else {
+        spi_exec "update prd_doc_v set format = '$5' where base = '$1' and type = '$2' and class = '$3' and annot = '$4'"
+    }
+    spi_exec "delete from prd_doc_data where base = '$1' and type = '$2' and class = '$3' and annot = '$4'"
+    set i 0; while {$odata != {}} {
+        set rec [string range $odata 0 8000]
+        set odata [string range $odata [expr 8000 + 1] end]
+        spi_exec "insert into prd_doc_data (base,type,class,annot,seq,data) values ('$1','$2','$3','[quote $4]',$i,'[quote $rec]')"
+        incr i
+    }
+    return 1
+$$;}
+
+#Fetch the specified document data, reassembling the bits back together
+#in the right order.
+#Usage: prd_doc_fetch(base,type,class,annot)
+#----------------------------------------------------------------
+function prd_doc_fetch(varchar,varchar,varchar,varchar) {prd_doc_data} {
+  returns text language pltcl as $$
+    set odata {}
+    spi_exec -array d "select data from prd_doc_data where base = '$1' and type = '$2' and class = '$3' and annot = '[quote $4]' order by seq" {
+        append odata $d(data)
+    }
+    return $odata
+$$;}
+
+#Delete the specified document.
+#Usage: prd_doc_delete(base,type,class,annot)
+#----------------------------------------------------------------
+function prd_doc_delete(varchar,varchar,varchar,varchar) {prd_doc_v} {
+  returns int language plpgsql as $$
+    begin
+        delete from prd_doc_v where base = $1 and type = $2 and class = $3 and annot = $4;
+        return 1;
+    end;
+$$;}
+
+#Copy one document to another.
+#Usage: prd_doc_copy(b1,t1,c1,a1,b2,t2,c2,a2)
+#----------------------------------------------------------------
+function prd_doc_copy(varchar,varchar,varchar,varchar,varchar,varchar,varchar,varchar) {prd_doc_v prd_doc_data} {
+  returns int language plpgsql as $$
+    declare
+        fmt varchar;
+    begin
+        select into fmt format from prd_doc_v where base = $1 and type = $2 and class = $3 and annot = $4;
+        if not found then
+            raise exception 'Document %.%.%.% not found', $1, $2, $3, $4;
+        end if;
+        insert into prd_doc_v (base,type,class,annot,format) values ($5,$6,$7,$8,fmt);
+        insert into prd_doc_data (base,type,class,annot,seq,data) 
+            select $5,$6,$7,$8,seq,data from prd_doc_data
+            where base = $1 and type = $2 and class = $3 and annot = $4;
+        return 1;
+    end;
+$$;}
+

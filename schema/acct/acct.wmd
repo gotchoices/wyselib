@@ -1,0 +1,17 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabdef acct.acct -focus numb -fields [concat {
+    {numb		ent	5	{1 1}		-just r}
+    {code		ent	6	{2 1}		}
+    {type		pdm	10	{3 1 2}		}
+    {name		ent	26	{1 2 2}		}
+    {container		chk	1	{3 2}		-ini false -onvalue t -offvalue f}
+    {par		ent	4	{4 2}		-just r -spf scm -data acct}
+    {descr		mle	{60 3}	{1 3 4 3}	-spf edw}
+} $glob::stampd]
+
+tabdef acct.acct_v -focus numb -fields {
+    {level		ent	4	{1 5}		-opt 1 -state readonly -write 0 -takefocus 0}
+    {fpath		ent	30	{2 5 3}		-opt 1 -state readonly -write 0 -takefocus 0}
+} -inherits acct.acct

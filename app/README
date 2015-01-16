@@ -1,0 +1,5 @@
+This folder contains standard sample applications for operating the various 
+canned ERP modules supported by Wyselib.  
+
+Typically one might create custom versions of these apps for an individual site to add 
+functionality specific to the needs of the site.

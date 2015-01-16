@@ -1,0 +1,66 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a group} [concat {
+    {id			{Entity ID}		{A unique number assigned to each entity}}
+    {ent_type		{Entity Type}		{The kind of entity this record represents} {
+        {p		{Person}		{The entity is an individual}}
+        {o		{Organization}		{The entity is a organization (such as a company or partnership) which may employ or include members of individual people or other organizations}}
+        {g		{Group}			{The entity is an group of people, companies, and/or other groups}}
+    }}
+    {ent_cmt		{Ent Comment}		{Any other notes relating to this entity}}
+    {ent_name		{Entity Name}		{Company name, personal surname, or group name}}
+    {fir_name		{First Name}		{First given (Robert, Susan, William etc.) for person entities only}}
+    {mid_name		{Middle Names}		{One or more middle given or maiden names} for person entities only}
+    {pref_name		{Preferred}		{Preferred first name (Bob, Sue, Bill etc.) for person entities only}}
+    {title		{Title}			{A title that prefixes the name (Mr., Chief, Dr. etc.)}}
+    {born_date		{Born Date}		{Birth date for person entities or optionally, an incorporation date for entities}}
+    {gender		{Gender}		{Whether the person is male (m) or female (f)} {
+        {{}		{N/A}			{Gender is not applicable (such as for organizations or groups)}}
+        {m		{Male}			{The person is male}}
+        {f		{Female}		{The person is female}}
+    }}
+    {marital		{Marital Status}	{Whether the person is married (m) or single (s)} {
+        {{}		{N/A}			{Maritcal status is not applicable (such as for organizations or groups)}}
+        {m		{Married}		{The person is in a current marriage}}
+        {s		{Single}		{The person has never married or is divorced or is the survivor of a deceased spouse}}
+    }}
+    {username		{Username}		{The login name for this person, if a user on this system}}
+    {database		{Data Access}		{A flag indicating that this entity has access to the ERP database}}
+    {activ		{Active}		{A flag indicating that this entity is current, in business, or alive}}
+    {inside		{Inside}		{A flag indicating that this person is somehow associated with this site (user, member, employee, etc.).  Inside people will be given an ID number in a lower range than outside people and companies.}}
+    {country		{Country}		{The country of primary citizenship (for people) or legal organization (companies)}}
+    {tax_id		{TID/SSN}		{The number by which the country recognizes this person or company for taxation purposes}}
+    {bank		{Bank Routing}		{Bank routing information: bank_number<:.;,>account_number}}
+    {proxy		{Proxy}			{ID of another person authorized to act on behalf of this employee where necessary in certain administrative functions of the ERP (like budgetary approvals)}}
+} $glob::stampt] -errors {
+    {CFN		{First Name}	{A first name is required for personal entities}}
+    {CMN		{Middle Name}	{A middle name is prohibited for non-personal entities}}
+    {CPN		{Pref Name}	{A preferred name is prohibited for non-personal entities}}
+    {CTI		{Title}		{A preferred title is prohibited for non-personal entities}}
+    {CGN		{Gender}	{Gender must not be specified for non-personal entities}}
+    {CMS		{Marital}	{Marital status must not be specified for non-personal entities}}
+    {CBD		{Born Date}	{A born date is required for inside people}}
+    {CPA		{Prime Addr}	{A primary address must be active}}
+}
+
+tabtext base.ent_v	{Entities}		{A view of Entities, which can be a person, a company or a group, plus additional derived fields} {
+    {std_name		{Std Name}		{The standard format for the entity's name or, for a person, a standard format: Last, Preferred}}
+    {frm_name		{Formal Name}		{A person's full name in a formal format: Last, Title First Middle}}
+    {cas_name		{Casual Name}		{a person's full name in a casual format: First Last}}
+}
+
+tabtext base.ent_link	{Entity Links}		{Links to show how one entity (like an employee) is linked to another (like his company)} {
+    {org		{Organization ID}	{The ID of the organization entity that the member entity belongs to}}
+    {mem		{Member ID}		{The ID of the entity that is a member of the organization}}
+    {role		{Member Role}		{The function or job description of the member within the organization}}
+    {supr_path		{Super Chain}		{An ordered list of superiors from the top down for this member in this organization}}
+} -errors {
+    {NBP		{Illegal Entity Org}	{A personal entity can not be an organization (and have member entities)}}
+    {PBC		{Illegal Entity Member}	{Only personal entities can belong to company entities}}
+}
+
+tabtext base.ent_link_v	{Entity Links}		{A view showing links to show how one entity (like an employee) is linked to another (like his company), plus the derived names of the entities} {
+    {org_name		{Org Name}		{The name of the organization or group entity the member belongs to}}
+    {mem_name		{Member Name}		{The name of the person who belongs to the organization}}
+    {role		{Role}			{The job description or duty of the member with respect to the organization he belongs to}}
+}

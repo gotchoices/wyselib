@@ -1,0 +1,55 @@
+# Copyright Action Targer Inc. all rights reserved
+#------------------------------------------------------------
+
+tabdef prod.oper -focus oper -fields {
+    {oper		ent	18	{0 0}		}
+    {descr		ent	40	{1 0}		-hot 1}
+}
+
+#------------------------------------------------------------
+tabdef prod.proc -focus oper_r -fields [concat {
+    {base_rr		ent	18	{0 0}		-hide 1}
+    {rev_r		ent	3	{1 0}		-hide 1}
+    {idx		ent	3	{2 0}		-hide 1 -write 0}
+    {oper_r		ent	5	{0 1}		-init assy -spf scm -data oper}
+    {next		ent	3	{1 1}		-spf prod.proc_sel}
+    {lab_time		ent	6	{0 2}		-spf clc}
+    {mach_time		ent	6	{1 2}		-spf clc}
+    {descr		ent	40	{0 3 4}		-spf edw -hot 1}
+} $glob::stampd]
+
+#------------------------------------------------------------
+tabdef prod.proc_v -focus oper_r -fields {
+} -inherits prod.proc
+
+#------------------------------------------------------------
+tabdef prod.note -focus type -fields [concat {
+    {base_rrr		ent	18	{0 0}		-hide 1}
+    {rev_rr		ent	3	{1 0}		-hide 1}
+    {idx_r		ent	3	{2 0}		-hide 1}
+    {seq		ent	3	{3 0}		-hide 1 -write 0}
+    {type		pdm	4	{0 1}		-ini step}
+    {doc_r		ent	8	{1 1}		-spf prod.doc_sel}
+    {descr		ent	40	{0 2 4}		-spf edw -hot 1}
+} $glob::stampd]
+
+#------------------------------------------------------------
+tabdef prod.note_v -focus type -fields {
+} -inherits prod.note
+
+#------------------------------------------------------------
+tabdef prod.boms -focus quant -fields [concat {
+    {base_rr		ent	20	{0 0}		-hide 1}
+    {rev_r		ent	3	{1 0}		-hide 1}
+    {idx		ent	3	{2 0}		-hide 1}
+    {quant		ent	10	{0 1}		-just r -spf clc}
+    {proc		ent	4	{1 1}		-just r -state readonly -takefocus 0}
+    {script		ent	30	{2 1 2}		-spf edw}
+    {comp_base		ent	22	{0 2 2}		-spf scm -data base}
+    {comp_parms		ent	30	{2 2 2}		-spf {prod::parm_edit %w}}
+    {cmt		ent	64	{0 4 3}		-spf edw -hot 1}
+} $glob::stampd]
+
+#------------------------------------------------------------
+tabdef prod.boms_v -focus quant -fields {
+} -inherits prod.boms

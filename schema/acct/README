@@ -1,0 +1,492 @@
+Accounting module, Try 3
+
+Projects
+#----------------------------------------------------------------
+Often it is desirable to divide accounting transactions by accountability.
+There are several problems with using a separate account to identify 
+these divisions of accountability.  First problem is that some types of 
+accountability centers might contain transactions to various different 
+types of accounts (asset, liability, income, expense).  So to use 
+accounts would necessitate creating multiple accounts for each such center 
+of activity (project).
+
+By storing a separate field for each project, projects can potentially
+contain transactions for any type of account as well as all the various 
+transaction categories.
+
+Projects are maintained in a hierarchical structure.  The hierarchy is
+meant to correspond to a supervisory structure within the enterprise.
+An owner of a project has permissions not only to that project but also
+all of its progeny.  Using a password structure, project owners can
+create passwords that allow others to have limited or full access to
+their project structures.
+
+Projects can also operate withing a fund granting framework where 
+disbursements are not possible unless the project has sufficient funding.  
+Funding can be granted and/or revoked by parent projects.
+
+We can also use the project field to represent the notion of individual
+business units, or entities.
+
+The various project types should support the following:
+
+hld	Holding
+	This project can not have transactions booked directly to it, but
+	rather serves as a place holder for other sub-projects.  There is
+	a special holding project (0) which is the parent of all other 
+	projects, and is the only project allowed to not have a parent 
+	defined.
+	
+	Holding projects should be able to be used under an entity as well 
+	to group other similar projects.  For example, we should be able
+	to put a bunch of jobs under a holding project.  Once you have
+	created a single child of a holding project, it should never be
+	able to get a direct child of a different type.
+	
+ent	Entity (Business Unit)
+	There should only be type 'hld' projects between this type and
+	project 0.  Or this type of project can be a direct child of 0.
+	
+	Entity projects can have any type of child projects.  Typically
+	though, they should have just a handful of holding projects (such
+	as one for each administrative area of the company).
+	Not subject to funding limitations.
+
+ext	This is like the entity type except it meant to identify outside
+	entities such as customers, employees or vendors.  By tracking the 
+	activity in this type of project we can support the notion of a
+	"customer account" or an "employee tab."
+
+bsh	Balance Sheet
+	This project must have an account defined which serves as a pointer 
+	to show where this project will appear on the balance sheet.
+	This type of project can be used for such things as:
+	    inventory
+	    bank accounts
+	    loans, credit lines
+	    capital assets
+	    credit cards
+	This type may need to be broken out into individual types.
+	Not subject to funding limitations.
+
+job	Percent Completion Job
+	Project should contain only income and expense accounts.  Revenue
+	can be accrued on a percent-completion basis by attributing an
+	expected margin to each accrued expense.
+	Subject to funding limitations.
+
+jip	Contract Completion Job
+	Project should contain only income and expense transactions.  
+	As long as the job is open, all income will accrue to deposits
+	(liability) and all costs will accrue to jobs in process (asset).
+	Upon contract completion, the accrued cost will be credited 
+	back off of the balance sheet and debited to COGS.  Payments will
+	be credited to sales.
+	Subject to funding limitations.
+
+ots	Project is for sales revenues and cogs expenses for products sold
+	off-the-shelf.  Revenues and costs will accrue at the moment of
+	completion of each order.
+	Subject to funding limitations.
+
+sub	Project can be under any other type of project for the purpose of
+	aiding in management or accountability.  However, for purposes of
+	financial reporting, transactions in this type of project will
+	appear in their parent project.
+	Subject to funding limitations.
+
+adm	Project should contain primarily expenses which will accrue to
+	G&A expense.  Income may be optionally be applied if it is of a
+	nature to offset overhead expenses.
+	Subject to funding limitations.
+
+wip	Work in Process projects can accumulate material costs, labor and
+	A/P.  The purpose is to culminate in the production of an asset
+	such as inventory.  This may be determined to be the same as jip.
+
+poi	Each purchase order item should allocate a project number.  This is
+	probably the same as wip as it accumulates cost and is expected to
+	close out to zero.
+
+Example		Project Name				Type	Acct Pointer
+    3		ACME Widget Company			ent	null
+      310	  Balance Sheet Projects		hld	null
+        <num>	    Wells Fargo Checking		bsh	Checking
+        <num>	    Wells Fargo Savings			bsh	Savings
+        <num>	    Wells Fargo Credit Line		bsh	Credit Line
+        <num>	    Vanguard Bond Fund			bsh	Securities
+        <num>	    Parts Inventory			bsh	Inventory
+        <num>	    Bulk Gas Inventory			bsh
+        <num>	    Seed Inventory			bsh
+        <num>	    Hay Inventory			bsh
+        <num>	    Cattle Inventory			bsh	
+      320	  Overhead Cost Centers			hld
+        <num>	    Main Office Operations		adm	Operations Overhead
+        <num>	    Remote Office Operations		adm	Operations Overhead
+        <num>	    Domestic Warranty			adm	Warranty
+        <num>	    International Warranty		adm	Warranty
+      330	  Profit Centers			hld	null
+        <num>	    Domestic Jobs			hld
+          <num>	      Job w				job
+           <num>      Job w installation		sub
+          <num>	      Job x...				job
+        <num>	    International Jobs			hld
+          <num>	      Job y				job
+          <num>	      Job z...				job
+        <num>	    JIP Sales				hld
+          <num>	      Job q				jip
+          <num>	      Job r...				jip
+        <num>	    OTS Sales				hld
+          <num>	      Job m				ots
+          <num>	      Job n				ots
+
+Each project record should maintained a cached copy of the first entity type
+project found when moving up the tree.  This constitutes the "entity" field
+for all transactions logged to this project.  A full project path would show
+the project hierarchy of the project.  For example:
+
+    3:330:1234:2345:3456
+
+But more commonly, an entity-project specifier would consist of just the
+entity and project numbers:
+
+    3-3456
+
+When entering data, just the 3456 would be sufficient as its location within
+the project hierarchy will imply the applicable entity.
+
+Account Table
+#----------------------------------------------------------------
+Each transaction is booked to an account which is always one of the standard
+five accounting types.
+
+   Asset
+   Liability
+   Equity
+   Income
+   Expense
+   
+There is one top-level account of each type that has no parent.  All other 
+accounts must be a child of an account with the same type.
+
+Accounts are generic across all entities in the system.  So you should not
+create accounts for specific uses or projects (like a specific bank account
+or job.  Rather, accounts should be used to organize where transactions will
+appear on a balance sheet or income statement.  And for finer-grained detail,
+the project field should be used.
+
+       1  ast Assets				Detail:
+      10  cas  Current Assets
+     100  chk    Checking			Project/bank_account
+     102  sav    Savings			Project/bank_account
+     103  sec    Securities			Project/stock
+     105  acr    Accounts Receivable		Entity, customer
+     106  inv    Inventory			Project/inventory, part_num, category
+     107  wip    Work in Process		Project/poi, category
+     108  jip    Jobs in Process		Project/contract, category
+     109  pre    Prepayments			Project
+      15  fas  Fixed Assets
+     150  cap    Capital Equipment		Project/asset, category
+     152  res    Real Estate			Project/asset, category
+     154  lnr    Loans Receivable		Project/loan
+   
+       2  lia Liabilities
+      20  cul  Current Liabilities
+     200  cln    Credit Line			Project/line
+     201  acp    Accounts Payable		Entity, vendor
+     202  prp    Payroll Payable		Entity (employee)
+     203  cmp    Commissions Payable		Entity (employee or vendor)
+     204  itp    Income Tax Payable		Entity (US, State, etc.)
+     205  ssp    Social Security Payable	Project/entity
+     206  mcp    Medicare Payable	
+     207  stp    Sales Tax Payable		Project/entity
+     208  gap	 Garnishments Payable		Entity (employee or vendor)
+      25  ltl  Long Term Liabilities
+     250  eql    Equipment Loans		Project/asset
+     251  cal    Capital Leases			Project/asset
+     252  rel    Real Estate Loans		Project/asset
+     254  lnp    Loans Payable			Project/loan
+   
+       3  equ Equity
+      30  beg  Beginning Balances
+      32  con  Contributions			Entity
+      34  dis  Distributions			Entity
+      36  mem  Member Capital			Entity
+      38  stk  Issued Stock			Entity
+      39  ret  Retained Earnings
+   
+       4  inc Income
+      40  sal  Sales				Project, Entity (customer)
+     400  sjb    Job Sales
+     401  sjp    Jip Sales
+     403  sot    Ots Sales
+     405  ser    Service
+      42  shp  Shipping Charges
+      44  gos  Gain on Sale of Assets
+      45  glt  LT Capital Gains
+      46  gst  ST Capital Gains
+       
+       5  exp Expenses				Category
+      50  cgs  Cost of Goods Sold		#gross margin
+      52  cog  Commissions on Gross		#gross margin after commissions
+      53  war  Warranty				#gross margin after warranty
+      54  opo  Operations Overhead		#EBITDA
+      56  int  Interest				#net margin before depreciation
+      57  con  Commissions on Net		#net margin after commissions
+      58  dep  Depreciation			#taxable income
+      59  tax  Taxes				#net income
+
+Categories
+#----------------------------------------------------------------
+Traditionally, expense accounts have been broken down into individual
+sub-accounts representing the type of thing the expense was for (such as fuel,
+travel, taxes and so forth).  There are a few problems with this approach.  
+First, there may be several higher level accounts for which this level of 
+detail is also wanted (such as G&A, Warranty and COGS).  To track each of these 
+categories in a separate account requires creating numerous new account codes 
+under each major expense category.
+
+When individual expense types are tracked in individual accounts, budgeting
+is also impacted.  By setting individual budget amounts for fuel and lodging
+it implies to a manager that he is only authorized to spend more money if it
+is in the right account.  When really, he should be looking to effectively
+manage his overall expenses (probably project based).
+
+A more difficult problem is that often these categories are also applicable
+to disbursements which will debit balance sheet accounts such as Jobs in 
+Process, Work in Process, Capital Equipment, inventory and so forth.  To create 
+separate accounts under each of these balance sheet accounts would make it much 
+more difficult (if not impossible) to reconcile these accounts.  And yet, it is
+often helpful to analyze the allocation of values in the various categories.
+
+Therefore, we will avoid creating these divisions as accounts and will instead
+maintain general expense accounts such as COGS and overhead.  A separate field
+called "category" will contain a detail specification like the following:
+(numbers are optional)
+
+ Number     Code        Description
+    05      sawa	Salary and Wages
+    10      comm	Commissions
+    15      ptax	Employment tax expense
+    20      lega	Legal
+    25      prof	Other professional contract
+    30      equi	Equipment lease and rentals
+    35      util	Utilities
+    40      osup	Office supplies
+    45      tool	Tools & Equipment
+    50      bond	Bonding and insurance
+    55      matl	Materials
+    60      repm	Repairs and Maintenance
+    65      ship	Shipping expense
+    70      stax	Sales Tax
+    75      tele	Telecom
+    80      trav	Travel
+    82      lodg	Lodging
+    85      diem	Per-diem expense
+    90      food	Food & Entertainment
+    95      fuel	Gas and other fuel
+
+GL Encoding
+#----------------------------------------------------------------
+Each GL entry should include:
+    Project:		See below
+    Account:		See below
+    Category:		See below
+    Date:		Transaction Date
+    Debit:		Debit amount if any
+    Credit:		Credit amount if any
+    Amount:		Net amount			(derived from Debit - Credit)
+    Trans_ID:		A unique ID for the transaction (derived from report level fields)
+
+Credits and Debits must always be a positive number.  Amount will be signed.
+
+When running reports, the full account code will be rendered as a concatenation
+of the components: project, account, category.
+
+For example:
+
+    3456.50.fuel		proj.acct.cat
+    3-3456.50.fuel		ent-proj.acct.cat	
+    3-2345.cgs.repm		full account code
+    3..cgs.rep			project suppressed for income statement
+    3-3456.sjb			no category applicable for income
+    3456.400
+
+Extensions (draft)
+#----------------------------------------------------------------
+We use a project number wherever possible to provide the necessary detail 
+beyond what can be found by the generic account numbers.  However some accounts 
+and projects may require further granularity.  For example, deducted tax
+payable would be its own ext project within the payable section of the account
+tree.  However we would like to be able to analyse it by the ID of the employee
+whose pay was deducted.
+
+Examples:
+    Account			Project_per	Other_detail
+    Inventory			Inventory	Part_# (or proj/part_#)
+    WIP, inventory-clearing	prod_order	part_#
+    Payroll Tax Payable		State		Employee
+    Garnishments Payable	Payee		Vendor, Employee
+    Accounts Payable		Vendor		?
+    Accounts Receivable		Customer	?
+    Capital Equipment		Asset		?
+    Payroll Payable		Employee	?
+
+So where possible, the project is interpreted as the detail field.  But where
+additional detail is needed, the individual module will have to store data
+about that field.    
+
+Module Specifics
+#----------------------------------------------------------------
+Each module must store information as required about the project, account, 
+and category applicable to each transaction.  In some cases, the account
+may be determined from the context of the project.  In some cases, a
+category may not be necessary.  For example:
+
+requ:		An explicit value is required for each transaction
+ent:		The entity project that owns the balance sheet
+def:		A value can be guessed from the project but may be over-written
+proj:		The value can always be determined from the project
+const:		The module always produces the same value
+N/A:		No value is stored nor required
+
+Module		dr_proj	dr_acct	dr_cat	dr_det		cr_proj	cr_acct	cr_cat	cr_det
+#----------------------------------------------------
+Cash Payment	ent	const	N/A	N/A		requ	proj	N/A	N/A
+    dr_proj:	ext entity tab project		or	any_proj
+    dr_acct:	acp, prp, cmp			or	any_acct
+    cr_proj:	the cash project we are paying from
+    cr_acct:	cash, derived from cr_proj
+
+Module		Dr_Proj	Dr_Acct	Dr_Cat	Dr_Detail	Cr_Proj	Cr_Acct	Cr_Cat	Cr_Detail
+#----------------------------------------------------
+Cash Deposit	requ	proj	N/A	N/A		requ	def	N/A	N/A
+    dr_proj:	the cash project we are depositing to
+    dr_acct:	cash, derived from dr_proj
+    cr_proj:	ext entity tab project		or	any_proj
+    cr_acct:	acr, lnr			or	any_acct
+
+Module		Dr_Proj	Dr_Acct	Dr_Cat	Dr_Detail	Cr_Proj	Cr_Acct	Cr_Cat	Cr_Detail
+#----------------------------------------------------
+AP Invoice	requ	def	requ	vendor,invoice	ent	const	N/A	N/A
+    dr_proj:	job, wip, adm where expense goes
+    dr_acct:	derived from dr_proj type
+    cr_proj:	ext entity tab project		or	any_proj
+    cr_acct:	acp, lnp			or	any_acct
+
+Module		Dr_Proj	Dr_Acct	Dr_Cat	Dr_Detail	Cr_Proj	Cr_Acct	Cr_Cat	Cr_Detail
+#----------------------------------------------------
+Payroll Accrual	requ	proj	const	employee	ent	proj	N/A	N/A
+    dr_proj:	job, wip, adm, cmp where expense goes
+    dr_acct:	derived from dr_proj type
+    cr_proj:	employee entity tab project
+    cr_acct:	prp
+
+Payroll Deduct	ent	proj	requ	N/A		requ	proj	N/A	N/A
+    dr_proj:	employee entity tab project
+    dr_acct:	prp
+    cr_proj:	ext entity tab project (state, fed, garish, employee
+    cr_acct:	tax payable, health plan, etc.
+
+Payroll Match	ent	const	N/A	N/A		requ	proj	N/A	N/A
+    dr_proj:	employee entity tab project
+    dr_acct:	health plan expense, ss or mc match expense
+    cr_proj:	ext entity tab project (fed, employee)
+    cr_acct:	ss or mc tax payable, health plan, etc.
+
+Commission Accr	requ	proj	const	employee	ent	proj	N/A	N/A
+    dr_proj:	job, jip, etc where expense goes
+    dr_acct:	cog, con, etc derived from dr_proj
+    cr_proj:	employee entity tab project
+    cr_acct:	cmp
+
+Module		Dr_Proj	Dr_Acct	Dr_Cat	Dr_Detail	Cr_Proj	Cr_Acct	Cr_Cat	Cr_Detail
+#----------------------------------------------------
+AR Invoice	ent	proj	N/A	N/A		requ	def	N/A	N/A
+    dr_proj:	customer entity tab project
+    dr_acct:	acr
+    cr_proj:	job, jip project			or any_proj
+    cr_acct:	sales: sjb, sjp, sot, ser, shp, etc.	or any_acct
+
+Module		Dr_Proj	Dr_Acct	Dr_Cat	Dr_Detail	Cr_Proj	Cr_Acct	Cr_Cat	Cr_Detail
+#----------------------------------------------------
+Material	requ	proj	N/A	N/A		requ	proj	N/A	N/A
+Cash Transfers	requ	proj	N/A	N/A		requ	proj	N/A	N/A
+Hand Entry	requ	requ	requ	N/A		requ	requ	requ	N/A
+PO Close, cost	requ	proj	N/A	N/A		?
+Funding trans	requ	?	N/A	N/A		requ	?	N/A	N/A
+
+Nested Sets
+#----------------------------------------------------------------
+Both the account table and the project table are organized hierarchically.  This
+implies that there will be lots of times when we will want to select for ledger
+data that applies to a whole tree structure (i.e. show me the total of my assets
+or show me all the accounting activity under a given project and its progeny.
+
+Since a relational database is not particularly well suited for parsing this
+kind of hierarchical data, we will produce several cached mechanisms to make it
+more efficient to scan for the data we want.
+
+The first method is called "materialized path."  In this method we will maintain
+an array associated with each account.  The array contains a list of accounts
+starting at the top (trunk) of the tree structure and moving out the branches
+until you come to the account in question.
+
+So when you want to find all the progeny of a given account, simply query for
+all accounts whose path contains that account somewhere in the array.  If you want
+to find all the ancestors of a given account, simply query for the ones in that
+account's materialized path.  It is not very fast, but it is very simple and
+easy to use.  The materialized path also has the benefit that if you use it as a
+sort key, the list will come out in tree order (where all the children show up
+immediately after their parent).
+
+The second method is called "nested sets" (see the wikipedia page by that title).
+In this method, we list all the accounts in tree order as defined above.  Then
+we assign a sequential index number to each account in that order.  So the very
+highest account will be numbered 1.  Its first child will be 2 and its first
+child will be 3.
+
+Then we assign a second index number (called "max_child") to each account.  This
+index records the largest index of any of the account's progeny.  So an account
+with no progeny will have the same number for its index and its max_child.  The
+max_child of the top level project will be the number of total accounts in the
+hierarchy.
+
+If we apply database indexes to these two numbers, we can search for progeny
+quite efficiently by looking for projects with an index between two numbers:
+the index itself and the max_child number.  If we want to look only for the
+progeny and not the parent, we use a > comparison.  If we want to include the
+parent, we use >=.
+
+It is relatively expensive to maintain the data required for materialized path
+and nested sets.  So the method only works if we are doing a lot more querying
+of data than we are changing the tree structure.  Each time we change the tree
+it will be necessary to adjust some of the indexes.
+
+Closing Periods
+#----------------------------------------------------------------
+We will keep a table containing dates and module names.  Each entry indicates
+an end of period date.  Dates less than or equal to this date should not be
+allowed modifications.  The dates should only be able to be moved forward in
+time by other than supervisory control.  
+
+There will also be a reserved module name "master" which will have the effect 
+of also moving forward all other module dates which are less than it such that 
+they become equal to it.
+
+Budgets
+#----------------------------------------------------------------
+A business unit entity will typically want to produce a budget on a periodic basis.
+A budget will typically look like an income statement in that it will contain
+revenues and expenditures.  But the amounts will be pro-forma or what is expected
+to happen, rather than what has actually happened.
+
+We will maintain budget data in a ledger called acct::budget.  This will look
+much like a standard ledger in that it can contain debits and credits to any
+project/account/category in the system.  A budget will be constituted by a
+balanced entry per period (each month, for example) which indicates the expected
+debits and credits in each account for that period.  Budgets would typically be 
+modified by adding additional entries to offset the originals.
+
+Budgeting is a module like any other so it has period close dates.  Once a
+period is closed, the budget entries behind it can not be modified.

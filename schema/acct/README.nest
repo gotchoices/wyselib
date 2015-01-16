@@ -1,0 +1,40 @@
+Visualization of Nested Sets
+Node_Name: Idx: Mxc
+
+                    |F:3:3
+         |B:2:7 ----|          |N:5:
+         |          |G:4:6 ----|
+         |          |          |O:6:
+         |          |H:7:7
+         |C:8:8
+         |
+A:1:19 --|          |I:10:10
+         |          |
+         |D:9:11 ---|J:11:11
+         |
+         |E:12:19 --|K:13:30              |R:16
+                    |          |P:15:17 --|
+                    |L:14:18 --|          |S:17
+                    |          |Q:18:18
+                    |M:19:19
+
+Update example 1:
+  If changing D.parent from A to G:		(moving toward smaller idx's)
+    - D's down-line needs new path's generated
+    - Need to renumber: G (the new parent) and its children above the insert point
+                        H, C because they are above G
+                        B because its mxc is above G
+                        D and its children
+    - E and above should be OK
+
+Update example 2:
+  If changing G.parent from B to D:		(moving toward larger idx's)
+    - G's down-line needs new path's
+    - Need to renumber: B (the old parent) and its children
+                        H, C because they are above G
+                        B because its mxc is above G's index
+    - E and above should be OK
+
+So renumber where idx or mxc is inclusively between a min and max computed as
+   min =    least(old.idx,	new.idx)
+   max = greatest(new.idx,	old.idx)

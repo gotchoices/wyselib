@@ -1,0 +1,80 @@
+# Maps to render books under various methods of accounting
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+# 
+# Ledgers will be kept according to a standard method we will refer to as "book"
+# For each method defined method below, we will provide a series of mappings 
+# from one account to another which will render the books according to the
+# alternate method.
+#
+#TODO:
+#X- make methods table
+#X- make method map table
+#- abandon mapping table
+#- make method transaction journal with method field
+#- union with general ledger with method field='book'
+#- 
+#-
+
+namespace eval acct {
+    def meth_pk		{code}
+    def meth_v_in	{code name descr}
+    def meth_v_up	$meth_v_in
+    def meth_se		[concat $meth_v_up $glob::stampfn]
+    def mmap_pk		{meth book_acct}
+    def mmap_v_in	{meth book_acct meth_acct cmt}
+    def mmap_v_up	$mmap_v_in
+    def mmap_se		[concat $mmap_v_up $glob::stampfn]
+    def mmap_audit	"$mmap_v_in"
+}
+
+# Contains a record for each defined method
+#----------------------------------------------------------------
+table acct.meth {acct.acct base.curr_eid()} {
+    code	varchar(8)	primary key constraint "!acct.meth.IVC" check (code ~ '[A-Za-z][A-Za-z0-9_]*')
+  , name	varchar(40)
+  , descr	varchar
+    subst($glob::stamps)
+}
+
+# Base view
+#----------------------------------------------------------------
+view acct.meth_v {acct.meth} {
+    select eval(fld_list $acct::meth_se m), m.oid as _oid
+    from		acct.meth	m;
+    eval(rule_insert acct.meth_v acct.meth $acct::meth_v_in {} $glob::stampin);
+    eval(rule_update acct.meth_v acct.meth $acct::meth_v_up $acct::meth_pk {} $glob::stampup);
+    eval(rule_delete acct.meth_v acct.meth $acct::meth_pk);
+} -grant {
+    {glman	s}
+}
+
+# Contains a record for each account mapping for each method
+#----------------------------------------------------------------
+table acct.mmap {acct.meth} {
+    meth	varchar		references acct.meth on update cascade on delete cascade
+  , book_acct	int		references acct.acct (numb) on update cascade on delete cascade
+  , meth_acct	int		not null references acct.acct (numb) on update cascade on delete cascade
+  , primary key (meth, book_acct)
+  , cmt		varchar
+    subst($glob::stamps)
+}
+audit::audit acct.mmap $acct::mmap_audit
+
+# Map view
+#----------------------------------------------------------------
+view acct.mmap_v {acct.mmap} {
+    select eval(fld_list $acct::mmap_se m)
+  , ba.name		as ba_name
+  , ma.name		as ma_name
+  , m.oid as _oid
+    from		acct.mmap	m
+    join		acct.acct	ba on ba.numb = m.book_acct
+    join		acct.acct	ma on ma.numb = m.meth_acct;
+    
+    eval(rule_insert acct.mmap_v acct.mmap $acct::mmap_v_in {} $glob::stampin);
+    eval(rule_update acct.mmap_v acct.mmap $acct::mmap_v_up $acct::mmap_pk {} $glob::stampup);
+    eval(rule_delete acct.mmap_v acct.mmap $acct::mmap_pk);
+} -grant {
+    {glman	s}
+}

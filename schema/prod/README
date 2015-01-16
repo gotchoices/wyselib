@@ -1,0 +1,47 @@
+Production Model
+
+This is a schema for managing a production center.  Parts are organized in 
+families which share a common base name.  A base describes a set of parts that 
+share a common set of specifications and production documentation.  However, 
+each part within the base family will differ according to one or more 
+parameters.
+
+For example, a family of zinc plated hex bolts might be described by a single 
+base name.  But one part number might exist for a 3/8x16 bolt that is 1" long.  
+Another part number is associated with a 3/x16 bolt that is 2" long.
+
+Base names are created for manufactured pats as well as raw materials like the
+bolt example above.  For example, a manufactured case might consist of a box,
+a lid, and 4 bolts and nuts to attach the lid to the box.  In this example,
+the parts that go into the product would be described by a bill of materials
+(or BOM).
+
+In addition to being described by a BOM, you might need to also describe 
+several different operations to be performed on those materials.  For example, 
+it might be necessary to punch holes in the lid first.  But the holes in the 
+box might need to be drilled.  And before assembly, the box and lid might each 
+need to be painted.  After attaching the lid, it may be necessary to inspect 
+and place decals on the finished box.
+
+The BOM will be written in TCL.  But it will be parsed by the database in
+the back end.  After parsing, the BOM will be resolved into a distinct set
+of components and procedures.  These lists will be cached in a table with one
+instantiation for each defined part number within the product family.
+
+#BOM Example:
+oper assembly {
+  part 1 o:decal(top)
+  part 4 o:decal(side)
+  oper 1 paint {
+    oper 1 punch {
+      part 1 o:lid
+    }
+  }
+  oper 1 paint {
+    oper 1 drill {
+      part 1 o:box
+    }
+  }
+  part 4 b:hex(10,32,1/2)
+  part 4 b:nut(10,32)
+}

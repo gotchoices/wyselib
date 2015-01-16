@@ -1,0 +1,37 @@
+# Support for Minnesota withholding
+# Formula as found on www.revenue.state.mn.us
+# include(Copyright)
+# Valid for 2013
+#TODO:
+#- 
+
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+function {whold_MN(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+  returns numeric language plpgsql as $$
+    declare
+        pay_cyc_mult	numeric;
+        adjgross	numeric(14,2);
+        trec		record;
+    begin
+
+    select v1 into pay_cyc_mult from whold_dat where module = 'MN' and type = pc and code = 'pay_cyc_mult';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'US', pc, 'pay_cyc_mult';	-- Lookup value not found
+    end if;
+
+    select (gr * pay_cyc_mult) - (al * v1) into adjgross from whold_dat where module = 'MN' and code='allow';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'US', pc, 'allow';	-- Lookup value not found
+    end if;
+
+    select into trec * from whold_dat where module = 'MN' and code = ms and v1 < adjgross order by v2 desc limit 1;
+    if not found then
+        return 0.00; end if;
+-- raise notice 'v1:% v2:% v3:% excess:%', trec.v1, trec.v2, trec.v3, (adjgross - trec.v1);
+    return ((trec.v2 + (trec.v3 * (adjgross - trec.v1)))/pay_cyc_mult)::numeric(14,2);
+    end;
+$$;}

@@ -1,0 +1,76 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext empl.empl	{Employee Data}		{Personal data including payroll information for each employee.  Each record must be linked to a corresponding record in the entity table.} [concat {
+    {emple		{Employee ID}		{The employee's entity ID}}
+    {emplr		{Employer ID}		{The employer's entity ID}}
+    {empl_type		{Employee Type}		{The type of hours or work schedule this employee is on} {
+        {regular	{Regular}		{The employee works a full work week and is expected to be with the company for some time}}
+        {part		{Part Time}		{The employee regularly works less than a full work week}}
+        {temp		{Temporary}		{The person's employment is intended to last for only a limited amount of time}}
+        {season		{Seasonal}		{The person regularly works only during certain times of the month or year}}
+        {train		{In Training}		{The person's employment is expected to be short term unless his performance during an initial training period justifies a longer term}}
+        {contract	{Contract}		{The person works on a contract basis, but has an entry here in order to have database privileges}}
+        {other		{Other}			{The person's employment type does not fit in any other category}}
+        {intern		{Intern}		{The person's employment is that of a temporary internship}}
+    }}
+    {empl_cmt		{Comment}		{Other general comments about this employee}}
+    {superv		{Supervisor}		{ID of the employee who is this employee's supervisor}}
+    {supr_path		{Supervisors}		{A list of IDs of all the employees who are in this employee's supervisory chain}}
+    {hire_date		{Hire Date}		{The date the employee was hired}}
+    {term_date		{Terminate Date}	{The date employee quit or was terminated}}
+    {pay_type		{Pay Type}		{Method by which pay rate is calculated for this employee} {
+        {annual		{Annual Salary}		{Pay is computed as a fixed amount per year worked}}
+        {monthly	{Monthly Salary}	{Pay is computed as a fixed amount per month worked}}
+        {weekly		{Weekly Salary}		{Pay is computed as a fixed amount per week worked}}
+        {hourly		{Straight Hourly}	{Pay is computed as a fixed amount per hour worked}}
+        {commis		{Commission}		{Pay is computed as a percentage of sales or profits}}
+        {piece		{Piecework}		{Pay is computed based on the amount or number of items produced by the employee}}
+    }}
+    {pay_rate		{Pay Rate}		{Pay amount (as interpreted in the context of the pay type)}}
+    {allow		{Allowances}		{Number of withholding allowances claimed by employee}}
+    {ins_code		{Workers Comp}		{Workers' Compensation classification code}}
+} $glob::stampt $empl::empl_local_wmt] -errors {
+    {SLF		{Supervisor Loop}	{Two or more employees reference each other as their supervisor (either directly or indirectly)}}
+    {SNC		{Bad Supervisor}	{A current employee can not work for a supervisor who is not current}}
+    {BOO		{Bad CEO count}		{There should be one, and only one employee who has no supervisor}}
+    {TMB		{Supervisor Error}	{There should only be one employee per employer who has no supervisor}}
+    {CES		{Self Supervisor}	{An employee can't be his own supervisor}}
+    {CST		{Invalid Standing}	{The standing specified for the employee is invalid}}
+    {CET		{Invalid Empl Type}	{The type specified for the employee is invalid}}
+    {CPT		{Invalid Pay Type}	{The pay type specified for the employee is invalid}}
+}
+
+tabtext empl.empl_v 	{Employees}		{A view joining the employee table with the entity table, showing an employee's relationship to his employer} {
+    {ent_name		{Surname}		{The employee's last name.  This is the same as the Entity Name field in the entity table.}}
+    {role		{Job Title}		{The employee's job with this employer.  This is the same as the role column in the entity link table.}}
+    {supr_name		{Super Name}		{The name of the employee's supervisor}}
+    {prox_name		{Proxy Name}		{The name of the employee's current proxy}}
+    {mplr_name		{Employer Name}		{The name of the employer this employee is linked to by this record}}
+    {current		{Current}		{Indicates if the employee is currently employed with the company}}
+    {level		{Level}			{Indicates the employee's reporting level in the company's management organization}}
+    {birthday		{Birthday}		{The employee's birthday, minus the year}}
+    {hour_rate		{Hour Rate}		{Estimated amount per hour this employee earns (regardless of his actual pay type).}}
+    {norm_rate		{Norm Rate}		{Pay rate for this record, normalized to piecewise, hourly or weekly, depending on the pay type}}
+    {hrate		{Hour Rate}		{Estimated amount per hour this employee earns}}
+    {nrate		{Norm Rate}		{Pay rate for this record, normalized to piecewise, hourly or weekly, depending on the pay type}}
+    {full_path		{Chain Of Cmd}		{A list of the employee's bosses starting from the top and moving down through his supervisors and then including the employee himself.  Sort by this field and display the indented name to create an organizational chart.}}
+    {ind_name		{Indented Name}		{The standard employee name with a number of dots at the beginning showing the employee's level in the company.  Show this field and sort by the chain of command to create an organizational chart.}}
+}
+
+tabtext empl.empl_v_sup	{Employees}		{A list of employees who report to the current user} {
+    {rdate      {Review Date}           {Date of last employee review}}
+}
+
+tabtext empl.comm_v        {Communication}         {View of users' communication points (phone, email, fax, etc.) with additional helpful fields} {
+    {std_name                   {Employee Name}           {The name of the entity this communication point pertains to}}
+}
+
+
+tabtext empl.addr_v        {Addresses}             {A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {
+    {std_name                   {Employee Name}           {The name of the entity this address pertains to}}
+}
+
+
+#FIXME:
+#tabtext empl_v_pub	{Employees}		{A list of employees with their non-confidential information}
+#tabtext empl_v_uname	{Usernames}		{A list of employees and their usernames on the system (if they are a user)}

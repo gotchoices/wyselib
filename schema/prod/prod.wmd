@@ -1,0 +1,177 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabdef prod.unit -focus abbr -fields {
+    {abbr	ent	10	{0 0}		}
+    {descr	ent	40	{1 0}		}
+    {cmt	ent	60	{0 1 2}		-hot 1 -spf edw}
+}
+
+tabdef prod.type -focus type -fields {
+    {type	ent	5	{0 0}		}
+    {descr	ent	50	{1 0}		}
+    {level	pdm	4	{0 1}		-ini raw}
+    {cmt	ent	50	{1 1}		-hot 1 -spf edw}
+}
+
+tabdef prod.prod -focus type_r -fields [concat {
+    {type_r	ent	3	{0 0}		-spf scm -data prod_type}
+    {name	ent	15	{1 0}		}
+    {base	ent	15	{2 0}		-state readonly -hide 1 -write 0}
+    {units	ent	8	{3 0}		-spf scm -data units}
+    {curr	ent	3	{0 1}		-spin {int {1 99}} -just r}
+    {descr	ent	40	{1 1 4}		-spf edw}
+} $glob::stampd]
+
+tabdef prod.vers -focus spec -fields [concat {
+    {base_r	ent	15	{0 0}		-hide 1 -write 0}
+    {rev	ent	3	{1 0}		-hide 1 -write 0}
+    {spec	ent	60	{0 1}		-spf edw}
+    {change	ent	60	{0 1}		-spf edw}
+    {bom	ent	60	{0 1}		-spf edw}
+} $glob::stampd]
+
+tabdef prod.prod_v_vers -focus type_r -fields [concat {
+    {base	ent	15	{0 0}		-hide 1 -write 0}
+    {base_r	ent	15	{1 0}		-hide 1 -write 0}
+    {rev	ent	3	{2 0}		-hide 1 -write 0}
+    {type_r	ent	3	{0 1}		-spf scm -data prod_type}
+    {name	ent	15	{1 1}		}
+    {units	ent	8	{2 1}		-spf scm -data units}
+    {curr	ent	3	{0 2}		-spin {int {1 99}} -just r}
+    {descr	ent	40	{1 2 2}		-spf edw}
+    {spec	ent	60	{0 3 3}		-spf edw}
+    {change	ent	60	{0 4 3}		-spf edw}
+    {bom	ent	60	{0 5 3}		-spf edw}
+} $glob::stampd]
+
+#-------------------------------------------
+tabdef prod.parm -focus var -fields [concat {
+    {base_rr	ent	15	{0 0}		-hide 1 -write 1}
+    {rev_r	ent	4	{0 1}		-hide 1 -just r}
+    {pos	ent	4	{0 2}		-hide 1 -just r}
+    {var	ent	5	{1 1}		}
+    {units	ent	8	{2 1}		-spf scm -data units}
+    {ptyp	pdm	4	{3 1}		-ini num}
+    {def	ent	8	{4 1}		}
+    {descr	ent	60	{1 2 4}		-spf edw -hot 1}
+} $glob::stampd]
+
+#-------------------------------------------
+tabdef prod.parm_v -focus var -fields {
+} -inherits prod.parm
+
+return
+
+#-------------------------------------------
+tabdef prd_part_v_potool -focus pnum -fields {
+    {pnum               ent     6       {1 0}   -hide 1}
+    {base               ent     10      {1 1}	-state readonly -write 0}
+    {parm               ent     18      {}	    -depend base -title {Param:} -gmc {pack %w -in %p.base}}
+    {elevel             ent     2       {2 1}	-state readonly -write 0 -just r}
+    {weight             ent     6       {1 3}	-state readonly}
+    {price              ent     12      {1 2}	-just r -state readonly}
+    {cost				ent     6       {}	    -depend price -title {Cost:} -gmc {pack %w -in %p.price}}
+    {gsa				chk     2       {2 3}   -onvalue t -offvalue f -state disabled -write 0}
+    {gprice				ent     8       {}	    -depend weight -title {GSA Price:} -gmc {pack %w -in %p.weight}}
+    {partname           ent     12      {1 4}   -hide 1 -state readonly}
+}
+
+#-------------------------------------------
+tabdef prd_part_inv_v_base -focus base -fields {
+    {pnum               ent     6       {1 0}   -hide 1}
+    {base               ent     10      {1 1}   -state readonly -write 0}
+    {parm               ent     18      {2 1}   -state readonly -write 0}
+    {elevel             ent     2       {3 1}   -state readonly -write 0 -just r}
+    {weight             ent     6       {4 1}   -just r}
+    {price              ent     12      {1 2}   -just r}
+    {cost               ent     6       {2 2}   -state readonly -write 0 -just r}
+    {gsa                chk     2       {3 2}   -onvalue t -offvalue f -state disabled -write 0}
+    {gprice             ent     8       {4 2}   -state readonly -write 0 -just r}
+}
+
+#-------------------------------------------
+tabdef prd_part_inv_v_prodim -fields {
+    {inv                ent     3       {0 0}       -just r -spf scm -data inve}
+    {title              ent     20      {1 0}       -state readonly}
+    {pnum               ent     6       {0 1 2}       -just r -spf scm -data part}
+    {partname           ent     32      {}          -depend pnum -title {:} -gmc {pack %w -in %p.pnum}}
+    {buylev             ent     6       {0 2}       -just r}
+    {reclev             ent     6       {1 2}       -just r}
+    {recbuy             ent     6       {2 2}       -just r}
+    {docount            chk     1       {2 0}       -onvalue t -offvalue f}
+    {lstcnt             ent     12      {}          -depend docount -title {:} -gmc {pack %w -in %p.docount}}
+}
+
+#-------------------------------------------
+tabdef prd_part_inv_v -fields {
+    {inv                ent     3       {1 0}   -hide 1}
+    {pnum               ent     6       {2 0}   -hide 1}
+    {buylev             ent     6       {1 1}   -state readonly -write 0 -just r}
+    {reclev             ent     6       {2 1}   -state readonly -write 0 -just r}
+    {cgrlev             ent     6       {}      -depend reclev -title {:} -gmc {pack %w -in %p.reclev}}
+    {recbuy             ent     6       {4 1}   -state readonly -write 0 -just r}
+    {vlead              ent     6       {5 1}   -state readonly -write 0 -just r}
+    {mlead              ent     6       {}      -depend vlead -title {:} -gmc {pack %w -in %p.vlead}}
+	{base				ent		10		{6 1}	-hide 1}
+}
+
+
+
+#-------------------------------------------
+tabdef prd_part_v_mat -focus descr -fields {
+    {pnum               ent     5       {0 1}	-state readonly -write 0 }
+    {partname           ent     23      {1 1 2}	-state readonly -write 0}
+    {descr              ent     42      {0 2 3}	-state readonly -write 0}
+    {cost		ent     6       {3 2}	-state readonly -write 0 -just r}
+    {cmt		ent     40      {0 3 3}	-spf edw}
+    {elevel             ent     6       {3 3}	-state readonly -write 0 -just r}
+    {units		ent     6       {4 3}	-state readonly -write 0 -just r}
+    {height             ent     6       {0 4}	-just r}
+    {weight             ent     6       {1 4}	-just r}
+    {width              ent     6       {2 4}	-just r}
+    {length             ent     6       {3 4}	-just r}
+    {stack              ent     6       {4 4}	-just r -state readonly -write 0}
+    {mddate             ent     12      {0 5}	-just r -hide 1}
+    {trquant            ent     6       {1 5}	-just r -hide 1}
+    {open_mtrs          ent     6       {2 5}	-just r -hide 1}
+    {base		ent     12      {0 6}	-opt 1 -state readonly -write 0 -just r } 
+    {parm		ent     42      {1 6 3}	-opt 1 -state readonly -write 0 -just r } 
+    {modate  	        ent     12	{0 7}	-opt 1 -state readonly -write 0 -just r }
+    {open_del		ent     6       {1 7}	-opt 1 -state readonly -write 0 -just r } 
+    {open_ords          ent     6       {2 7}	-opt 1 -state readonly -write 0 -just r } 
+    {open_reqs          ent     6       {3 7}	-opt 1 -state readonly -write 0 -just r } 
+    {midate		ent     12	{0 8}	-opt 1 -state readonly -write 0 -just r } 
+    {open_rec		ent     6       {1 8}	-opt 1 -state readonly -write 0 -just r } 
+}
+
+#-------------------------------------------
+tabdef prd_base_v -fields {
+    {base               ent     10      {0 0}   -hide 1}
+    {status             ent     1       {1 1}   -state readonly}
+    {units              ent     4       {}   	-depend status -title {Units:} -gmc {pack %w -in %p.status}}
+    {revision           ent     2       {3 1}   -state readonly} 
+    {minrev		ent	2	{} 	-state readonly -depend revision -title {.} -gmc {pack %w -in %p.revision}}   
+    {price              ent     14      {4 1}   -state readonly}
+    {descr              ent     40      {1 2 4} -state readonly}
+    {spec               ent     38      {1 3 4}  -spf edw }
+}
+
+#-------------------------------------------
+tabdef prd_base_v_prodim -fields {
+    {base               ent     15      {2 0}       -hide 1}
+    {revision           ent     2       {0 0}       }    
+    {minrev		ent	2	{1 0}  	    }
+    {status             pdm     1       {0 2}       -ini d}
+    {units              ent     4       {1 2}       -spf exs}
+    {price              ent     12      {2 2}       -just r}
+    {descr              ent     55      {0 3 4}     -spf edw}
+    {verified           chk     2       {3 2}       -ini f -onvalue t -offvalue f -state disabled -title {Ver:} }
+    {spec               mle     {55 4}  {0 4 4}     -spf edw}
+    {crt_by             ent     5       {0 5}       -opt 1 -state readonly}
+    {crtname            ent     12      {}          -opt 1 -depend crt_by -title {:} -gmc {pack %w -in %p.crt_by}}
+    {crt_date           ent     12      {2 5}       -opt 1 -state readonly}
+    {mod_by             ent     5       {0 6}       -opt 1 -state readonly}
+    {modname            ent     12      {}          -opt 1 -depend mod_by -title {:} -gmc {pack %w -in %p.mod_by}}
+    {mod_date           ent     12      {2 6}       -opt 1 -state readonly}
+}

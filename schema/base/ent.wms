@@ -1,0 +1,182 @@
+# Entities
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+
+schema base -grant public
+
+# An entity can be a person, company, group, etc
+#----------------------------------------------------------------
+table base.ent {base.country} {
+    id		int		check (id > 0) primary key
+  , ent_type	char		not null check(ent_type in ('p','o','g'))
+  , ent_name	varchar		not null
+  , fir_name	varchar		constraint "!base.ent.CFN" check(case when ent_type != 'p' then fir_name is null end)
+  , mid_name	varchar		constraint "!base.ent.CMN" check(case when fir_name is null then mid_name is null end)
+  , pref_name	varchar		constraint "!base.ent.CPN" check(case when fir_name is null then pref_name is null end)
+  , title	varchar		constraint "!base.ent.CTI" check(case when fir_name is null then title is null end)
+  , gender	char(1)		constraint "!base.ent.CGN" check(case when ent_type != 'p' then gender is null end)
+  , marital	char(1)		constraint "!base.ent.CMS" check(case when ent_type != 'p' then marital is null end)
+  , ent_cmt	varchar
+  , born_date	date		constraint "!base.ent.CBD" check(case when ent_type = 'p' and inside then born_date is not null end)
+  , username	varchar		unique
+  , database	boolean		not null default false
+  , activ	boolean		not null default true
+  , inside	boolean		not null default true
+  , country	varchar(3)	not null default 'US' references base.country on update cascade
+  , tax_id	varchar		unique
+  , bank	varchar
+  , proxy	int		constraint "!ent.ent.OPR" check (proxy != id)
+
+    subst($base::ent_local)	-- locally defined columns
+    subst($glob::stamps)
+} -ver 1
+index {} base.ent ent_type
+index {} base.ent username
+index {} base.ent proxy
+audit::audit base.ent $base::ent_audit
+
+# Links entities to other entities as members, employees, etc.
+#----------------------------------------------------------------
+table base.ent_link {base.ent} {
+    org		int4		references base.ent on update cascade
+  , mem		int4		references base.ent on update cascade on delete cascade
+  , primary key (org, mem)
+  , role	varchar
+  , supr_path	int[]		-- other modules (like empl) are responsible to maintain this cached field
+    subst($glob::stamps)
+}
+
+# Make a unique ID for each new person
+#----------------------------------------------------------------
+function base.ent_tf_id() {base.ent} {
+  returns trigger language plpgsql as $$
+    begin
+        if TG_OP = 'UPDATE' then
+            if new.inside != old.inside then 	-- if changing inside/outside (shouldn't happen except by someone who knows what he is doing)
+                new.id := null;		-- we will change the ID to the correct range
+            end if;
+        end if;
+        if new.id is null then
+            if not new.inside then		-- use big number for outside people and companies
+                select into new.id coalesce(max(id)+1,subst($base::ent_outmin)) from base.ent where id >= subst($base::ent_outmin);
+            elseif new.ent_type = 'o' then	-- use really small numbers for inside company entities
+                select into new.id coalesce(max(id)+1,subst($base::ent_entmin)) from base.ent where id < subst($base::ent_insmin);
+            else				-- medium sized numbers for employees
+                select into new.id coalesce(max(id)+1,subst($base::ent_insmin)) from base.ent where id >= subst($base::ent_insmin) and id < subst($base::ent_outmin);
+            end if;
+        end if;
+        return new;
+    end;
+$$;}
+trigger base_ent_tr_id {} {
+    before insert or update on base.ent for each row execute procedure base.ent_tf_id();
+}
+
+# Validity checks when adding a member to a group
+#----------------------------------------------------------------
+function base.ent_link_tf_check() {base.ent_link} {
+  returns trigger language plpgsql security definer as $$
+    declare
+        erec	record;
+        mrec	record;
+    begin
+        select into erec * from base.ent where id = new.org;
+        
+        if erec.ent_type = 'g' then
+            return new;
+        end if;
+        if erec.ent_type = 'p' then
+            raise exception '!base.ent_link.NBP % %', new.mem, new.org;	-- Entity can not belong to a personal entity
+        end if;
+
+        select into mrec * from base.ent where id = new.mem;
+        if erec.ent_type = 'c' and mrec.ent_type != 'p' then
+            raise exception '!base.ent_link.PBC % %', new.mem, new.org;	-- Only people can belong to companies
+        end if;
+        return new;
+    end;
+$$;}
+trigger base_ent_link_tf_check {} {
+    before insert or update on base.ent_link for each row execute procedure base.ent_link_tf_check();
+}
+
+# Base entity view
+#----------------------------------------------------------------
+view base.ent_v {base.ent} {
+    select eval(fld_list $base::ent_se e)
+      , case when e.fir_name is null then e.ent_name else e.ent_name || ', ' || coalesce(e.pref_name,e.fir_name) end	as std_name
+      , e.ent_name || case when e.fir_name is not null then ', ' || 
+                case when e.title is null then '' else e.title || ' ' end ||
+                e.fir_name ||
+                case when e.mid_name is null then '' else ' ' || e.mid_name end
+            else '' end												as frm_name
+      , case when e.fir_name is null then '' else coalesce(e.pref_name,e.fir_name) || ' ' end || e.ent_name	as cas_name
+      , e. oid as _oid
+    from	base.ent	e;
+
+    eval(rule_insert base.ent_v base.ent $base::ent_v_in {} $glob::stampin);
+    eval(rule_update base.ent_v base.ent $base::ent_v_up $base::ent_pk {} $glob::stampup);
+    eval(rule_delete base.ent_v base.ent $base::ent_pk);
+} -grant {
+    {entim	s {i u} d}
+}
+
+# Base link view
+#----------------------------------------------------------------
+view base.ent_link_v {base.ent_link base.ent_v} {
+    select eval(fld_list $base::ent_link_se el)
+      , oe.std_name		as org_name
+      , me.std_name		as mem_name
+      , el. oid as _oid
+    from	base.ent_link	el
+    join	base.ent_v	oe on oe.id = el.org
+    join	base.ent_v	me on me.id = el.mem;
+
+    eval(rule_insert base.ent_link_v base.ent_link $base::ent_link_v_in {} $glob::stampin);
+    eval(rule_update base.ent_link_v base.ent_link $base::ent_link_v_up $base::ent_link_pk {} $glob::stampup);
+    eval(rule_delete base.ent_link_v base.ent_link $base::ent_link_pk);
+} -grant {
+    {entim	s {i u d}}
+}
+
+# A view that everyone can have read access to just for non-sensitive fields
+#----------------------------------------------------------------
+view base.ent_v_pub {base.ent_v} {select eval(fld_list $base::ent_v_pub_se) from base.ent_v;} -grant public
+    
+# Return the entity ID number of the current user
+#----------------------------------------------------------------
+function base.curr_eid() {base.ent} {
+  returns int language sql security definer stable as $$
+    select id from base.ent where username = session_user;
+$$;}
+
+# Return a user ID number from his system (and database) username
+#----------------------------------------------------------------
+function base.user_id(varchar) {base.ent} {
+  returns int language sql security definer stable as $$
+    select id from base.ent where username = $1;
+$$;}
+
+# Return a username from a user ID number
+#----------------------------------------------------------------
+function base.username(int) base.ent {
+  returns varchar language sql security definer stable as $$
+    select username from base.ent where id = $1;
+$$;}
+
+# Return a standardized entity name from an entity ID number
+#----------------------------------------------------------------
+function base.std_name(int) {base.ent_v} {
+  returns varchar language sql security definer stable as $$
+    select std_name from base.ent_v where id = $1;
+$$;}
+
+# Return a standardized entity name from an entity username
+#----------------------------------------------------------------
+function base.std_name(name) {base.ent_v} {
+  returns varchar language sql security definer stable as $$
+    select std_name from base.ent_v where username = $1;
+$$;}
+
