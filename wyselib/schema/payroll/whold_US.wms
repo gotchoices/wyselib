@@ -1,0 +1,39 @@
+# Support for US Federal withholding
+#include(Copyright)
+# Valid for 2008
+#TODO:
+#- 
+
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+function {whold_US(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+  returns numeric language plpgsql as $$
+    declare
+        agross	numeric(14,2);
+        trec	record;
+    begin
+
+    select into agross gr - (v1 * al) from whold_dat where module = 'US' and type = pc and code = 'allow';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'US', pc, 'allow';		-- Lookup value not found
+    end if;
+ 
+    if agross < 0 then
+        agross := 0;			-- force negatives to 0
+    end if;
+
+    if (select count(*) from whold_dat where module = 'US' and type = pc and code = ms) != 7 then
+        raise exception '!whold.BMD: % % %', 'US', pc, ms;		-- Bad or missing data. Should be exactly 7 entries but before 2012, it was always 6 entries
+    end if;
+    
+    select into trec * from whold_dat where module = 'US' and type = pc and code = ms and v1 < agross order by v2 desc limit 1;
+    if not found then
+        return 0.00;
+    end if;
+-- raise notice 'v1:% v2:% v3:% excess:%', trec.v1, trec.v2, trec.v3, (agross - trec.v1);
+    return (trec.v2 + (trec.v3 * (agross - trec.v1)))::numeric(14,2);
+    end;
+$$;}

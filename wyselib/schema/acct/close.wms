@@ -1,0 +1,65 @@
+# Period closing dates
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#X- re-implement close table on top of system parameters
+#X- create user view
+#X- trigger to make sure master is the earliest date in the table
+#- dates can only move forward except for supervisor priv (test)
+#- 
+#- 
+#- 
+
+namespace eval acct {
+    def close_v_pk	{module parm}
+    def close_v_up	{v_date cmt}
+    def close_v_se	"module parm v_date cmt $glob::stampfn"
+}
+
+# Base view with limited access
+#----------------------------------------------------------------
+view acct.close_v {base.parm base.priv_has(varchar,varchar)} {
+    select eval(fld_list $acct::close_v_se)
+    from	base.parm
+    where parm = 'close' and type = 'date';
+
+    eval(rule_update acct.close_v base.parm $acct::close_v_up $acct::close_v_pk {where new.v_date > old.v_date or base.priv_has('glman','super')} $glob::stampup);
+} -grant {
+    {glman	s u}
+}
+
+# Table validity checks
+#----------------------------------------------------------------
+function acct.close_tf_tabchk() {base.parm acct.close_v} {
+  returns trigger security definer language plpgsql as $$
+    declare
+        mdate	date;
+    begin
+        select into mdate v_date from base.parm where module = 'master' and parm = 'close' and type = 'date';
+        if not found then
+            raise exception '!acct.acct.NMR';		-- No master record found
+        end if;
+        if exists (select * from base.parm where module != 'master' and parm = 'close' and v_date < mdate) then
+            raise exception '!acct.close_v.MDE';	-- No module should be older than master
+        end if;
+        return new;
+    end;
+$$;}
+trigger acct_close_tr_tabchk {} {
+    after insert or update or delete on base.parm for each statement execute procedure acct.close_tf_tabchk();
+}
+
+# Return the close date for a specified module
+#----------------------------------------------------------------
+function {acct.close(p varchar)} {acct.close_v} {
+  returns date language plpgsql stable as $$
+    declare
+        mdate	date;
+    begin
+        select into mdate v_date from acct.close_v where module = p;	-- Find date for our module
+        if not found then						-- If not found
+            raise exception '!acct.close.NEP', priv;		-- Nonexistent parameter
+        end if;
+        return mdate;
+    end;
+$$;}

@@ -1,0 +1,329 @@
+Accounting module, Try 2
+
+GL Encoding
+#----------------------------------------------------------------
+Each GL entry should include:
+    Trans_ID:		A unique ID for the transaction
+    Entity:		The ID of the lowest entity project above my project
+    Project:		See below
+    Account:		See below
+    Category:		See below
+    Date:		Transaction Date
+    Debit:		Debit amount if any
+    Credit:		Credit amount if any
+    Amount:		Net amount
+
+Ideally, all credits and debits should be a positive number.
+
+When running reports, the full account code will be rendered as a concatenation
+of the components: entity, account, project, category.  For example:
+
+    3.50.1234.fuel		
+    3.cgs.2345.repm	full account code
+    3.cgs..rep		project suppressed for income statement
+    3.400.3456		no category applicable for income
+
+Extensions
+#----------------------------------------------------------------
+Some balance sheet accounts are reconciled by a detail other than a project 
+number.  For example a part-number based inventory must be sub-dividable 
+into sub-accounts for each separate part number.  Work in Process must be 
+dividable into individual work order items.  A Capital Asset project must 
+be dividable by Asset ID numbers.
+
+Examples:
+    Inventory, clearing		Part Number
+    WIP				PO Item Number (POI)
+    Capital Equipment		Asset ID
+    Payroll Payable		Employee ID
+    Payroll Tax Payable		State, Employee ID
+    Garnishments Payable	Vendor ID, Employee ID
+    Accounts Payable		Vendor ID
+    Credit Cards		Entity ID?
+    
+This implies that many transactions must be capable of storing these additional
+fields.  Each such extension field should be required (non-null) if the 
+project type demands it and forbidden (null) otherwise.
+
+Since the G/L will not contain all these extensions, an individual register
+will be exist specific to each account type which is a sub-set of the G/L
+and which contains the necessary additional extension fields.
+
+Module Specifics
+#----------------------------------------------------------------
+Each module must store information as required about the project, account, 
+and category applicable to each transaction.  In some cases, the account
+may be determined from the context of the project.  In some cases, a
+category may not be necessary.  For example:
+
+requ:		An explicit value is required for each transaction
+def:		A value can be guessed from the project--may be over-written
+proj:		The value can always be determined from the project
+const:		The module always produces the same value
+N/A:		No value is stored nor required
+
+Module		Project		Account		Category	Extensions
+AP Invoice	requ		def		requ		poi, asset
+AP Payment	requ		proj		N/A
+Payroll Accrual	requ		proj		const		poi, asset
+Payroll Deduct	requ		def		def
+Payroll Match	requ		proj		N/A
+Payroll Payment	requ		proj		N/A
+Material	requ		proj		const		poi
+AR Invoice	requ		def		def		poi, asset
+AR Deposit	requ		proj		N/A
+Cash Payments	requ		requ		requ		poi, asset
+Cash Deposits	requ		def		def		poi, asset
+Cash Transfers	requ		proj		N/A
+Hand Entry	requ		requ		requ		poi, asset
+Commission Accr	requ		proj		const
+PO Close (cost)	requ		proj		N/A		poi
+
+Account Table
+#----------------------------------------------------------------
+Each transaction is booked to an account which is always one of the standard
+five accounting types.
+
+   Assets
+   Liabilities
+   Equity
+   Income
+   Expenses
+
+Accounts are organized in a hierarchical structure.  There is a parent account 
+above each of the main 5 types called "Entity" (number 0).  Then, there can be 
+sub accounts under each of them to create a chart of accounts like the 
+following (the numbers and codes can be chosen differently):
+
+       1  ast Assets
+      10  cas  Current Assets
+     100  chk    Checking			Project/sub-account
+     102  sav    Savings			Project/sub-account
+     103  bro    Brokerage
+    1030  etr      E-Trade			Project/stock
+    1034  sch      Schwab			Project/stock
+     105  rec    Accounts Receivable
+     106  inv    Inventory			Project/inventory, Detail:part_num, category
+     107  wip    Work in Process		Project/shop, Detail:POI_number, category
+     108  jip    Jobs in Process		Project/contract, Detail: category
+     109  pre    Prepayments
+      15  fas  Fixed Assets
+     150  cap    Capital Equipment		Project/steward, Detail:asset_num, category
+     152  res    Real Estate			Project/asset, Detail:category
+     154  lre    Loans Receivable		Project/loan
+   
+       2  lia Liabilities
+      20  cul  Current Liabilities
+     200  cln    Credit Line			Project/line
+     201  itp    Income Tax Payable		Project/entity	(US, State, etc.)
+     202  ssp    Social Security Payable	Project/entity
+     203  mcp    Medicare Payable	
+     204  stp    Sales Tax Payable		Project/entity
+     205  acp    Accounts Payable		Detail:vendor
+     206  pap    Payroll Payable		Detail:employee
+     207  cmp    Commissions Payable		Detail:entity
+      25  ltl  Long Term Liabilities
+     250  eql    Equipment Loans		Project/loan
+     251  cal    Capital Leases			Project/lease, Detail:asset_num
+     252  rel    Real Estate Loans		Project/asset
+     254  lop    Loans Payable
+   
+       3  equ Equity
+      30  beg  Beginning Balances
+      32  con  Contributions
+      34  dis  Distributions
+      36  mem  Member Capital			Detail: entity
+      38  stk  Issued Stock			Detail: entity
+   
+       4  inc Income
+      40  sal  Sales
+     400  sjb    Job Sales
+     401  sjp    Jip Sales
+     403  sot    Ots Sales
+     405  ser    Service
+      42  shp  Shipping Charges
+      44  gos  Gain on Sale of Assets
+      45  cgl  LT Capital Gains
+      46  cgs  ST Capital Gains
+       
+       5  exp Expenses				Detail: category
+      50  cgs  Cost of Goods Sold	#gross margin
+      52  cog  Commissions on Gross	#gross margin after commissions
+      53  war  Warranty			#gross margin after warranty
+      54  opo  Operations Overhead	#EBITDA
+      56  int  Interest			#net margin before depreciation
+      57  con  Commissions on Net	#net margin after commissions
+      58  dep  Depreciation		#taxable income
+      59  tax  Taxes			#net income
+
+Categories
+#----------------------------------------------------------------
+Traditionally, expense accounts have been broken down into individual
+sub-accounts representing the type of thing the expense was for (such as fuel,
+travel, taxes and so forth).  There are a few problems with this approach.  
+First, there may be several higher level accounts for which this level of 
+detail is wanted (such as G&A, Warranty and COGS).  To track each of these 
+categories in a separate account requires creating numerous new account codes 
+under each major expense category.
+
+When individual expense types are tracked in individual accounts, budgeting
+is also impacted.  By setting individual budget amounts for fuel and lodging
+it implies to a manager that he is only authorized to spend more money if it
+is in the right account.  When really, he should be looking to effectively
+manage his overall expenses (probably project based).
+
+A more difficult problem is that often these categories are also applicable
+to disbursements which will debit balance sheet accounts such as Jobs in 
+Process, Work in Process, Capital Equipment and so forth.  To create separate
+accounts under each of these balance sheet accounts would make it much more
+difficult (if not impossible) to reconcile these accounts.  And yet, it is
+often helpful to analyze the distribution of values in the various categories.
+
+Therefore, we will avoid creating these divisions as accounts and will instead
+maintain general expense accounts such as COGS and overhead.  A separate field
+called "category" will contain a detail specification like the following:
+(numbers are optional)
+
+    05      sawa	Salary and Wages
+    10      comm	Commissions
+    15      ptax	Employment tax expense
+    20      lega	Legal
+    25      prof	Other professional contract
+    30      equi	Equipment lease and rentals
+    35      util	Utilities
+    40      osup	Office supplies
+    45      tool	Tools & Equipment
+    50      bond	Bonding and insurance
+    55      matl	Materials
+    60      repm	Repairs and Maintenance
+    65      ship	Shipping expense
+    70      stax	Sales Tax
+    75      tele	Telecom
+    80      trav	Travel
+    82      lodg	Lodging
+    85      diem	Per-diem expense
+    90      food	Food & Entertainment
+    95      fuel	Gas and other fuel
+
+Categories display an alpha tag rather than a numeric one.  This will aid in
+readability to distinguish category codes from account codes.  The optional
+number field is included to facilitate 10-key entry where desired.
+
+Projects
+#----------------------------------------------------------------
+Often it is desirable to divide accounting transactions by accountability.
+There are several problems with using a separate account for each division
+of accountability.  First problem is that some types of accountability 
+center might contain transactions to various different types of accounts 
+(asset, liability, income, expense).  So to use accounts would necessitate 
+creating multiple accounts for each such center of activity (project).
+
+By storing a separate field for each project, projects can potentially
+contain transactions for any type of account as well as all the various 
+transaction categories.
+
+Projects are maintained in a hierarchical structure.  The hierarchy is
+meant to correspond to a supervisory structure within the enterprise.
+An owner of a project has permissions to not only that project but also
+all of its progeny.
+
+Projects can also operate withing a fund granting framework where 
+disbursements are not possible unless the project has sufficient funding.  
+Funding can be granted and/or revoked by parent projects.
+
+We an also use the project field to represent the notion of individual
+business units, or entities.
+
+The various project types should support the following:
+
+hld	Holding
+	This project can not have transactions booked directly to it, but
+	rather serves as a place holder for other sub-projects.  There is
+	a special holding project (0) which is the parent of all other 
+	projects, and is the only project allowed to not have a parent 
+	defined.
+	
+	Holding projects should be able to be used under an entity as well 
+	to group other similar projects.  For example, we should be able
+	to put a bunch of jobs under a holding project.  Once you have
+	created a single child of a holding project, it should never be
+	able to get a direct child of a different type.
+	
+ent	Entity (Business Unit)
+	There should only be type 'hld' projects between this type and
+	project 1.  Or this type of project can be a direct child of 1.
+	
+	Entity projects can have any type of child projects.  Typically
+	though, they should have just a handful of holding projects (such
+	as one for each administrative area of the company).
+	Not subject to funding limitations.
+
+bsh	Balance Sheet
+	This project must have an account defined which serves as a pointer 
+	to show where this project will appear on the balance sheet.
+	This type of project can be used for such things as:
+	    inventory
+	    bank accounts
+	    loans, credit lines
+	    capital assets
+	    credit cards
+	This type may need to be broken out into individual types.
+	Not subject to funding limitations.
+
+job	Percent Completion Job
+	Project should contain only income and expense accounts.  Revenue
+	can be accrued on a percent-completion basis by attributing an
+	expected margin to each accrued expense.
+	Subject to funding limitations.
+
+jip	Contract Completion Job
+	Project should contain only income and expense transactions.  
+	As long as the job is open, all income will accrue to deposits
+	(liability) and all costs will accrue to jobs in process (asset).
+	Upon contract completion, the accrued cost will be credited 
+	back off of the balance sheet and debited to COGS.  Payments will
+	be credited to sales.
+	Subject to funding limitations.
+
+ots	Project is for sales revenues and cogs expenses for products sold
+	off-the-shelf.  Revenues and costs will accrue at the moment of
+	completion of each order.
+	Subject to funding limitations.
+
+sub	Project can be under any other type of project for the purpose of
+	aiding in management or accountability.  However, for purposes of
+	financial reporting, transactions in this type of project will
+	appear in their parent project.
+	Subject to funding limitations.
+
+adm	Project should contain primarily expenses which will accrue to
+	G&A expense.  Income may be optionally be applied if it is of a
+	nature to offset overhead expenses.
+	Subject to funding limitations.
+
+Example		Project Name				Acct Pointer
+    3		ACME Widget Company			null
+      10	  Balance Sheet Projects		null
+        <num>	    Wells Fargo Checking		Checking
+        <num>	    Wells Fargo Savings			Savings
+        <num>	    Wells Fargo Credit Line		Credit Line
+        <num>	    Vanguard Bond Fund			Securities
+        <num>	    Parts Inventory			Inventory
+        <num>	    Bulk Gas Inventory
+        <num>	    Seed Inventory
+        <num>	    Hay Inventory
+        <num>	    Cattle Inventory
+      20	  Overhead Cost Centers
+        <num>	    Main Office Operations		Operations Overhead
+        <num>	    Remote Office Operations		Operations Overhead
+        <num>	    Domestic Warranty			Warranty
+        <num>	    International Warranty		Warranty
+      30	  Profit Centers			null
+        <num>	    Domestic Jobs
+          <num>	      Job w
+          <num>	      Job x...
+        <num>	    International Jobs
+          <num>	      Job y
+          <num>	      Job z...
+        <num>	    JIP Sales
+        <num>	    OTS Sales

@@ -1,0 +1,14 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext acct.cat	{Account Categories}	{Native table containing one entry for each defined account category.  Categories are typically associated with expenses, but can also describe transactions which accrue to assets or other account types as well.} [concat {
+    {numb		{Cat Number}		{A unique nnumber that represents this account category.  Transactions will typically be ordered by this number where applicable.}}
+    {code		{Cat Code}		{A brief alphanumeric code defined for each category.  This code will be used as a relational link in ledger data rather than the account number.}}
+    {name		{Cat Name}		{The name of this account category as it will appear on typical reports.}}
+    {descr		{Description}		{A more complete description of what this category is used for.}}
+} $glob::stampt] -errors {
+    {CNF		{Category Not Found}	{Could not find a category with that code, number or name}}
+}
+
+tabtext acct.cat_v	{Account Categories}	{Standard view of the table containing one entry for each defined account category.  Categories are typically associated with expenses, but can also describe transactions which accrue to assets or other account types as well.} {
+}

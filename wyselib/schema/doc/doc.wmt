@@ -1,0 +1,37 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext doc.doc		{Documents}		{Table contains information about external documents logged to the database.  The documents themselves are stored as large objects in the database as well as being archived outside the database.} [concat {
+    {id			{Document ID}		{A sequential number assigned by the database to uniquely represent this document}}
+    {path		{Path}			{An array of names.  This will form the path of folders under which the file will be archived in the external filesystem.}}
+    {name		{Name}			{The base portion of the file (not including extension) as it appears when stored in the external filesystem}}
+    {version		{Version}		{The version of this document.  The first version is typically version 0 and shows nothing unusual in the archived filename.  But subsequent versions (1, 2, 3..) are appended to the filename just before the extension.}}
+    {exten		{Extension}		{Many documents are stored in a filesystem with an extension (often 3 letters) which indicates the file type.  If an extension is applicable, specify it here (without the dot separator).}}
+    {cmt		{Comment}		{Any comment or notation the user wishes to store with or about the file}}
+    {locked		{Locked}		{If this is set to true, the file can no longer be deleted or modified.}}
+    {size		{Size}			{The size of the file in bytes when stored as an external file}}
+    {cksum		{Checksum}		{A checksum of the data in the file}}
+    {checked		{Checked}		{Indicates the last time the file archive copy of this file was checked for existence and correctness compared to the copy in the database}}
+    {blob		{Object ID}		{An ID number used internally to locate the data for this file in the large object table.  This number is not likely to be the same from one instance of the database to another.}}
+} $glob::stampt] -errors {
+    {ONF		{Object Not Found}	{The specified document could not be found in the large object data table}}
+    {CFN		{Filename Conflict}	{There is already a document in the database with the same path,filename,version,extension}}
+    {UFN		{Name Not Unique}	{The combination of path, name, version and exten must be unique so the document can be archived in a filesystem}}
+    {IPS		{Illegal Path}		{There must be at least one non-null path element in the document specification}}
+    {IFN		{Illegal Filename}	{The filename contains one or more illegal characters}}
+    {IVN		{Illegal Version}	{The version number should be a positive integer}}
+    {DLK		{Document Locked}	{A locked document can not be modified or deleted}}
+}
+
+tabtext doc.link	{Document Links}	{Table records which documents depend on other documents in the database.} {
+    {outp		{Output Doc}		{The ID of the document which is produced or is the result using the specified dependency link}}
+    {inp		{Input Doc}		{The ID of the document which gets used to create or is incorporated into the output document}}
+    {type		{Type}			{Describes the nature of how the output document depends on the input document} {
+        {auto		{Auto}			{The input document will automatically get used, included or invoked by the output document as long as it is present in the work directory where the output document is opened (presumably by some application)}}
+        {link		{Linked}		{The input document will be detected for use by the output document as long as it is present in the work directory where the output document is opened by some application.  But the application may give the user discretion about whether to update the link reference or not.}}
+        {manu		{Manual}		{The application that makes the output document is not aware of the dependency.  The user would have to explicitly re-import the input document into the output document by some manual method.}}
+        {rend		{Render}		{The output document is some form of a rendering of the data contained in the input document.  The user would have to manually perform some kind of operation (like print-to-file) on the input document to produce the output document.}}
+    }}
+} -errors {
+    {ITP		{Illegal Type}		{Illegal value for document link type}}
+}

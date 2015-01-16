@@ -1,0 +1,22 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabdef acct.meth -focus code -fields [concat {
+    {code		ent	10	{1 1}		}
+    {name		ent	40	{2 1}		}
+    {descr		mle	{60 4}	{1 2 2 4}	-spf edw}
+} $glob::stampd]
+
+tabdef acct.meth_v -focus code -fields {
+} -inherits acct.meth
+
+tabdef acct.mmap -focus book_acct -fields [concat {
+    {meth		ent	10	{0 0}		-hide 1}
+    {book_acct		ent	6	{1 1}		-just r -spf scm -data acct}
+    {meth_acct		ent	6	{2 1}		-just r -spf scm -data acct}
+    {cmt		mle	{60 4}	{1 2 2 4}	-spf edw}
+} $glob::stampd]
+
+tabdef acct.mmap_v -focus book_acct -fields {
+    {ba_name		ent	20	{}		-depend book_acct -title {:} -gmc {pack %w -in %p.book_acct}}
+    {ma_name		ent	20	{}		-depend meth_acct -title {:} -gmc {pack %w -in %p.meth_acct}}
+} -inherits acct.mmap

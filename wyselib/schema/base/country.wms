@@ -1,0 +1,18 @@
+# International country data
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+
+# Table of countries
+#----------------------------------------------------------------
+table base.country {base} {
+    code	varchar(2)	primary key
+  , com_name	varchar		not null unique
+  , capital	varchar
+  , cur_code	varchar(4)	not null
+  , cur_name	varchar		not null 
+  , dial_code	varchar(20)
+  , iso_3	varchar(4)	not null unique
+  , iana	varchar(6)
+}

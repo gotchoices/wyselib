@@ -1,0 +1,110 @@
+#!/usr/bin/wish
+#A tool for viewing the General Ledger, the Chart of Accounts and other misc accounting tasks
+#------------------------------------------
+#Copyright WyattERP, all other rights reserved
+package require wyselib
+
+#TODO:
+#- Make a lg_v_gl (in the main application schema?)
+#- Implement dbp on gl as main glman view
+#- Implement a budgetary transaction journal
+#- Write reports that can use any ledger as their source
+#-  Income statement
+#-  Balance sheet
+#-  Trial balance
+#-  Project reconciliation (live links in report)
+#- Implement a method table
+#- Can we build ledgers on the fly as each new method is created?
+#- Build a transaction journal for each method (or maybe one for all methods?)
+#- Make a summary journal to go with each defined method
+#- Cache daily, or monthly trial balance into summary journal
+#- Make ledger views use the summary data up through the cache date
+#- 
+#- 
+
+#Preferences control array {tag title display_type user_edit}
+set cnf(pref)  {\
+    -f {fixme	ent	{Fixme:}	::cnf(fixme)	-help {Insert preferences here} -width 4}\
+}
+
+# Construct the main window
+#----------------------------------------------------
+proc main_win {w} {
+    global cnf
+
+    set m [$w menu w]
+    $m mb tools -under 0 -help {Common helpful functions for this application}
+    acct::acct_menu $m tools
+    acct::cat_menu  $m tools
+    acct::clos_menu $m tools
+    acct::meth_menu $m tools
+    proj::ptyp_menu $m tools
+    proj::proj_menu $m tools
+    tran::tran_menu $m tools hand acct {Hand Journal}
+    tran::tran_menu $m tools budg budg {Budget Journal}
+    base::parm_menu $m tools
+
+#    $m tools mi hand {Hand Entries}      -s Hand -help {Open a toplevel window for viewing/inserting hand adjustment entries}  -command "top::top hand -title {Hand Entries:}       -build {trans::build %w} -reopen 1"
+#    $m tools mi prdcm {Product Commissions} -help {Open a toplevel window for managing product groups and commissions}	       -command "top::top prcm -title {Product Commissions} -build {prdgrp::prdgrp %w} -reopen 1"
+#    sysparm::menuitem $m tools
+#    gl::ar_agingp $m tools
+#    gl::poi_summary $m tools
+#    gl::inv_costs $m tools
+
+#    foreach {tag name} {rp report lg ledger rg register} {
+#        set Name [cap_first $name]
+#        $m tools sm $tag -text "$Name Views" -help "Open a toplevel preview window showing a particular $name view (${tag}_v_...)."
+#        foreach rec [sql::qlist "select tablename,title,help from wm.table_pub where tablename ~ '^${tag}_v_.*' and language = 'en' order by 2,1"] {}
+##        foreach rec [sql::qlist "select tab,title,help from wm.table_pub where tab ~ '^${tag}_v_.*' and language = 'en' order by 2,1"] {
+#            lassign $rec view title help
+#            $m tools $tag mi $view "$title ($view)" -help "$Name View: $view\n$help" -command "top::top $view -title {$Name:  $view}   -build {top::dbp %w -table $view $::cnf($tag)} -reopen 1"
+#        }
+#    }
+
+#    $m mb rept -under 0 -help {Reports related to the General Ledger}
+#    $m rept mi glrep {Ledger Report}  -s Ledger	-under 0 -command {gl::ledger}		-help {Show transactions selected from the G/L}
+#    $m rept mi trial {Trial Balance}  -s Trial	-under 0 -command {gl::trial}		-help {Show transactions for a period summarized by account code}
+#    $m rept mi chreg {Check Register} -s ChReg	-under 0 -command {gl::checkreg}	-help {Show transactions related to the cash account}
+#    $m rept mi cash  {Cash Summary} -s {Cash -bg green} -under 1 -command {gl::cash}	-help {Show quick summary of available cash}
+#    $m rept mi gnreg {Garnishment Summary}	-under 0 -command {gl::garnreg}		-help {Show transactions related to the standard garnishment account, summarized by employee}
+#    $m rept mi pr99  {Print 1099 Forms} -under 0 -command gl::pr_1099 -help {Preview and/or print forms for vendors who require a 1099 filed}
+#    $m rept mi budan {Budget Anomalies} -command gl::bud_anom -help {Show expense transactions that occur on the income statement, but which do not fall under normal budgeted projects}
+#    $m rept mi sep
+#    $m rept mi balsh {Balance Sheet}	 -s BS	-under 0 -command {gl::bal_sheet}	-help {Show a balance sheet for a beginning and end of a period}
+##    $m rept mi incst {Income Statement}	 -s IS	-under 0 -command {gl::inc_state}	-help {Show an income statement for specified periods}
+#    $m rept mi cashf {Cash Flow}	 -s CF	-under 2 -command {gl::cash_flow}	-help {Show a statement of cash flows for specified periods}
+#    $m rept mi sep
+#    $m rept mi arage {AR Aging}			-under 0 -command {gl::ar_aging}	-help {Show detail of how AR was comprised on a given date}
+#    $m rept mi aragn {AR Aging w/ Notes} -command {gl::ar_aging_notes}
+#    $m rept mi arage {AP Aging}			-under 1 -command {gl::ap_aging}	-help {Show detail of how AP was comprised on a given date}
+#    $m rept mi revde {Revenue Detail}		-under 0 -command {gl::revenue}		-help {Show where revenue was generated by project type}
+#    $m rept mi matlc {Material Projection}	-under 0 -command {gl::mat_proj}	-help {See projections for cost/revenues/profits due to the shipment of committed materials}
+#    $m rept mi partd {Part History}		-under 0 -command {gl::part}		-help {Show running cost and stock levels for a part number}
+#    $m rept mi coste {Costing Estimate}		-under 2 -command {gl::uncosted}	-help {Show the estimated effect on a period of completing costing}
+#    $m rept mi casho {Cash Orders}		-under 5 -command {gl::cashord}		-help {Find deposits logged to an order but with no invoice number referenced}
+#    $m rept mi clsex {Close Exceptions}		-under 7 -command {gl::close_ex}	-help {Find certain exceptions that would prevent completing a hard close}
+#    $m rept mi sep
+#    $m rept mi invd {Inventory Detail}		-under 2 -command {gl::invent}		-help {Show the costs making up an inventory by date}
+#    $m rept mi invd {Idle Inventory}		-under 1 -command {gl::slowinv}		-help {Show the part that have not been used for a while}
+#    $m rept mi wicd {WIP/IVC Detail}		-under 2 -command {gl::wip_ivc}		-help {Show the costs making up Work in Process or Inventory Clearing Account as of a closing date}
+#    $m rept mi sep
+#    $m rept mi matlc {Material Costing}		-under 0 -command {gl::mat_cost}	-help {Apply costing corrections to material transfers for a period}
+#    $m rept mi poico {POI Costing}		-under 1 -command {gl::poi_cost}	-help {Apply costing corrections to PO items where possible}
+
+#    top::add [eval dbp::dbp $w.p $cnf(lgp)] lgr
+#    pack $w.p -side top -fill both -expand yes
+    return 1
+}
+
+# Main
+#----------------------------------------------------
+base::priv_run
+eval pref::init $cnf(pref)
+set w [top::top m main_win -main 1]
+
+argform {load} argv
+argnorm {{load 1} {macro 1}} argv
+prargs $argv {
+    -macro	{if {[catch {%v} msg]} {dia::err "In command line macro: %v\n\nMessage:\n$msg"}}
+}
+#m tlglp menu menu invoke def

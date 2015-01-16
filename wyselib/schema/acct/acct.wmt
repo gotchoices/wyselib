@@ -1,0 +1,41 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext acct.acct	{Accounts}		{Native table containing one entry for each account number known by the system.} [concat {
+    {numb		{Acct Number}		{The number that represents this account code}}
+    {code		{Acct Code}		{An optional alpha-numeric code for the account.  This can be used in data entry instead of the number if the user finds it easier to remember.}}
+    {type		{Acct Type}		{Each account must be one of the standard 5 accounting types} {
+        {asset		{Asset}			{Items which appear on the balance sheet representing a positive (debit balance) of value for the entity}}
+        {liability	{Liability}		{Items which appear on the balance sheet representing a negative (credit balance) of value for the entity}}
+        {equity		{Equity}		{Items which appear on the balance sheet representing the net value of the entity}}
+        {income		{Income}		{Items which appear on the income statement which are equal to and opposite (as a credit balance) of the increases to the value of the entity}}
+        {expense	{Expense}		{Items which appear on the income statement which are equal to and opposite (as a debit balance) of the decreases in the value of the entity}}
+    }}
+    {name		{Acct Name}		{A brief name that is descriptive of the account}}
+    {descr		{Description}		{A more complete description of what this account is for}}
+    {par		{Parent}		{The ID of the account that this account is a child or subordinate to}}
+    {container		{Container}		{If asserted, no transactions should be logged to this account.  It is to be used only as a point for grouping other accounts.}}
+} $glob::stampt] -errors {
+    {INP		{Illegal Null Parent}	{There can only be one account which has no parent and it must be the top account of type 'book.'}}
+    {IPT		{Incompatible Type}	{Accounts must always have the same type as their parent.}}
+    {PLP		{Parent Loop}		{Exceeded maximum recursion depth when searching for account parents}}
+    {AOP		{Parent Loop}		{An account can not be its own parent}}
+    {CPR		{Posted Transaction}	{You can not make the requested change to a posted transaction}}
+    {ENC		{Entry Not Complete}	{There is only one side (debit or credit) to this transaction and should be 2 or more}}
+    {ENB		{Entry Not Balanced}	{The debits and credits in this transaction are not balanced (sum=0)}}
+    {PNP		{Bad Null Parent}	{Only the top account of all accounts can have a null parent (and it must)}}
+    {ANF		{Account Not Found}	{Could not find a standard account with that code, number or name}}
+}
+
+tabtext acct.acct_st_c	{Statistics Cache}	{The system stores information here about the hierarchical organization of accounts so they can be queried more efficiently.  The user can not write directly to this table.} {
+    {level		{Level}			{How far from the top of the hierarchy this account is}}
+    {ppath		{Parent Path}		{A list of the accounts above this account in the hierarchical structure (starting with this account's parent and going up to the top)}}
+    {idx		{Node Index}		{Contains an index number for this account which is used for the nested set method of scanning the account hierarchy.  This number may change from time to time and should not be used directly by the end user.}}
+    {mxc		{Max Child}		{Contains the largest index number of any of the children of this account.  This is used for the nested set method of scanning the account hierarchy.  This number may change from time to time and should not be used directly by the end user.}}
+}
+
+tabtext acct.acct_v	{Accounts}		{A view of all defined accounts, joined with cached data helpful for scanning the hierarchical structure of accounts.} {
+    {fpath		{Full Path}		{An list including this account and all the accounts above this account in the hierarchical structure (starting with this account's parent and going up to the top)}}
+    {level		{Level}			{A numeric indication of how far this account is from the top of the account hierarchy}}
+    {iname		{Name Indented}		{The account name, indented appropriately (once for each level depth) to display properly in a hierarchical tree list}}
+}

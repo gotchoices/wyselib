@@ -1,0 +1,344 @@
+# Manufacturing production module
+#TODO:
+#X- put in a schema
+#X- make table to define standard operations
+#X- make a view with left join to show all basenames and versions
+#X- test splitview macro
+#X- can't update a basename (fix dbe.tcl?)
+#X- properly cache basename
+#X- have development (non-deployed) mode for products
+#X- use function to adjust version number up
+#X- build GUI for BOM
+#- build GUI for string values table
+#- 
+#- implement where conditions on splitview macro
+#- parameter editing pop-up GUI
+#- only super priv can nullify curr or back it down
+#- backend procedure to instantiate a new development version?
+#- allow only one development version to be created at a time
+#- normalize all parameters when writing to array
+#- protect prod.prod record from writing (type,name,units,descr) if curr is not null
+#- 
+#- function to instantiate development version above production version
+#- prodim -load x should load current production base
+#- adjust parameter list in the part when a parameter is added or removed
+#- 
+#- make a public view showing only the production versions
+#- 
+#- allow commit to production version
+#- can't change anything on production or prior versions
+#- can only update parms on development version?
+#- 
+
+schema prod -grant public
+
+# Product categories
+#----------------------------------------------------------------
+other prod_level {} {
+    create type prod_level as enum ('raw','sub','fin','pkg','sys');
+} {drop type prod_level}
+
+# Contains an entry for each unit of measure defined in the system
+#----------------------------------------------------------------
+table prod.unit {prod} {
+    abbr	varchar(12)	constraint "!prod.unit.IMC" check (abbr ~ '[a-zA-Z/%-]+') primary key
+  , descr	varchar		not null
+  , cmt		varchar
+} -grant {
+    prodim {s s {i u d}}
+}
+ 
+# Contains an entry for each product type
+#----------------------------------------------------------------
+table prod.type {prod prod_level} {
+    type	varchar(3)	constraint "!prod.type.IPT" check (type ~ '[a-zA-Z@~!#&]+') primary key
+  , descr	varchar(24)	not null
+  , level	prod_level	not null
+  , cmt		varchar
+} -grant {
+    prodim {s s {i u d}}
+}
+ 
+# Contains an entry for each product family
+#----------------------------------------------------------------
+table prod.prod {prod.type prod.unit base.ent} {
+    base	varchar		primary key
+  , type_r	varchar		references prod.type on update cascade
+  , name	varchar		constraint "!prod.prod.IPN" check (name ~ '^[a-zA-Z][a-zA-Z_0-9]*$')
+  , curr	int		constraint "!prod.prod.IPV" check (curr > 0)
+  , maxv	int		constraint "!prod.prod.IMV" check (maxv > 0)
+  , units	varchar		not null references prod.unit on update cascade
+  , descr	varchar		not null
+  , enab	boolean		not null default false
+    constraint "!prod.prod.IVS" check (maxv - curr between 0 and 1)		-- Are there cases where we need more than one development version?
+--    foreign key (base,curr) references prod.vers (base_r,rev) on update cascade
+    subst($glob::stamps)
+}
+#index {} prod.base status
+ 
+# Contains an entry for each version of a product
+#----------------------------------------------------------------
+table prod.vers {prod.prod} {
+    base_r	varchar		references prod.prod on update cascade on delete cascade
+  , rev		int		constraint "!prod.vers.IPV" check (rev > 0)
+  , spec	varchar
+  , change	varchar
+  , bom		varchar
+  , primary key (base_r, rev)
+    subst($glob::stamps)
+}
+#index {} prod.base status
+ 
+# Contains an entry for each parameter of each version of a product
+#----------------------------------------------------------------
+table prod.parm {prod.vers} {
+    base_rr	varchar
+  , rev_r	int		
+  , var		varchar(3)	constraint "!prod.parm.IVN" check (var ~ '[a-zA-Z][a-zA-Z0-9]*')
+  , pos		int		constraint "!prod.parm.IPP" check (pos >= 1)
+  , ptyp	varchar		not null constraint "!prod.parm.IPT" check(ptyp in ('num', 'str', 'eng'))
+  , units	varchar		references prod.unit on update cascade constraint "!prod.parm.IUN" check(case when ptyp = 'str' then units is null else units is not null end)
+  , def		varchar
+  , descr	varchar
+  , primary key (base_rr, rev_r, var)
+  , foreign key (base_rr, rev_r) references prod.vers on update cascade on delete cascade
+  , unique (base_rr, rev_r, var, ptyp)		-- solely for fk reference in prod.sval
+  , constraint "parm_unique" unique (base_rr, rev_r, pos) deferrable initially deferred		-- keep position index distinct within version
+    subst($glob::stamps)
+}
+
+# Contains a description for each parameter of type "str"
+#----------------------------------------------------------------
+table prod.sval {prod.parm} {
+    base_rrr	varchar
+  , rev_rr	int		
+  , var_r	varchar
+  , ptyp_r	varchar		default 'str' check (ptyp_r = 'str')
+  , value	varchar
+  , descr	varchar
+  , foreign key (base_rrr, rev_rr, var_r, ptyp_r) references prod.parm (base_rr, rev_r, var, ptyp) on update cascade on delete cascade
+  , primary key (base_rrr, rev_rr, var_r)
+    subst($glob::stamps)
+}
+
+# Contains an entry for each minor revision note
+#----------------------------------------------------------------
+table prod.minr {prod.vers} {
+    base_r	varchar
+  , rev_r	int		
+  , seq		int
+  , descr	varchar
+  , primary key (base_r, rev_r, seq)
+  , foreign key (base_r, rev_r) references prod.vers on update cascade on delete cascade
+    subst($glob::stamps)
+}
+
+#----------------------------------------------------------------
+view prod.prod_v {prod.prod} {
+    select 	eval(fld_list $prod::prod_se p), p.oid	as _oid from prod.prod p;
+    eval(rule_insert prod.prod_v prod.prod $prod::prod_v_in {} $glob::stampin);
+    eval(rule_update prod.prod_v prod.prod $prod::prod_v_up $prod::prod_pk {where old.curr is null} $glob::stampup);
+    eval(rule_delete prod.prod_v prod.prod $prod::prod_pk {where old.curr is null});
+} -grant {
+    {prodim	s i {u d}}
+}
+
+#----------------------------------------------------------------
+view prod.prod_v_vers {prod.prod prod.vers} {
+  select	
+    eval(fld_list $prod::prod_j_se pp)
+  , eval(fld_list $prod::vers_se pv)
+  , case when pv.rev < pp.maxv or pv.rev = pp.curr then true else false end	as locked
+  , case when pv.rev = pp.curr then true else false end				as current
+  , pv.rev = pp.maxv								as latest
+  
+    from	prod.prod	pp
+    left join	prod.vers	pv on pv.base_r = pp.base;
+} -primary {
+    base rev
+} -grant {
+    {prodim	s {i u} d}
+}
+splitview::triggers prod.prod_v_vers {base rev} \
+    [list prod.prod $prod::prod_pk $prod::prod_v_in $glob::stampin $glob::stampup $prod::prod_v_up] \
+    [list prod.vers $prod::vers_pk $prod::vers_v_iu $glob::stampin $glob::stampup] \
+    {not old.locked} {not old.locked}
+
+#----------------------------------------------------------------
+function prod.prod_tf_biu() {prod.prod prod.vers} {returns trigger language plpgsql as $$
+    begin
+        new.base := new.type_r || '_' || new.name;
+        if new.curr is not null then
+            if not exists (select * from prod.vers where rev = new.curr) then
+                raise exception '!prod.prod.ICV %', new.curr;
+            end if;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_prod_tr_biu {} {before insert or update on prod.prod for each row execute procedure prod.prod_tf_biu();}
+
+#----------------------------------------------------------------
+function prod.vers_tf_bi() {prod.vers} {returns trigger language plpgsql as $$
+    declare
+        cr	int default 0;
+    begin
+        select into cr curr from prod.prod where base = new.base_r;
+        select into new.rev coalesce(max(rev)+1,1) from prod.vers where base_r = new.base_r;
+        update prod.prod set maxv = new.rev where base = new.base_r;
+        if cr is not null and new.rev >= cr + 1 then
+            raise exception '!prod.vers.TMW %', new.rev;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_vers_tr_bi {} {before insert on prod.vers for each row execute procedure prod.vers_tf_bi();}
+
+# Don't allow to modify any version except the latest version
+#----------------------------------------------------------------
+function prod.vers_tf_lock() {prod.vers} {returns trigger language plpgsql as $$
+    begin
+--        if session_user != 'dbadmin()' and 
+        if exists (select * from prod.prod where base = old.base_r and (curr = old.rev or maxv > old.rev)) then
+            raise exception '!prod.vers.CEV % %', old.base_r, old.rev;
+        end if;
+        return new;
+    end;
+$$;}
+trigger prod_vers_tr_lock {} {before update or delete on prod.vers for each row execute procedure prod.vers_tf_lock();}
+
+# Update maximum version number
+#----------------------------------------------------------------
+function prod.vers_tf_maxv() {prod.vers} {returns trigger language plpgsql as $$
+    begin
+        if TG_OP = 'UPDATE' and new.rev = old.rev then
+            return new;
+        end if;
+        update prod.prod set maxv = (select max(rev) from prod.vers where base_r = old.base_r) where base = old.base_r;
+        return old;
+    end;
+$$;}
+trigger prod_vers_tr_maxv {} {after update or delete on prod.vers for each row execute procedure prod.vers_tf_maxv();}
+
+# View of prd_parm for use in prodim, with extra fields added
+# -------------------------------------------------------------
+view prod.parm_v {prod.parm} {select
+    eval(fld_list $prod::parm_se pm)
+  , case when pm.rev_r < pp.maxv or pm.rev_r = pp.curr then true else false end	as locked
+  , case when pm.rev_r = pp.curr then true else false end			as current
+  , pm.rev_r = pp.maxv								as latest
+
+    from	prod.parm	pm
+    join	prod.prod	pp on pp.base = pm.base_rr;
+} -grant {
+    {prodim s {i u d}}
+}
+view::triggers prod.parm_v prod.parm $prod::parm_pk \
+	-ins [list -c $prod::parm_v_iu -f $glob::stampin] \
+	-upd [list -c $prod::parm_v_iu -f $glob::stampup] \
+	-del [list -w {}] \
+
+# Create a new position number for this parameter at the end of the list
+#----------------------------------------------------------------
+function prod.parm_tf_bi() {prod.parm prod.part} {returns trigger language plpgsql as $$
+    declare
+        trec	record;
+    begin
+        if new.pos is null then
+            select into new.pos coalesce(max(pos)+1,1) from prod.parm where base_rr = new.base_rr and rev_r = new.rev_r;
+        end if;
+
+        for trec in select * from prod.part where base_r = new.base_rr loop
+            trec.parm[new.pos] := new.def;
+-- raise notice 'Updating part: %', trec.pnum;
+            update prod.part set parm = trec.parm where pnum = trec.pnum;
+        end loop;
+        
+        return new;
+    end;
+$$;}
+trigger prod_parm_tr_bi {} {before insert on prod.parm for each row execute procedure prod.parm_tf_bi();}
+
+# Renumber positions when deleting a parameter
+#----------------------------------------------------------------
+function prod.parm_tf_ad() {prod.parm} {returns trigger language plpgsql as $$
+    declare
+        trec	record;
+    begin
+        update prod.parm set pos = pos-1 where base_rr = old.base_rr and rev_r = old.rev_r and pos > old.pos;
+
+        for trec in select * from prod.part where base_r = old.base_rr loop
+            for i in old.pos..array_upper(trec.parms,1) loop
+                trec.parms[i] := trec.parms[i+1];
+            end loop;
+raise notice 'Updating part: %', trec.pnum;
+
+
+--FIXME: delete null parm from end of array:
+--            trec.parms := trec.parms[1:??]
+            update prod.part set parms = trec.parms where pnum = trec.pnum;
+        end loop;
+        return old;
+    end;
+$$;}
+trigger prod_parm_tr_ad {} {after delete on prod.parm for each row execute procedure prod.parm_tf_ad();}
+
+# Each block of parameters should have consecutive pos values going from 1 to N.
+#----------------------------------------------------------------
+function prod.parm_tf_chk() {prod.parm} {returns trigger language plpgsql as $$
+    declare
+        trec	record;
+    begin
+        for trec in select base_rr, min(pos) as min, max(pos) as max, count(*) as count from prod.parm group by 1 having min(pos) != 1 or max(pos) != count(*) loop
+            raise exception '!prod.parm.POO % % %', trec.base_rr, trec.min, trec.max;
+        end loop;
+        return null;
+    end;
+$$;}
+trigger prod_parm_tr_chk {} {after insert or update or delete on prod.parm for each statement execute procedure prod.parm_tf_chk();}
+
+# Move the specified parameter up or down in the parameter list
+#----------------------------------------------------------------
+function {prod.parm_move(b varchar, r int, v varchar, x int)} {prod.parm prod.part} {
+  returns setof prod.parm language plpgsql as $$
+    declare
+        opos	int;		-- old position
+        npos	int;		-- new position
+        cnt	int;
+        trec	record;
+        pval	varchar;
+        retv	record;
+    begin
+        select into retv * from prod.parm where base_rr = b and rev_r = r and var = v;
+        opos := retv.pos;
+        select into cnt count(*) from prod.parm where base_rr = b and rev_r = r;
+        npos := opos + x;				-- calculate new position
+        if npos < 1 or npos > cnt then			-- no place to move to
+            return;
+        end if;
+        set constraints prod.parm_unique deferred;	-- we will break the unique constraint temporarily
+        update prod.parm set pos = case when pos = opos then npos else opos end where base_rr = b and rev_r = r and pos in (opos,npos);		-- have to do both changes in one statement
+        
+        for trec in select * from prod.part where base_r = b order by pnum loop		-- now update all instantiated parts' parameters
+            pval := trec.parms[opos];
+            trec.parms[opos] := trec.parms[npos];
+            trec.parms[npos] := pval;
+            update prod.part set parms = trec.parms where pnum = trec.pnum;
+        end loop;
+        return next retv;
+        return;
+    end;
+$$;}
+
+# Make a new revision of an existing base with all its relational tables
+# Parameters - (Target base, Source base, Source revision)
+# -----------------------------------------------------------------
+function {prod.clone_base(c varchar, s varchar, r int)} {prod.prod_v_vers} {
+  returns void language plpgsql security definer as $$ 
+    begin
+         insert into prod.parm_v (base_rr, rev_r, var, pos, ptyp, units, def, descr) select c, 1, var, pos, ptyp, units, def, descr from prod.parm where base_rr = s and rev_r = r;
+         insert into prod.boms_v (base_rr, rev_r, idx, quant, comp_base, comp_parms, script, proc) select c, 1, idx, quant, comp_base, comp_parms, script, proc from prod.boms proc where base_rr = s and rev_r = r;
+         insert into prod.proc_v (base_rr, rev_r, idx, oper_r, next, lab_time, mach_time, descr) select c, 1, idx, oper_r, next, lab_time, mach_time, descr from prod.proc where base_rr = s and rev_r = r;
+         insert into prod.note_v (base_rrr, rev_rr, idx_r, seq, type, doc_r, descr) select c, 1, idx_r, seq, type, doc_r, descr from prod.note where base_rrr = s and rev_rr = r;
+    end;
+$$;}

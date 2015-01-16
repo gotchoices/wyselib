@@ -1,0 +1,30 @@
+#!/usr/bin/wish
+# Production Information Manager
+#------------------------------------------
+#Copyright WyattERP, all other rights reserved
+package require wyselib
+
+#TODO:
+#- 
+
+#Preferences control array {tag title display_type user_edit}
+set cnf(pref) {\
+    -f {myext	ent	{Telephone Extension:}	::cnf(myext)	-help {The extension number of your office phone} -width 4}\
+}
+
+# Main
+#----------------------------------------------------
+base::priv_run
+pref::init {*}$cnf(pref)
+#cdoc::init empl {} {cont_id empl_id}
+set w [top::top prod prod::build Main -main 1]
+
+argform {load} argv
+argnorm {{load 1} {macro 1}} argv
+prargs $argv {
+    -load	{prod parte load {%v}}
+    -base	{prod verse load {%v}}
+    -debug	{#debug::command}
+    -macro	{#if {[catch {%v} msg]} {dia::err "In command line macro: %v\n\nMessage:\n$msg"}}
+}
+prod prodp menu menu invoke def

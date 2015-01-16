@@ -1,0 +1,58 @@
+# Support for Virginia State withholding
+#include(Copyright)
+# Valid for 2008
+#TODO:
+#- 
+
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+function {whold_VA(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+  returns numeric language plpgsql as $$
+    declare
+        pper	int4;
+        agross	numeric(14,2);
+        whold	numeric(14,2);
+        base	numeric(14,2);
+        allo	numeric(14,2);
+        trec	record;
+    begin
+
+    select into pper v1 from whold_dat where module = 'VA' and type = pc;
+    if not found then
+        raise exception '!whold.LVN: % %', 'VA', pc;		-- Lookup value not found
+    end if;
+    
+    select into base v1 from whold_dat where module = 'VA' and code = 'base';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'VA', pc, 'base';		-- Lookup value not found
+    end if;
+    
+    select into allo v1 from whold_dat where module = 'VA' and code = 'all';
+    if not found then
+        raise exception '!whold.LVN: % % $', 'VA', pc, 'all';		-- Lookup value not found
+    end if;
+    
+-- raise notice 'gr:% pper:% base:% allo:% al:%', gr, pper, base, allo, al;
+    agross := (gr * pper) - base - (allo * al);
+    if agross < 0 then
+        agross := 0;
+    end if;
+
+    if (select count(*) from whold_dat where module = 'VA' and type is null and code is null) != 4 then
+        raise exception '!whold.BMD: %', 'VA';		-- Bad or missing data (should be 4 entries)
+    end if;
+    
+    select into trec * from whold_dat where module = 'VA' and type is null and code is null and v1 <= agross order by v2 desc limit 1;
+    if found then
+        whold := trec.v2 + (trec.v3 * (agross - trec.v1));
+    else
+        whold := 0.00;
+    end if;
+-- raise notice 'agross:% v1:% v2:% v3:% whold:%', agross, trec.v1, trec.v2, trec.v3, whold;
+    
+    return (whold / pper)::numeric(14,2);
+    end;
+$$;}

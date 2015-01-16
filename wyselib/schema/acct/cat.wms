@@ -1,0 +1,36 @@
+# Account Categories
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+
+namespace eval acct {
+    def cat_pk		{numb}
+    def cat_v_in	{numb code name descr}
+    def cat_v_up	$acct::cat_v_in
+    def cat_se		[concat $acct::cat_v_up $glob::stampfn]
+}
+
+# Contains a record for each transaction category
+#----------------------------------------------------------------
+table acct.cat {acct.acct base.ent} {
+    code	varchar(8)	primary key
+  , numb	int		unique
+  , name	varchar(32)	not null unique constraint "!acct.cat.ICN" check (name ~ '[A-Za-z][A-Za-z0-9_ ]*')
+  , descr	varchar
+    subst($glob::stamps)
+}
+
+# Standard view
+#----------------------------------------------------------------
+view acct.cat_v {acct.cat} {
+    select eval(fld_list $acct::cat_se c)
+      , c.oid as _oid
+    from		acct.cat	c;
+
+    eval(rule_insert acct.cat_v acct.cat $acct::cat_v_in {} $glob::stampin);
+    eval(rule_update acct.cat_v acct.cat $acct::cat_v_up $acct::cat_pk {} $glob::stampup);
+    eval(rule_delete acct.cat_v acct.cat $acct::cat_pk);
+} -grant {
+    {glman	s}
+}

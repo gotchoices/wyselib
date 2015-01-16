@@ -1,0 +1,46 @@
+#Employee withholding schema
+#include(Copyright)
+#TODO:
+#- 
+
+#Contains an entry for each defined deduction module
+#----------------------------------------------------------------
+table whold_mod {} {
+    module	varchar		primary key,	-- fed, UT, CA, etc.
+    descr	varchar		not null,
+    cmt		varchar
+} -grant {
+    {payroll	s {i u} d}
+}
+
+#Contains table data for withholding deduction data
+#----------------------------------------------------------------
+table whold_dat {whold_mod} {
+    module	varchar		references whold_mod on update cascade on delete cascade,
+    seq		int4,
+    type	varchar(2),		-- bw, sm, mo, etc.
+    code	varchar,		-- tag to tell module what the entry means
+    v1		numeric,
+    v2		numeric,
+    v3		numeric,
+    v4		numeric,
+
+    primary key (module, seq)
+} -grant {
+    {payroll	s {i u} d}
+}
+
+# Create a sequence number for each new entry
+#----------------------------------------------------------------
+function whold_dat_tf_seq() {whold_dat} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        if new.seq is null then
+            select into new.seq coalesce(max(seq),0)+1 from whold_dat where module = new.module;
+        end if;
+        return new;
+    end;
+$$;}
+trigger whold_dat_tr_seq {} {
+    before insert on whold_dat for each row execute procedure whold_dat_tf_seq();
+}

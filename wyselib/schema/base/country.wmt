@@ -1,0 +1,12 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext base.country	{Countries}		{Contains standard ISO data about international countries} {
+    {code		{Country Code}		{The ISO 2-letter country code.  This is the offical value to use when entering countries in wylib applications.}}
+    {com_name		{Country}		{The common name of the country in English}}
+    {capital		{Capital}		{The name of the capital city}}
+    {cur_code		{Currency}		{The standard code for the currency of this country}}
+    {cur_name		{Curr Name}		{The common name in English of the currency of this country}}
+    {dial_code		{Dial Code}		{The numeric code to dial when calling this country on the phone}}
+    {iso_3		{Code 3}		{The ISO 3-letter code for this country (not the wylib standard)}}
+    {iana		{Root Domain}		{The standard extension for WWW domain names for this country}}
+}

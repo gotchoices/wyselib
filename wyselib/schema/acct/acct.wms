@@ -1,0 +1,260 @@
+# Chart of accounts
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#-
+
+namespace eval acct {
+    def acct_pk		{code}
+    def acct_v_in	{code numb type name descr par container}
+    def acct_v_up	$acct_v_in
+    def acct_se	[concat $acct_v_up $glob::stampfn]
+    def acct_local	{}
+    def acct_top_tp	category	;#type and
+    def acct_top_cd	b		;#code of top account of all accounts
+}
+schema acct -grant public
+
+# Basic account types
+#----------------------------------------------------------------
+other acct_types {} {
+    create type acct_types as enum ('asset','liability','equity','income','expense','category');
+} {drop type acct_types}
+
+# Contains a record for each account
+#----------------------------------------------------------------
+table acct.acct {acct_types base.curr_eid()} {
+    code	varchar		primary key
+  , numb	int		unique
+  , type	acct_types	not null default 'asset'
+  , name	varchar(32)	not null constraint "!acct.cat.IAN" check (name ~ '[A-Za-z][A-Za-z0-9_ ]*')
+  , descr	varchar
+  , par		varchar		references acct.acct on update cascade
+  , container	boolean		not null default false
+  , constraint "!acct.acct.PNP" check ((par is not null and (type != 'subst($acct::acct_top_tp)' or  code != 'subst($acct::acct_top_cd)')) or 
+                                       (par is     null and  type  = 'subst($acct::acct_top_tp)' and code  = 'subst($acct::acct_top_cd)'))
+    subst($acct::acct_local)	-- locally defined columns
+    subst($glob::stamps)
+}
+#index {acct_acct_x_numb} acct.acct {create unique index acct_acct_x_numb on acct.acct (numb)}
+index {} acct.acct type
+
+# Keeps cached index and statistical information about the account hierarchy
+#----------------------------------------------------------------
+table acct.acct_st_c {acct.acct} {
+    code_r	varchar	primary key references acct.acct on update cascade on delete cascade
+  , level	int
+  , ppath	varchar[]	-- materialized path of parents
+  , idx		int		-- account index for nested sets
+  , mxc		int		-- maximum progeny index
+}
+index {} acct.acct_st_c idx
+index {} acct.acct_st_c mxc
+
+# View to produce indexes for materialized path and nested sets.
+# This should always agree with the information cached in acct.acct_st_c
+#----------------------------------------------------------------
+view acct.acct_st_v {acct.acct} {
+    with acct_idxs as (
+        with recursive acct_path(code, level, path, ipath, cycle) as (
+            select	a.code,	1,		array[a.code],	array[a.numb],	false
+            from	acct.acct a where par is null
+        union all
+            select	a.code,	ap.level + 1,	path || a.code,	ipath || a.numb,	a.code = any(path)
+            from	acct.acct	a 
+            join	acct_path	ap on ap.code = a.par and not cycle
+        ) 
+        select code
+            ,	ac.level
+            ,	ac.path
+            ,	ac.ipath
+            ,	row_number() over (order by ac.ipath) as idx			-- generate sequential numbering
+        from	acct_path	ac
+        )
+    select	ai.code					as code
+        ,	ai.level
+        ,	ai.path[1:array_upper(ai.path,1)-1]		as ppath	-- includes only parents
+        ,	ai.path						as fpath	-- includes self
+        ,	ai.ipath
+        ,	ai.idx
+        ,	(select max(idx) from acct_idxs where path @> ai.path)	as mxc	-- generate max child as a sub-query
+    from	acct_idxs	ai;
+}
+
+#Base view joined with cached fields
+#----------------------------------------------------------------
+view acct.acct_v {acct.acct acct.acct_st_c} {
+    select eval(fld_list $acct::acct_se a)
+      , c.level
+      , c.ppath
+      , c.ppath || a.code as fpath
+      , c.idx
+      , c.mxc
+      , repeat('.',case when a.par isnull then 0 else array_upper(c.ppath,1) end) || a.name as iname
+      , a.oid as _oid
+    from		acct.acct	a
+        join		acct.acct_st_c	c	on c.code_r = a.code;
+
+    eval(rule_insert acct.acct_v acct.acct $acct::acct_v_in {} $glob::stampin);
+    eval(rule_update acct.acct_v acct.acct $acct::acct_v_up $acct::acct_pk {} $glob::stampup);
+    eval(rule_delete acct.acct_v acct.acct $acct::acct_pk);
+} -grant {
+    {glman	s}
+}
+
+# View for exception testing only.  This should ideally contain no rows.
+# Rows present indicate an incorrect or missing cache item.
+#----------------------------------------------------------------
+view acct.acct_ex_v {acct.acct acct.acct_st_v acct.acct_st_c} {
+    select	a.numb, a.name,
+    		hc.level, hc.ppath, hc.idx, hc.mxc,
+    		hv.level as level_v, hv.ppath as ppath_v, hv.idx as idx_v, hv.mxc as mxc_v
+    from	acct.acct	a
+    left join	acct.acct_st_c	hc on hc.code_r = a.code
+    left join	acct.acct_st_v	hv on hv.code = a.code
+    where	(hc.level	is distinct from	hv.level)	or
+    		(hc.ppath	is distinct from	hv.ppath)	or
+    		(hc.idx		is distinct from	hv.idx)		or
+    		(hc.mxc		is distinct from	hv.mxc)
+}
+
+# Validity checks
+#----------------------------------------------------------------
+function acct.acct_tf_check() {acct.acct} {
+  returns trigger security definer as $$
+    declare
+        prec	record;
+    begin
+        if new.par is null then
+            new.container = true;		-- default top-level accounts to container type
+        else
+            select * into prec from acct.acct where code = new.par;	-- get parent
+            if      not (new.type = prec.type)			-- usually of the same type
+                and not (new.type != 'category' and prec.type = 'category')
+            then
+                raise exception '!acct.acct.IPT % %', new.type, prec.type;		-- Incompatible with parent account type
+            end if;
+        end if;
+        if new.par = new.code then
+            raise exception '!acct.acct.AOP';		-- Account can't be its own parent
+        end if;
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_acct_tr_check {} {before insert or update on acct.acct for each row execute procedure acct.acct_tf_check();}
+
+# After any insert or update statement (table checks)
+#----------------------------------------------------------------
+function acct.acct_tf_tabchk() {acct.acct acct.acct_st_v} {
+  returns trigger security definer language plpgsql as $$
+    declare
+        trec	record;
+        pp	int[];
+        fp	int[];
+    begin
+        if not exists (select type, code from acct.acct where type = 'subst($acct::acct_top_tp)' and code = 'subst($acct::acct_top_cd)') then
+            raise exception '!acct.acct.INP';			-- Top account must exist
+        end if;
+    
+        insert into acct.acct_st_c (code_r)		        -- Create any missing entries in cache table
+            select a.code from acct.acct a where not exists (select code_r from acct.acct_st_c where code_r = a.code);
+
+        update acct.acct_st_c
+            set level = hv.level, ppath = hv.ppath, idx = hv.idx, mxc = hv.mxc
+            from	acct.acct_st_v	hv
+            where	hv.code = acct.acct_st_c.code_r
+            and		acct.acct_st_c.idx is null;
+
+        return new;
+    end;
+$$;}
+trigger acct_acct_tr_tabchk {} {after insert or update or delete on acct.acct for each statement execute procedure acct.acct_tf_tabchk();}
+
+# Maintain cached data
+#----------------------------------------------------------------
+function acct.acct_tf_i_cache() {acct.acct_st_c acct.acct_v} {
+  returns trigger security definer as $$
+    declare
+        new_idx		int;
+    begin
+        select mxc into new_idx from acct.acct_v where par = new.par and code < new.code order by code desc limit 1;	-- get the largest sibling smaller than me that may already exist
+        if not found then
+            select mxc into new_idx from acct.acct_v where code = new.par;		-- get from the parent account
+        end if;
+        update acct.acct_st_c set idx = null where idx >= new_idx or mxc >= new_idx;			-- mark dirty
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_acct_tr_i_cache {} {before insert on acct.acct for each row execute procedure acct.acct_tf_i_cache();}
+
+# Maintain cached data
+#----------------------------------------------------------------
+function acct.acct_tf_u_cache() {acct.acct_st_c acct.acct_v} {
+  returns trigger security definer as $$
+    declare
+        orec		record;		-- old cache record for this project
+        oprec		record;		-- cache record for the old parent
+        nprec		record;		-- cache record for the new parent
+        min		int;
+        max		int;
+    begin
+        if new.par = old.par and new.code = old.code then return new; end if;		-- if no change to parent or code
+        select * into orec from acct.acct_st_c where code_r = old.code;		-- get index of record as before update
+            
+        if new.par != old.par then						-- if moving to new parent
+            select * into oprec from acct.acct_st_c where code_r = old.par;	-- get previous parent
+            select * into nprec from acct.acct_st_c where code_r = new.par;	-- get new parent
+
+            if nprec.idx > oprec.idx then		-- moving up the tree (to a larger idx)
+                min := orec.idx;			-- min is our old slot
+                select idx-1 into max from acct.acct_v where par = new.par and code > new.code order by code limit 1;	-- get the smallest sibling larger than me that may already exist at this parent
+                if not found then max := nprec.mxc; end if;		-- or just get mxc from new parent
+            else					-- moving down the tree (to a smaller idx)
+                max := orec.mxc;			-- max is our max child
+                select idx+1 into min from acct.acct_v where par = new.par and code < new.code order by code desc limit 1;	-- get the largest sibling smaller than me that may already exist at this parent
+                if not found then min := nprec.idx+1; end if;		-- or just get idx from new parent
+            end if;
+
+raise notice 'Update opar.idx:% npar.idx:% min:% max:%', oprec.idx, nprec.idx, min, max;
+            update acct.acct_st_c set idx = null where (idx between min and max) or (mxc between min and max);	-- mark dirty
+
+            if new.par != old.par then		-- if code changed (should do this after the dirty-marking above)
+                update acct.acct_st_c set idx = null where idx >= orec.idx and idx <= orec.mxc;	-- refresh all children to update path lists
+            end if;
+        end if;
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_acct_tr_u_cache {} {before update on acct.acct for each row execute procedure acct.acct_tf_u_cache();}
+
+# Maintain cached data
+#----------------------------------------------------------------
+function acct.acct_tf_d_cache() {acct.acct_st_c acct.acct_v} {
+  returns trigger security definer as $$
+    declare
+        old_idx		int;
+    begin
+        select idx into old_idx from acct.acct_st_c where code_r = old.code;		-- get index of record we will delete
+        update acct.acct_st_c set idx = null where idx >= old_idx or mxc >= old_idx;	-- mark dirty
+        return old;
+    end;
+  $$ language plpgsql;
+}
+trigger acct_acct_tr_d_cache {} {before delete on acct.acct for each row execute procedure acct.acct_tf_d_cache();}
+
+# Force a clean update of the project index cache
+#----------------------------------------------------------------
+function {acct.acct_recache()} {acct.acct_st_c} {
+  returns void language plpgsql as $$
+    begin
+        update acct.acct_st_c set idx = null;
+        update acct.acct set par = null where code = 'subst($acct::acct_top_cd)';
+    end;
+$$;}
+
+# Build hand entry journal in acct schema
+#----------------------------------------------------------------
+tran::journal acct glman 1000				;#make hand-entry journal

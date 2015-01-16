@@ -1,0 +1,26 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext base.priv	{Privileges}		{Privileges assigned to each system user} {
+    {grantee		{Grantee}		{The user receiving the privilege}}
+    {priv		{Privilege}		{The name of the privilege being granted}}
+    {level		{Access}		{What level of access within this privilege (view,use,manage)} {
+        {role		{Group Role}		{The privilege is really a group name which contains other privileges and levels}}
+        {limit		{View Only}		{Limited access - Can see data but not change it}}
+        {user		{Normal Use}		{Normal access for the user of this function or module - Includes normal changing of data}}
+        {super		{Supervisor}		{Supervisory privilege - Typically includes the ability to undo or override normal user functions.  Also includes granting of view, user privileges to others.}}
+    }}
+    {priv_level		{Priv Level}		{Shows the name the privilege level will refer to in the database.  This is formed by joining the privilege name and the level with an underscore.}}
+    {cmt		{Comment}		{Comments about this privilege allocation to this user}}
+} -errors {
+    {NUN	{No username found}	{The specified user has no username--This probably means he has not been added as a database user}}
+    {UAE	{User already exists}	{The specified username was found to already exist as a user in the database}}
+    {ENF	{Employee not found}	{While adding a user, the specified ID was not found to belong to anyone in the empl database table}}
+    {UAD	{User doesn't exist}	{While dropping a user, the specified username was not found to exist in the database}}
+    {UNF	{Username not found}	{While dropping a user, the specified username was not found to exist in the empl database}}
+}
+
+tabtext base.priv_v	{Privileges}		{Privileges assigned to each entity} {
+    {std_name		{Entity Name}		{The name of the entity being granted the privilege}}
+    {priv_list		{Priv List}		{In the case where the privilege refers to a group role, this shows which underlying privileges belong to that role.}}
+    {username		{Username}		{The username within the database for this entity}}
+}

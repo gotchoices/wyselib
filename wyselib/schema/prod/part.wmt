@@ -1,0 +1,107 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext prod.part	{Parts}			{Native table containing one entry for each part defined within a product family} [concat {
+    {pnum		{Part Number}		{A unique number chosen by the computer to represent each distinct part (a part is a basename with a unique set of parameters).  This number should remain constant throughout the life of the product (even though the basename may change).}}
+    {base_r		{Base}			{The name of the part family (basename) this part belongs to.}}
+    {parm		{Parameters}		{An array of parameter values describing how the part differs from other parts with the same base name}}
+    {parm_c		{Parameters}		{This gets a copy of the parameter string any time a development version of the basename is created.  This then becomes the definitive version of the parameter list for a production revision.}}
+    {weight		{Weight}		{How much the part weighs (in pounds) per each standard unit.}}
+    {height		{Height}		{The height (in inches) of one unit when disposed in its most stable position (typically the smallest dimension)}}
+    {width		{Width}			{The width (in inches) of one unit when disposed in its most stable position (typically the smaller than the length)}}
+    {length		{Length}		{The length (in inches) of one unit when disposed in its most stable position (typically the largest dimension)}}
+    {stack		{Stacking}		{A factor to apply to the total volume needed to store additional items when they are stored together in their normal way.  A value of 1 would be used for stacking cubes (each additional item requires the same amount of space as the first).  A value of 0.5 would mean that the second item only requires half as much additional space as the first item.  If the parts require spacing to stack, use an appropriately sized number larger than 1 to indicate the total volume needed for each additional item.}}
+    {recbuy		{RecBuy}		{Recommended buy quantity.  This tells the computer the minimum number of units likely to be an efficient buy.  For example, it is not efficient to buy 100 resistors but it may well be OK to buy 100 ft of angle iron.}}
+    {cost		{Cost}			{A stated value (cost per part) for this part number.  This number gets used on all material transfers to estimate the costs of materials.  It should be set just above the typical, actual, historical cost based on our best data available.}}
+    {lcost		{Labor}			{Typical cost of labor required to build this part}}
+    {cmt		{Comment}		{Any general comments about this part}}
+} $glob::stampt] -errors {
+    {IWT		{Invalid Weight}	{Weight must be a positive real number}}
+    {IHT		{Invalid Height}	{Height must be a positive real number}}
+    {IWD		{Invalid Width}		{Width must be a positive real number}}
+    {ILN		{Invalid Length}	{Length must be a positive real number}}
+    {IST		{Invalid Stacking}	{Stacking factor must be a real number greater than zero}}
+    {IRB		{Invalid Buy}		{Recommended buy level must be an integer greater than zero}}
+    {ITC		{Invalid Cost}		{Total stated cost must be a real number greater than zero}}
+    {ILC		{Invalid Labor}		{Stated labor cost must be a real number greater or equal to zero}}
+}
+
+tabtext prod.part_v	{Parts View}		{A view of the parts table containing one entry for each part defined within a product family} {
+    {partname		{Part Name}		{The part name consists of the basename and the parameter list in parenthesis}}
+    {volume		{Volume}		{An estimate of the volume cube of the product.  This is the product: height * width * depth}}
+}
+
+tabtext prod.prod_v_part {Product View}		{A joined view of all product names.  This includes part families with and without instantiated part numbers.  So packages, systems and parts are all included.  Where parts or product version do not exist, the applicable fields are shown as nulls.} {
+    {partname		{Part Name}		{The part name consists of the basename and the parameter list in parenthesis}}
+}
+
+return
+
+
+
+tabtext prd_part_v_prodim	{Part}		{A view of the product table} {
+    {volume		{Volume}		{Product heigh * width * depth(thickness) }}
+    {crtname		{Created By}    {Name of the person who created this part}}
+    {modname    	{Modified By}   {Name of the person who last modified this part}}
+    {mod_date   	{Modified}      {Date this record was last modified}}
+}
+
+tabtext prd_part_v_potool	{Part}		{A view of the product table} {
+    {volume		{Volume}		{Product heigh * width * depth(thickness) }}
+    {crtname    	{Created By}    {Name of the person who created this part}}
+    {modname    	{Modified By}   {Name of the person who last modified this part}}
+    {mod_date   	{Modified}      {Date this record was last modified}}
+}
+
+tabtext prd_part_inv_v	{Parts/Inventory}	{A joined view showing each part with the information about the inventory project} {
+    {buylev		{Low}		    {Low water mark.  The system should order more parts if inventory drops below this level.}}
+    {reclev		{Rec}		    {Recommended stock level.  When a buy is generated, buy enough to have this many units left over after current demand}}
+    {recbuy		{Buy}		    {Recommended buy quantity.  This tells the computer the minimum number of units likely to be an efficient buy.  For example, it is not efficient to buy 100 resistors but it may well be OK to buy 100 ft of angle iron.}}
+    {cgrlev     	{CalcRecBuy}    {The computer-estimated recommended stock level of a part}}
+    {vlead      {Ld}            {The average quoted lead time from vendors}}
+    {mlead      {AvgLd}         {The weighted historical head time based on recent completed MTRs}}
+}
+
+tabtext prd_part_inv_v_prodim {Inventory Levels}    {A record of each part with information specific to each inventory} {
+    {inv        {Inventory}     {ID of the invetory for this part number}}
+    {buylev		{MinStk}		    {Low water mark.  The system should order more parts if inventory drops below this level.}}
+    {reclev		{RecStk}		    {Recommended stock level.  When a buy is generated, buy enough to have this many units left over after current demand}}
+    {recbuy		{RecBuy}		    {Recommended buy quantity.  This tells the computer the minimum number of units likely to be an efficient buy.  For example, it is not efficient to buy 100 resistors but it may well be OK to buy 100 ft of angle iron.}}
+    {docount    {Count}             {Issue a count Request for this pnum and inventory}}
+    {lstcnt	{Last}              {Date of last count on this item and inventory}}
+    {stock	{Stock}		{The sum of all closed MTRs for this part (i.e. the current stock level for this part in the specified project).}}
+    {available  {Available}     {The sum of all open and closed MTRs for this part (i.e. what the stock level would for this part and project if all open MTR's were fulfilled).}}
+    {availp     {A-PRIP}        {The sum of all open, closed and PRIP (purchasing round in process) MTRs for this part (i.e. what the stock level would for this part and project if all open and soon-to-be open MTRs were fulfilled).}}
+    {openi      {Open In}       {The sum of all open, inbound MTR's for this part and project}}
+    {confidence {Confidence}    {A number from 1 to 100 hundered indicatingt how likely the inventory numbers are accuratet.\n It is determined by subtracint a fraction of the number of mtrs there have been since the last count and a fraction of the days since the last count from 100.}}
+    {packed     {Packed}        {The number of items that are currently packed into an order, these will still show up as stock untill shipped}}
+    {shelf      {Shelf}         {The number of parts in this project minus the number packed for currently open MTR's in the system.}}
+    {openo      {Open Out}      {The sum of all open, outbound MTR's for this part and project}}
+
+}
+
+
+
+tabtext prd_part_inv_v_base	{Parts/Bases}	{A joined view showing each part with the information about the base name it belongs to} 
+
+    
+
+
+tabtext prd_part_v_mat  {Parts}         {A view of the product part table in relation to MTRs} {
+    {base		{Base Name}		{The base name used as the basis of the component.}}
+    {parm		{Parmeters}		{The parmeters used to constitute this part from the base name.}}
+    {mddate		{Min Due Date}		{The due date of the eariliest MTR that requires this part.}}
+    {midate		{Min In Date} 		{The eariliest due date of an MTR being received by inventory that requires this part.}}
+    {modate		{Min Out Date}		{The eariliest due date of an MTR being sent from inventory that requires this part.}}
+    {trquant		{Req Quant}		{The total required quantity from all open MTRs that require this part.}}
+    {open_mtrs		{Open MTRs}		{The total number of open MTRs that require this part.}}
+    {open_del		{Deliver MTRs}		{The number of open MTRs to outside vendors that require this part.}}
+    {open_rec		{Recieve MTRs}		{The number of incoming open MTRs that include this part.}}
+    {open_ords		{Order MTRs}		{The number of open Order MTRs that require this part.}}
+    {open_reqs		{Req MTRs}		{The number of requisitions that require this part.}}
+    {skids		{On Skids}		{The number of parts checked into skids in the material management system.}}
+}
+
+
+	
+	

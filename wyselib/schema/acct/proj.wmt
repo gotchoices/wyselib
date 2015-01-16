@@ -1,0 +1,128 @@
+# Copyright Action Target Inc. all rights reserved
+#------------------------------------------
+tabtext acct.proj_type	{Project Types}		{Table containing one entry for each defined project type.  These types should not typically be edited or changed as they require back-end coding modules to support their functionality.} [concat {
+    {code		{Type Code}		{A single, lower case alpha character to identify this project type}}
+    {name		{Type Name}		{A brief name for the project type}}
+    {descr		{Description}		{A more thorough description of what the project type means and how it behaves}}
+    {ptypes		{Par Types}		{A list of project types which are allowable to be the parent of this project type.  If there is no restriction, leave this field null.}}
+    {funding		{Funding}		{This project type is subject to funding limitations}}
+    {acct		{Account}		{This project provides a detail account under the specified account in the chart of accounts}}
+} $glob::stampt] -errors {
+    {IVT		{Invalid Type Code}	{The type code just be chosen as a single, lower case alpha character (a letter)}}
+}
+
+tabtext acct.proj	{Projects}		{Native table containing one entry for each project number.  Project numbers are used to track budgetary expenditures and income according to individual employee stewardships.} [concat {
+    {code		{Proj Code}		{The alphanumic code that represents this project.  It is formed by concatenating the project type and the project number into a single field.}}
+    {type		{Proj Type}		{A type for this project chosen out of the project types table}}
+    {numb		{Proj Number}		{A number chosen by the computer to uniquely identify each project within its own type grouping}}
+    {name		{Proj Name}		{The name of this project}}
+    {descr		{Description}		{A more complete description of what this project is for and what it should accomplish}}
+    {bdate		{Begin Date}		{The date when the project began.  Type adm projects can be closed and then re-opened for a new period.  In this case, the bdate will show the beginning of the new budgetary period.}}
+    {cdate		{Closed Date}		{The date when the project was closed (completed)}}
+    {status		{Status}		{When the project is created, it should be open.  Once it is closed, no further transactions should be posted to it.} {
+        {open		{Open}			{The project is active and in process}}
+        {clsd		{Closed}		{The project is completed and will accept no further transactions}}
+    }}
+    {passwd		{Password}		{An optional password which will allow others to view data about this project and its progeny}}
+    {owner		{Owner ID}		{The ID of the person fully authorized over expenses and other decisions pertaining to this project and its progeny}}
+    {par		{Parent}		{A link to the code of the parent of this project in the hierarchical structure}}
+} $glob::stampt] -errors {
+    {PNG		{Project Negative}	{The project ID number must be a positive number}}
+    {CBO		{Close Before Open}	{The project close date must be after the open date}}
+    {SOC		{Bad Status}		{The project status must be either open or closed}}
+    {PNP		{Bad Null Parent}	{Only the top parent of all projects (h0) can have a null parent (and it must)}}
+    {IPT		{Incompatible Parent}	{Certain project types can only be the children of certain other project types}}
+    {POP		{Project Own Parent}	{A project can not be its own parent}}
+    {NP0		{No Top Parent}		{There must exist one top level parent project of all (h0)}}
+    {PNO		{Parent not open} 	{A project listed as the parent of an open project must also be open}}
+    {PNF		{Project Not Found}	{Could not find a project with that code, number or name}}
+}
+#Are these still used?
+#    {PLP		{Parent loop}		{Two or more projects reference each other as their parent (either directly or indirectly)}}
+#    {BCC		{Bad corporate count}	{There should be one, and only one project (1) which has no parent}}
+#    {BCN		{Bad corporate number}	{The main project (which has no parent) must have proj_id of 1}}
+#    {PNF		{Project not found} 	{A project listed as the parent of an open project must also be open}}
+#    {NTD		{No Transaction Data} 	{An attempt was made to close a project which contains no recorded transactions}}
+#    {CPT		{Can't Change Type} 	{It is illegal to change a project's type after transactional data have been logged on that project}}
+#    {CCM		{Can't Change Margin} 	{It is illegal to change a job project's target margin after transactional cost data have been logged on that project}}
+#    {LCP		{Log to Closed Project}	{It is illegal to log a transaction to a project that has been closed}}
+#    {POB		{Project Over-budget}	{It is illegal to log a transaction to a project that has overrun its budget.  The project must be funded to 0 and then closed.}}
+#    {LIP		{Invalid Project Type}	{It is illegal to log accounting transactions to projects of type pcb or ccb}}
+#    {UMT		{Uncompleted MTR's}	{It is illegal to close a project if there are uncompleted material transfers logged to it}}
+#    {UPR		{Uncompleted Payroll}	{It is illegal to close a project if there are uncompleted payroll requests logged to it}}
+#    {UAP		{Uncompleted A/P}	{It is illegal to close a project if there are uncompleted Accounts Payable invoices logged to it}}
+#    {UAR		{Uncompleted A/R}	{It is illegal to close a project if there are uncommitted customer invoices logged to it}}
+#    {UUO		{Unresolved Orders}	{It is illegal to close a project if there are working or open orders attached to it}}
+
+tabtext acct.proj_st_c	{Proj Hier Cache}	{Table containing cached (stored copy) information about projects' hierarchical and permission relationships} {
+    {code_r		{Proj Code}		{A link to the project code}}
+    {level		{Level}			{How deep in the project hierarchy this project is (1 = top project, 2 = children of top, etc.)}}
+    {entity		{Entity}		{The project code for the entity project this project belongs to}}
+    {ppath		{Parent Path}		{An array list of the ancestors of this project (parent, up through corporate)}}
+    {idx		{Node Index}		{Contains an index number for this project which is used for the nested set method of scanning the project hierarchy.  This number may change from time to time and should not be used directly by the end user.}}
+    {mxc		{Max Child}		{Contains the largest index number of any of the children of this project.  This is used for the nested set method of scanning the project hierarchy.  This number may change from time to time and should not be used directly by the end user.}}
+    {rauth		{Read Authorized}	{A list of users authorized to view this project}}
+    {wauth		{Write Authorized}	{A list of users authorized to act on this project}}
+}
+
+tabtext acct.proj_st_v	{Proj Hier Cache}	{A dynamic (real-time) view used to generate the values for the project hierarchy cache acct.proj_st_c.  See that table for specific column descriptions.}
+tabtext acct.proj_ex_v	{Proj Cache Except}	{A view to show any values of the project hier cache which differ from the dynamic (real-time) view of the same data.  This view should ideally never contain any entries.  If it does, it means the cached copy is probably incorrect.}
+
+tabtext acct.proj_v	{Projects}		{A view of the project table with several additional helpful fields} {
+    {fpath		{Full Path}		{An array list of the ancestors of this project including itself (self, up through top project)}}
+    {own_name		{Owner Name}		{The name of the employee who owns this project}}
+    {par_name		{Parent Name}		{The name of the parent project over this project}}
+    {iname		{Indented Name}		{The name of this project, indented to show how deep the project's level is in the project hierarchy}}
+}
+
+tabtext acct.proj_pwd	{Project Passwords}	{Users can insert a password for various projects.  If their password matches a real project password, they will have read-access to that project and its progeny.} {
+    {ent		{Entity ID}		{The ID of the person/user who has entered the password}}
+    {ptyp		{Project Type}		{The type of the project this password applies to}}
+    {proj		{Project ID}		{The number of the project this password applies to}}
+    {passwd		{Password}		{The password itself.  This is typically shown only as asterisks (********) in views to indicate that a password is present}}
+}
+
+return
+xxxxxxxxxxxxxxxx
+
+tabtext proj_v_me	{Projects}		{A view of the project table, showing only the projects the current user has access to}
+
+#tabtext proj_passwd_v	{Project Passwords}	{A view of the project password table with several additional helpful fields} {
+#    {valid		{Valid}			{Indicates (true/false) whether the currently entered password matches the password for the intended project}}
+#    {empname		{Employee Name}		{The name of the employee who created this project password}}
+#    {proname		{Project Name}		{The name of the project this password is intended to match}}
+#}
+
+#tabtext proj_v_auth	{Project Authority}	{A view showing users who have various permissions of different types to various projects} {
+#    {empl_id		{Employee ID}		{The ID number of the user who has the permission referenced by this record}}
+#    {empname		{Employee Name}		{The name of the user who has the permission referenced by this record}}
+#    {priv		{Privilege}		{An 'R' means the user can only view the project.  A 'w' means the user can act on (or modify) the project.}}
+#    {reason		{Reason}		{This describes how the user came to have permission on this project.  Often a user will have permission indirectly (because of a permission related to an ancestor of a project).}}
+#}
+
+#tabtext proj_passwd_v_me	{Project Passwords}		{A view of the project password table, showing only the projects the current user has access to}
+
+#tabtext proj_ftr	{Project Funding}	{Native table containing one entry for each transfer of funding from one project to another} {
+#    {rid		{Record ID}		{A number chosen by the computer to uniquely identify each transfer}}
+#    {amount		{Amount}		{The amount of money to transfer from one project to another}}
+#    {tdate		{Date}			{The date on which the transaction should accrue}}
+#    {fr_proj		{From Project}		{The project which will give up funds as a result of the transfer}}
+#    {to_proj		{To Project}		{The project which will receive funds as a result of the transfer}}
+#    {cmt		{Comment}		{An explanation of what the transfer is for}}
+#    {ttype		{Type}			{What type of transfer this is.  Most transfers are for granting funding to projects.} {
+#        {auto		{Auto}			{When committing a customer order, the system will automatically grant sufficient funds for the project's target margin}}
+#        {grant		{Grant}			{Normal grant of funding}}
+#        {close		{Close}			{At project close, a project should give its budgetary balance back up to project 1 with this type of record}}
+#    }}
+#    {ordnum		{Order}			{Committing an order will automatically create a funding grant for the project it is linked to}}
+#    {crt_date		{Create Date}		{The date/time the transfer was initiated}}
+#    {crt_by		{Created By}		{The ID of the employee who created the transfer}}
+#}
+
+#tabtext proj_ftr_v	{Project Funding}	{A view of the project funding table with several additional helpful fields} {
+#    {crtname		{Employee Name}		{The name of the employee who created the fund transfer record}}
+#    {toname		{To Name}		{The name of the project these funds are given to}}
+#    {frname		{From Name}		{The name of the project these funds are taken from}}
+#}
+
+#tabtext proj_ftr_v_me	{Project Funding}	{A view of the project funding table, showing only the projects the current user has access to}

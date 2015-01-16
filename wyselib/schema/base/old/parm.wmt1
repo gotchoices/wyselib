@@ -1,0 +1,44 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+set base::parm_text [concat {
+    {parm		{Name}			{The name of the parameter setting}}
+    {value		{Value}			{The value that can be set or changed}}
+    {module		{Module}		{The system within the ERP this setting is applicable to}}
+    {cmt		{Comment}		{Notes you may want to add about why the setting is set to a particular value}}
+} $glob::stampt]
+
+tabtext base.parm_date	{Date Parameters}	{Parameters of date (year-month-day) type for configuring and controlling various modules across the database} \
+    $base::parm_text -errors {
+    {PNF		{Parameter not found}	{The parameter of date type was not found in the system parameter table}}
+}
+
+tabtext base.parm_text	{Text Parameters}	{Parameters of text (alphanumeric) type for configuring and controlling various modules across the database} \
+    $base::parm_text -errors {
+    {PNF	{Parameter not found}	{The parameter of text type was not found in the system parameter table}}
+}
+
+tabtext base.parm_int	{Date Parameters}	{Parameters of integer (non-fractional) type for configuring and controlling various modules across the database} \
+    $base::parm_text -errors {
+    {PNF	{Parameter not found}	{The parameter of integer type was not found in the system parameter table}}
+}
+
+tabtext base.parm_float	{Date Parameters}	{Parameters of float (real numbers) type for configuring and controlling various modules across the database} \
+    $base::parm_text -errors {
+    {PNF	{Parameter not found}	{The parameter of float type was not found in the system parameter table}}
+}
+
+tabtext base.parm_boolean	{Date Parameters}	{Parameters of boolean (true/false, yes/no) type for configuring and controlling various modules across the database} \
+    $base::parm_text -errors {
+    {PNF	{Parameter not found}	{The parameter of boolean type was not found in the system parameter table}}
+}
+
+tabtext base.parm_v	{Parameters}		{System parameters are stored in different tables depending on their data type (date, integer, etc.).  This view is a union of all the different type tables so all parameters can be viewed and updated in one place.  The value specified will have to be entered in a way that is compatible with the specified type so it can be stored natively in its correct data type.} [concat {
+    {type		{Data Type}		{Indicates the native data type of this paramter (and hence the particular underlying table it will be stored in.)} {
+        {int		{Integer}		{The parameter can contain only values of integer type (... -2, -1, 0, 1, 2 ...}}
+        {date		{Date}			{The parameter can contain only date values}}
+        {text		{Text}			{The parameter can contain any text value}}
+        {float		{Float}			{The parameter can contain only values of floating point type (integer portion, decimal, fractional portion)}}
+        {boolean	{Boolean}		{The parameter can contain only the values of true or false}}
+    }}
+} $base::parm_text]

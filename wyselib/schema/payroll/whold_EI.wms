@@ -1,0 +1,31 @@
+# Support for US Earned Income Tax Credit
+#include(Copyright)
+# Valid for 2008
+#TODO:
+#- 
+
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+function {whold_EI(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+  returns numeric language plpgsql as $$
+    declare
+        amount	numeric(14,2);
+        trec	record;
+    begin
+
+    select into trec * from whold_dat where module = 'EI' and type = pc and code = ms and v1 < gr order by v1 desc limit 1;
+    if not found then
+        raise exception '!whold.LVN: % % %', 'US', pc, 'allow';		-- Lookup value not found
+    end if;
+-- raise notice 'gr:% v1:% v2:% v3:% v4:%', gr, trec.v1, trec.v2, trec.v3, trec.v4;
+    amount := trec.v2 - (trec.v3 * (gr - trec.v1))::numeric(14,2) + (trec.v4 * gr)::numeric(14,2);
+-- raise notice 'amount:%', amount;
+    if amount <= 0 then
+        return 0;
+    end if;
+    return -amount;
+    end;
+$$;}

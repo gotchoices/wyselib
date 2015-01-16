@@ -1,0 +1,11 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabdef acct.cat -focus numb -fields [concat {
+    {numb		ent	4	{1 1}		-just r}
+    {code		ent	6	{2 1}		}
+    {name		ent	30	{1 2 2}		}
+    {descr		mle	{50 3}	{1 3 3 3}	-spf edw}
+} $glob::stampd]
+
+tabdef acct.cat_v -focus numb -fields {
+} -inherits acct.cat

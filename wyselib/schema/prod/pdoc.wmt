@@ -1,0 +1,25 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext prod.doc_type	{Prod Doc Types}	{Table defining the set of defined document types and their characteristics} {
+    {type		{Doc Type}		{A brief tag name for the document type}}
+    {descr		{Description}		{A complete description of what this document type is for}}
+    {autolock		{Auto Lock}		{Automatically lock (make read-only) every document stored of this type}}
+    {public		{Public}		{Describes how/whether documents of this type are available to be seen in other applications} {
+        {yes		{Always}		{This document type will always be accessible (read-only) from other applications}}
+        {no		{Never}			{This document type will never be accessible from other applications}}
+        {lock		{If Locked}		{This document type will only be accessible from other applications if/when it is locked}}
+    }}
+}
+
+tabtext prod.doc	{Product Documents}	{This contains the fields that link a document to the production tables (documents can also be linked to other sub-systems)} {
+    {doc		{Document}		{A link to the document ID number in the document table}}
+    {base_r		{Basename}		{The product family this document is related to}}
+    {type_r		{Doc Type}		{The type of this document (as defined in the document types table)}}
+    {chkout		{Checked Out}		{If null, this document can be edited by others as long as it is not locked (read-only).  If this column is set to a username, the document is checked out by that user so only he can modify it.}}
+} -errors {
+    {CHK		{Checked Out}		{The specified document is already checked out to another user}}
+}
+
+tabtext prod.doc_v	{Product Documents}	{Documents stored in the system relational to product families} {
+    {relname		{Relative Path}		{A string showing the name of the file as it would be stored in the backup archive filesystem}}
+}

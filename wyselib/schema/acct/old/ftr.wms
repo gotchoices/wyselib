@@ -1,0 +1,86 @@
+#Track funding transactions
+
+namespace eval proj {
+#    set fields(proj.pk) {proj_id}
+#    set fields(proj.in) {ptype title descr bdate status owner tmarg par passwd org_id}
+#    set fields(proj.up) $fields(proj.in)
+#    set fields(proj.se) [lremove [concat $fields(proj.pk) $fields(proj.up) cdate crt_date crt_by mod_date mod_by] passwd]
+#    set fields(proj_v.se) [concat $fields(proj.se) crtname modname ownname passwd fpath ppath wauth level parname ititle]
+#    set fields(proj_ftr.pk) {rid}
+#    set fields(proj_ftr.in) {amount tdate fr_proj to_proj cmt ttype}
+#    set fields(proj_ftr.up) $fields(proj_ftr.in)
+#    set fields(proj_ftr.se) [concat rid $fields(proj_ftr.up) crt_date crt_by]
+#    set fields(proj_passwd.pk) {empl_id proj_id}
+#    set fields(proj_passwd.in) [concat $fields(proj_passwd.pk) passwd]
+#    set fields(proj_passwd.up) {proj_id passwd}
+#    set fields(proj_passwd.se) {empl_id proj_id}
+}
+
+return
+#----------------------------------------------------------------
+sequence proj.ftr_seq {} {
+    minvalue 1000
+}
+
+# Fund transfer register
+#----------------------------------------------------------------
+table proj.ftr {proj.proj proj.ftr_seq ord_hdr} {
+    rid			int		primary key default nextval('proj.ftr_seq'),
+    amount		numeric(14,2)	check (amount > 0),
+    tdate		date		not null default current_date,
+    fr_proj		int		not null references proj on update cascade on delete cascade,
+    to_proj		int		not null references proj on update cascade on delete cascade,
+    cmt			varchar,
+    ttype		varchar(5)	not null check (ttype in ('grant','auto','close')),
+    ordnum		int		references ord_hdr (ordnum) on update cascade on delete cascade,
+
+xxxxxx
+
+    crt_date		timestamp(0) not null default current_timestamp,
+    crt_by		int4 not null default curr_uid() references empl on update cascade
+}
+index {} proj.ftr fr_proj
+index {} proj.ftr to_proj
+
+#Base view which includes additional helpful fields
+#----------------------------------------------------------------
+view proj.ftr_v {proj.ftr base.ent_v} {
+    select eval(fld_list $fields(proj_ftr.se) pf)
+      , ce.name		as crt_name
+      , tp.title	as to_name
+      , fp.title	as fr_name
+      , pf.oid as _oid 
+        
+    from	proj.ftr	pf
+        join	base.ent_v	ce	on ce.empl_id = pf.crt_by
+        join	proj.proj	tp	on tp.proj_id = pf.to_proj
+        join	proj.proj	fp	on fp.proj_id = pf.fr_proj;
+	
+    eval(rule_insert proj_ftr_v proj_ftr $fields(proj_ftr.in))	-- supervisors can do any fund transfer from this view
+} -grant {
+    {projman	{} {} {s i}}
+}
+
+xxxxxxxxxxxxxxxx
+
+# View that shows only fund transfers for projects I should see
+#----------------------------------------------------------------
+view proj_ftr_v_me {proj_ftr_v proj_v} {
+    select ft.*
+    from	proj_ftr_v	ft
+    left join	proj_v		fp	on fp.proj_id = ft.fr_proj and curr_uid() = any(fp.wauth)
+    left join	proj_v		tp	on tp.proj_id = ft.to_proj and curr_uid() = any(fp.wauth);
+
+-- users can grant only from projects they have write access to (no update or delete)
+-- and they can only fund from one project to (its progeny or its ancestors)
+
+    eval(rule_insert proj_ftr_v_me proj_ftr $fields(proj_ftr.in) {
+        where exists (select proj_id from proj_v where proj_id = new.fr_proj and curr_uid() = any(wauth))
+        and  (exists (select proj_id from proj_v where proj_id = new.to_proj and new.fr_proj = any(ppath))
+           or exists (select proj_id from proj_v where proj_id = new.fr_proj and new.to_proj = any(ppath))
+        )
+    })
+    
+} -grant {
+    {projman	s {i}}
+}

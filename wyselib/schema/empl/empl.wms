@@ -1,0 +1,278 @@
+# Database of employees of a company (employer) entity
+#----------------------------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- Review column naming convention
+#- Can supr_path include emple and do away with full_path?
+#- 
+
+schema empl -grant public
+
+
+# Data about a person's employment with a particular company
+#----------------------------------------------------------------
+table empl.empl {base.ent base.ent_link} {
+    emplr	int
+  , emple	int
+  , primary key (emplr, emple)
+  , foreign key (emplr, emple) references base.ent_link on update cascade on delete cascade
+  , empl_type	varchar(8)	not null default 'regular' constraint "!empl.empl.CET" check (empl_type in ('regular','part','temp','season','train','contract','other','intern'))
+  , empl_cmt	varchar
+  , stand	varchar(10)	not null default 'good'
+  , superv	int		constraint "!empl.empl.CES" check (superv != emple)
+  , foreign key (emplr, superv) references base.ent_link on update cascade
+  , hire_date	date		not null default current_date
+  , term_date	date
+  , pay_type	varchar		not null constraint "!empl.empl.CPT" check (pay_type in ('annual', 'monthly', 'weekly', 'hourly', 'commis', 'piece', 'other'))
+  , pay_rate	numeric(14,2)	not null
+  , allow	int
+  , ins_code	varchar(18)
+
+    eval(s $glob::stamps)
+    eval(s $empl::empl_local)	-- locally defined columns
+}
+index {} empl.empl superv
+
+# Base view of employees linked to entity fields
+#----------------------------------------------------------------
+view empl.empl_v {empl.empl base.ent_v base.priv_has(varchar,varchar)} {select 
+    eval(fld_list $empl::ent_se		ee)
+  , eval(fld_list $empl::empl_se	em)
+  , eval(fld_list $empl::empl_local_up 	em)
+
+  , (select std_name from base.ent_v where id = em.superv)			as supr_name
+  , (select std_name from base.ent_v where id = ee.proxy)	 		as prox_name
+  , em.emplr is not null and em.term_date is null and ee.activ	as current
+  , case when em.superv isnull then 1 else array_upper(el.supr_path,1)+1 end	as level
+  , repeat('.',case when em.superv isnull then 0 else array_upper(el.supr_path,1) end) || ee.std_name as ind_name
+  , to_char(ee.born_date,'Mon-dd')						as birthday
+  , case when em.pay_type in ('annual','commis') then 
+        (em.pay_rate / 2000)::numeric(14,2)
+    when pay_type = 'monthly' then
+        (em.pay_rate / 167)::numeric(14,2)
+    when pay_type = 'weekly' then
+        (em.pay_rate / 40)::numeric(14,2)
+    else 
+        em.pay_rate
+    end									as hour_rate
+  , case when em.pay_type in ('annual','commis') then 
+        (em.pay_rate / 52)::numeric(14,2)
+    when em.pay_type = 'monthly' then
+        (em.pay_rate * 12 / 52)::numeric(14,2)
+    else 
+        em.pay_rate
+    end									as norm_rate
+  , el.org
+  , el.mem
+  , el.role
+  , el.supr_path
+  , array_append(coalesce(el.supr_path,'{}'::int[]),em.emple)		as full_path
+  , ec.std_name								as mplr_name
+  , em.oid as _oid
+
+    from	base.ent_v	ee				-- employee
+    left join	base.ent_link	el on el.mem = ee.id		-- membership
+    left join	base.ent_v	ec on ec.id = el.org		-- company
+    left join	empl.empl	em on em.emplr = el.org and em.emple = el.mem
+    where	ee.ent_type = 'p';
+
+    eval(rule_inmulta empl.empl_v "
+        {base.ent	{$base::ent_v_in}	id			{ent_type 'p' activ 't' inside 't' $glob::stampin}}
+        {base.ent_link	{$base::ent_link_v_in}	mem			{org coalesce(new.org,new.emplr) $glob::stampin}}
+        {empl.empl	{$empl::empl_v_in $empl::empl_local_up}	emple			{emplr coalesce(new.emplr,new.org) empl_type coalesce(new.empl_type,'regular') stand coalesce(new.stand,'good') hire_date coalesce(new.hire_date,'today') $glob::stampin}}
+    ");
+    eval(rule_upmulti empl.empl_v "
+        {base.ent	{$empl::ent_v_up}	{$base::ent_pk}		{$glob::stampup}}
+        {base.ent_link	{$base::ent_link_v_up}	{$base::ent_link_pk}	{$glob::stampup}	{old.org is not null}	{$base::ent_link_v_up}	{mem coalesce(new.mem,new.emple,new.id) org coalesce(new.org,new.emplr)}}
+        {empl.empl	{$empl::empl_v_up $empl::empl_local_up}	{$empl::empl_pk}	{$glob::stampup}	{old.emple is not null}	{$empl::empl_v_in}	{emplr coalesce(new.emplr,new.org) emple coalesce(new.emple,new.mem,new.id) $glob::stampin}}
+    ");
+    eval(rule_demulti empl.empl_v "
+        {base.ent_link	{$base::ent_link_pk}	{(crt_by = session_user and (current_timestamp - crt_date) < '24 hours'::interval) or base.priv_has('emplim','super')}}
+    ");
+} -primary {
+    emple emplr
+} -grant {
+    {emplim	{} {} {s i u}}
+    {payroll	{} {s}}
+}
+#        {empl.empl	{$empl::empl_pk}	{crt_by = session_user and (current_timestamp - crt_date) < '24 hours'::interval}}
+
+# Data integrity.  For heirarchical employee structure:
+#----------------------------------------------------------------
+#- There should only be one employee per employer with a null supervisor
+#- A non-current employee can not be the supervisor of a current employee
+#- When inserting a record, build the supr_path of only that record
+#- When updating a record:
+#-   if superv changed, rebuild the supr_path of that record and its subordinates
+#- Always rebuild any/all records with null supr_paths
+#- Detect supervisor loops (employees with no path to the root)
+
+# Build a path of supervisors starting with a given supervisor
+#----------------------------------------------------------------
+function {empl.supr_path(eid int, mid int)} {empl.empl} {
+  returns int[] language plpgsql as $$
+    declare 
+        e	int;
+        eids	int[] default '{}'::int[];
+        trec	record;
+    begin
+        e := eid;
+        while e is not null loop
+--raise notice 'super %', e;
+            if e = any(eids) then 
+                raise exception '!empl.empl.SLF %', eid;	-- supervisor loop found
+            end if;
+            if eids is null then
+                eids := array[e];
+            else
+                eids := array_cat(array[e],eids);
+            end if;
+            select into trec * from empl.empl where emplr = mid and emple = e;
+            e := trec.superv;
+        end loop;
+        return eids;
+    end;
+$$;}
+
+# Before updating an employee record
+#----------------------------------------------------------------
+function empl.tf_dirty() {empl.empl empl.empl_v base.ent_link} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        if not same(new.superv,old.superv) then		-- if supervisor changed, mark cache as dirty
+            update base.ent_link set supr_path = null where org = old.emplr and mem in (select emple from empl.empl_v where emplr = old.emplr and old.emple = any(full_path));
+        end if;
+        return new;
+    end;
+$$;}
+trigger empl_tr_burec {} {
+    before update on empl.empl for each row execute procedure empl.tf_dirty();
+}
+
+# After an insert or update statement, update cached information
+#----------------------------------------------------------------
+function empl.tf_check() {empl.empl_v base.ent_link empl.supr_path(int,int)} {
+  returns trigger security definer language plpgsql as $$
+    declare
+        trec	record;
+        sp	int4[];
+    begin
+        if exists (select emplr,count(*) from empl.empl where superv is null group by 1 having count(*) > 1) then
+            raise exception '!empl.empl.TMB';	-- There can be only one supervisor per org
+        end if;
+
+        if exists (select * from empl.empl_v ee join empl.empl_v es on es.emplr = ee.emplr and es.emple = ee.superv where ee.current and not es.current) then
+            raise exception '!empl.empl.SNC';	-- current employees can't work for non-current ones
+        end if;
+
+        -- update supervisor path cache        
+        for trec in select * from empl.empl e join base.ent_link l on l.org = e.emplr and l.mem = e.emple where l.supr_path is null loop
+            update base.ent_link set supr_path = empl.supr_path(trec.superv,trec.org) where org = trec.org and mem = trec.mem;
+--raise notice 'Caching supr_path for %-%: %', trec.emple, trec.emplr, empl.supr_path(trec.superv,trec.org);
+        end loop;
+        return new;
+    end;
+$$;}
+trigger empl_tr_check {} {
+    after insert or update on empl.empl for each statement execute procedure empl.tf_check();
+}
+
+# Return the ID of the employee if he has a login or his lowest 
+# supervisor who has a login
+#----------------------------------------------------------------
+function {empl.boss_user(eid int)} {empl.empl_v_pub} {
+  returns int language plpgsql as $$
+    declare
+        trec	record;
+    begin
+        for trec in select * from empl.empl_v_pub where eid = any(full_path) order by level desc loop
+            if trec.database then return trec.id; end if;
+        end loop;
+        return null;
+    end;
+$$;}
+
+# Determine if an employee has another employee as his supervisor at any level
+# Usage: empl_ancest(employee, ancest)
+#----------------------------------------------------------------
+function empl.ancest(int4,int4) {empl.empl_v} {
+  returns boolean language sql security definer stable as $$
+    select exists (select emple from empl.empl_v where emple = $1 and $2 = any(full_path));
+$$;}
+
+# A view that everyone can have read access to (non-sensitive information)
+#----------------------------------------------------------------
+view empl.empl_v_pub {empl.empl_v} {
+    select eval(fld_list $empl::empl_v_pub_se) from empl.empl_v;
+
+    eval(rule_update empl.empl_v_pub empl.empl_v $empl::empl_v_pub_up $empl::empl_pk {where old.username = session_user} $glob::stampup);	-- a person can update his own proxy
+} -grant {
+    public
+    {eim	s u}
+}
+
+# View with limited privileges for supervisors to see their own people
+#----------------------------------------------------------------
+view empl.empl_v_sup {empl.empl_v base.priv base.curr_eid()} {
+    select	eval(fld_list $empl::empl_v_sup_se e)
+        , e._oid
+        eval(s $empl::empl_v_sup_local)
+    from	empl.empl_v e, base.curr_eid() b
+    where b.* = any(full_path)
+    	or	base.priv_has('emplim','super')
+    	or	base.priv_has('admin','limit');
+
+-- Supervisors can update limited info on their people (but not themselves)
+    eval(rule_update empl.empl_v_sup empl.empl_v $empl::empl_v_sup_up $empl::empl_pk {where old.emple != base.curr_eid()} $glob::stampup);
+} -primary {
+   emple emplr
+} -grant {
+    {emplim	s {i u}}
+}
+
+# Base address view
+#----------------------------------------------------------------
+view empl.addr_v {base.addr base.ent_v} {
+    select eval(fld_list $empl::addr_se a)
+      , oe.std_name
+      , a.oid                   as _oid
+
+    from        base.addr       a
+    join        base.ent_v      oe      on oe.id = a.addr_ent;
+
+    eval(rule_insert empl.addr_v base.addr $empl::addr_v_in {} $glob::stampin);
+    eval(rule_update empl.addr_v base.addr $empl::addr_v_up $empl::addr_pk {} $glob::stampup);
+    eval(rule_delete empl.addr_v base.addr $empl::addr_pk);
+} -grant {
+    {entim      s {i u} d}
+    {emplim	s {i u} d}
+} -primary {addr_ent addr_seq}
+
+
+#Communication view for use with emplim
+#----------------------------------------------------------------
+view empl.comm_v {base.comm empl.empl_v} {
+    select eval(fld_list $empl::comm_se c)
+      , em.std_name
+      , c.oid           as _oid
+
+    from        base.comm       c
+    join        empl.empl_v     em      on em.emple = c.comm_ent;
+
+    eval(rule_insert empl.comm_v base.comm $empl::comm_v_in {} $glob::stampin);
+    eval(rule_update empl.comm_v base.comm $empl::comm_v_up $empl::comm_pk {} $glob::stampup);
+    eval(rule_delete empl.comm_v base.comm $empl::comm_pk);
+} -grant {
+    {entim      s {i u} d}
+    {emplim	s {i u} d}
+} -primary {comm_ent comm_seq}
+
+#Return an employee name from an employee number
+#Usage: empl_name(empl_id)
+#----------------------------------------------------------------
+function empl.empl_name(int4) empl.empl_v_pub {
+  returns varchar as $$
+      select cas_name from empl.empl_v_pub where emple = $1;
+        $$ language sql stable;
+}
+

@@ -1,0 +1,20 @@
+Obsolete, needs to be updated:
+
+Applications that use the priv module, will check to see
+that the current user is a valid postgres user.
+
+If you are just getting started with a new, empty database, (like you're trying to run
+the Wyseman sample schema) you may have the following "catch-22" problem:
+
+- You have to run the employee information manager (emplim) to add new users
+- You can't run emplim without being a current user
+- So you can't get started
+
+There is a script called "kickstart" that will add your first user and give him permission
+emplim and priv permissions.  Run it as follows:
+
+    ./kickstart username userid <dbname>
+
+For example, to add user "bob" who's unix userid is 1234, accessing the database "mydb,"
+
+    ./kickstart bob 1234 mydb

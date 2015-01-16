@@ -1,0 +1,90 @@
+# Support for Utah State withholding
+#include(Copyright)
+# Valid for 2009
+#TODO:
+#- 
+
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+function {whold_UT(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+  returns numeric language plpgsql as $$
+    declare
+        trec	record;
+        f1	numeric(14,4);	-- a multiplication factor specified by the state (5%)
+        f2	numeric(14,4);	-- a multiplication factor specified by the state (1.3%)
+        t2	int4;		-- temp values (corresponds to circular computation method lines)
+        t4	int4;
+        t6	int4;
+        t7	int4;
+        t8	int4;
+        t9	int4;
+        t10	int4;
+    begin
+
+    if (select count(*) from whold_dat where module = 'UT' and type = pc and code = ms) != 1 then
+        raise exception '!whold.BMD: % % %', 'UT', pc, ms;		-- Bad or missing data (should only be one entry per case)
+    end if;
+
+    select into f1 v1 from whold_dat where module = 'UT' and code = 'f1';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'UT', pc, 'base';		-- Lookup value not found
+    end if;
+    
+    select into f2 v1 from whold_dat where module = 'UT' and code = 'f2';
+    if not found then
+        raise exception '!whold.LVN: % % %', 'UT', pc, 'base';		-- Lookup value not found
+    end if;
+    
+    select into trec * from whold_dat where module = 'UT' and type = pc and code = ms;
+
+    t2 := (gr * f1)::int4;
+    if t2 < 0 then t2 := 0; end if;			-- don't allow to go negative
+
+    t4 := (al * trec.v1)::int4;
+    t6 := (t4 + trec.v2)::int4;
+    t7 := (gr - trec.v3)::int4;
+    if t7 < 0 then t7 := 0; end if;			-- don't allow to go negative
+
+    t8 := (t7 * f2)::int4;
+    t9 := t6 - t8;
+    if t9 < 0 then t9 := 0; end if;			-- don't allow to go negative
+--raise notice 'whold_UT: f1:% f2:% t2:% t4:% t6:% t7:% t8:% t9:%', f1, f2, t2, t4, t6, t7, t8, t9;
+
+    t10 := t2 - t9;
+    if t10 < 0 then t10 := 0; end if;			-- don't allow to go negative
+    return t10::numeric(14,2);
+    end;
+$$;}
+
+# This algorithm worked up through 2008 but is no longer valid
+# pc: pay cycle
+# gr: gross pay
+# ms: marital status (m,s)
+# al: withholding allowances
+#----------------------------------------------------------------
+#function {whold_UT(pc varchar, gr numeric, ms varchar, al int4)} {whold_dat} {
+#  returns numeric language plpgsql as $$
+#    declare
+#        whold	numeric(14,2);
+#        trec	record;
+#    begin
+#
+#    if (select count(*) from whold_dat where module = 'UT' and type = pc and code = ms) != 6 then
+#        raise exception '!whold.BMD: % % %', 'UT', pc, ms;		-- Bad or missing data (should be 6 entries)
+#    end if;
+#    
+#    select into trec * from whold_dat where module = 'UT' and type = pc and code = ms and v1 < gr order by v2 desc limit 1;
+#    if not found then
+#        return 0.00;
+#    end if;
+#    whold := (trec.v2 * gr) - (al * trec.v3);
+#    if whold < 0 then
+#        whold := 0.00;
+#    end if;
+#    
+#    return whold;
+#    end;
+#$$;}

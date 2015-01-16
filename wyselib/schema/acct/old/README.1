@@ -1,0 +1,74 @@
+Accounting Module, Try 1
+
+Class Table
+#----------------------------------------------------------------
+This table contains 'account classes' which form graft points where actual 
+accounts would be grafted into a chart of accounts.  This facilitates the 
+notion that transactions are grouped together into accounts, but those
+accounts can appear in different locations in the financial reports based on
+how the particular accounting method treats them.
+
+It would also allow different entities to use a different type of chart of
+accounts (as well as sharing one if that is what the user wants).
+
+Classes would look like the upper level of the chart of accounts:
+
+       1  ast Assets
+      10  cas  Current Assets
+     100  chk    Checking			Project/sub-account
+     102  sav    Savings			Project/sub-account
+     103  bro    Brokerage
+    1030  etr      E-Trade			Project/stock
+    1034  sch      Schwab			Project/stock
+     105  rec    Accounts Receivable
+     106  inv    Inventory			Project/inventory, Detail:part_num, category
+     107  wip    Work in Process		Project/shop, Detail:POI_number, category
+     108  jip    Jobs in Process		Project/contract, Detail: category
+     109  pre    Prepayments
+      15  fas  Fixed Assets
+     150  cap    Capital Equipment		Project/steward, Detail:asset_num, category
+     152  res    Real Estate			Project/asset, Detail:category
+     154  lre    Loans Receivable		Project/loan
+   
+       2  lia Liabilities
+      20  cul  Current Liabilities
+     200  cln    Credit Line			Project/line
+     201  itp    Income Tax Payable		Project/entity	(US, State, etc.)
+     202  ssp    Social Security Payable	Project/entity
+     203  mcp    Medicare Payable	
+     204  stp    Sales Tax Payable		Project/entity
+     205  acp    Accounts Payable		Detail:vendor
+     206  pap    Payroll Payable		Detail:employee
+     207  cmp    Commissions Payable		Detail:entity
+      25  ltl  Long Term Liabilities
+     250  eql    Equipment Loans		Project/loan
+     251  cal    Capital Leases			Project/lease, Detail:asset_num
+     252  rel    Real Estate Loans		Project/asset
+     254  lop    Loans Payable
+   
+       3  equ Equity
+      30  beg  Beginning Balances
+      32  con  Contributions
+      34  dis  Distributions
+      36  mem  Member Capital		Detail: entity
+   
+       4  inc Income
+      40  sal  Sales
+     400  saj    Job Sales
+     401  sai    Jip Sales
+     403  sao    Ots Sales
+     405  ser    Service
+      42  shp  Shipping Charges
+      44  gos  Gain on Sale of Assets
+      45  ltg  LT Capital Gains
+      46  stg  ST Capital Gains
+       
+       5  exp Expenses			Detail: category
+      50  cgs  Cost of Goods Sold	#gross margin
+      52  cog  Commissions on Gross	#gross margin after commissions
+      53  war  Warranty			#gross margin after warranty
+      54  opo  Operations Overhead	#EBITDA
+      56  int  Interest			#net margin before depreciation
+      57  con  Commissions on Net	#net margin after commissions
+      58  dep  Depreciation		#taxable income
+      59  tax  Taxes			#net income

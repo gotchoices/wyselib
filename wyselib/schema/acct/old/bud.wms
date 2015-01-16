@@ -1,0 +1,162 @@
+# Budget journal
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- Make general purpose journal structure (for various sub-systems)
+#- Implement transaction journal for budget entries
+#- Make unified view for header/items
+#- Implement GUI for editing journal entries
+#- Implement hot-keys for rapid data entry
+#- 
+#- 
+
+namespace eval acct {
+    def bud_hdr_pk	{tr_id}
+    def bud_hdr_in	{tr_date descr status}
+    def bud_hdr_up	$bud_hdr_in
+#    def bud_hdr_se	[concat $bud_hdr_pk $bud_hdr_in $glob::stampfn]
+    def bud_itm_pk	{tr seq}
+    def bud_itm_in	{tr cmt proj acct cat debit credit}
+    def bud_itm_up	[lremove $bud_itm_in tr]
+#    def bud_itm_se	$bud_itm_up
+}
+
+sequence acct.bud_seq {} {minvalue 1000}
+
+#----------------------------------------------------------------
+table acct.bud_hdr {acct.bud_seq base.curr_eid()} {
+    tr_id		int		primary key default nextval('acct.bud_seq')
+  , tr_date		date		not null default current_date
+  , descr		varchar
+  , status		varchar(1)	not null default 'w' check (status in ('w','p'))
+    subst($glob::stamps)
+}
+index {} acct.bud_hdr tr_date
+
+#----------------------------------------------------------------
+table acct.bud_itm {acct.bud_hdr acct.proj acct.acct} {
+    tr			int		references acct.bud_hdr on update cascade on delete cascade
+  , seq			int
+  , primary key (tr, seq)
+  , cmt			varchar
+  , ptyp		char		not null
+  , proj		int		not null
+  , foreign key (ptyp, proj) references acct.proj on update cascade
+  , acct		int		references acct.acct on update cascade
+  , amount		numeric(14,2)	not null
+}
+
+#Combined view
+#----------------------------------------------------------------
+view acct.bud_v {acct.bud_hdr acct.bud_itm acct.acct acct.proj} {
+    select	h.tr_id
+  , h.tr_date
+  , h.descr
+  , h.status
+  , i.seq
+  , i.cmt
+  , case when i.amount >= 0 then i.amount else null     end		as debit
+  , case when i.amount <  0 then null     else i.amount end		as credit
+  , i.amount
+  , i.ptyp
+  , i.proj
+  , i.acct
+  , a.acct_name
+  , p.proj_name
+  , i.oid as _oid
+    from	acct.bud_hdr	h
+    join	acct.bud_itm	i	on i.tr = h.tr_id
+    join	acct.acct	a	on a.acct_id = i.acct
+    join	acct.proj	p	on p.proj_tp = i.ptyp and p.proj_id = i.proj;
+
+--    e#val(rule_inmulta acct.bud_v "
+--        {acct.bud_hdr	{$acct::bud_hdr_in}	tr_id			{tr_date current_date status 'w' $glob::stampin}}
+--        {acct.bud_itm	{$acct::bud_itm_in}	tr			{mplr_id coalesce(new.mplr_id,new.org_id) empl_type coalesce(new.empl_type,'regular') empl_stand coalesce(new.empl_stand,'good') hire_date coalesce(new.hire_date,'today') $glob::stampin}}
+--    ")
+} -grant {
+    {glman	s}
+} -primary {tr seq}
+
+return
+xxxxxxxxxxxxxxxxxx
+
+# Before updating a record
+#----------------------------------------------------------------
+function bud_hdr_tf_bu() {bud_hdr bud_itm} {
+  returns trigger security definer as $$
+    declare
+        trec	record;
+--        cr	numeric;
+--        dr	numeric;
+    begin
+        
+        if new.status in ('p','l') then		-- if the entry is being posted or locked
+            select sum(debit) as debit, sum(credit) as credit, count(*) as cnt into trec from bud_itm where rid = old.rid;
+
+            if trec.cnt < 2 then
+                raise exception '!bud_hdr.ENC %', old.rid;			-- entry not complete
+            end if;
+            if trec.credit != trec.debit then
+                raise exception '!bud_hdr.ENB %', old.rid;			-- entry not balanced
+            end if;
+        end if;
+
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger bud_hdr_tr_bu {} {
+    before update on bud_hdr for each row execute procedure bud_hdr_tf_bu();
+}
+
+# On update or insert
+#----------------------------------------------------------------
+function bud_hdr_tf_biu() {bud_hdr hard_close()} {
+  returns trigger security definer language plpgsql as $$
+    begin
+        if session_user = 'dbadmin()' then return new; end if;
+        if TG_OP = 'UPDATE' then
+            if old.adate > hard_close() and new.adate > hard_close() then return new; end if;
+        else
+            if new.adate > hard_close() then return new; end if;
+        end if;
+        raise exception '!bud_hdr.DCP % %', new.rid, new.adate;
+    end;
+$$;}
+trigger bud_hdr_tr_biu {} {
+    before insert or update on bud_hdr for each row execute procedure bud_hdr_tf_biu();
+}
+
+# Before inserting or updating a ledger item
+#----------------------------------------------------------------
+function bud_itm_tf_biu() {bud_hdr bud_itm curr_uid()} {
+  returns trigger security definer as $$
+    begin
+
+        if session_user = 'dbadmin()' then		-- skip the rest if I'm the admin
+            return new;
+        end if;
+        
+        update bud_hdr set crt_date = current_timestamp, crt_by = curr_uid() where rid = new.rid;
+        
+        return new;
+    end;
+  $$ language plpgsql;
+}
+trigger bud_itm_tr_biu {} {
+    before insert or update on bud_itm for each row execute procedure bud_itm_tf_biu();
+}
+
+#----------------------------------------------------------------
+function acct.bud_itm_tf_seq() {acct.bud_itm} {
+  returns trigger language plpgsql as $$
+    begin
+        if new.seq is null then
+            select into new.seq coalesce(max(seq),0)+1 from bud_itm where rid = new.rid;
+        end if;
+        return new;
+    end;
+$$;}
+trigger bud_itm_tr_bi {} {
+    before insert on bud_itm for each row execute procedure bud_itm_tf_bi();
+}

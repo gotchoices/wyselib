@@ -1,0 +1,1 @@
+select setval('doc.doc_seq', (select coalesce(max(id), 1000) from doc.doc));

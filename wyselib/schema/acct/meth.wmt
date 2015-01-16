@@ -1,0 +1,22 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+
+tabtext acct.meth	{Methods}		{Native table containing one entry for each alternate (as opposed to "book") accounting method defined in the system.} [concat {
+    {code		{Method Code}		{A short (8 or fewer characters) alphanumeric code to represent this method}}
+    {name		{Method Name}		{A more descriptive but brief name for this accounting method}}
+    {descr		{Description}		{A full and detailed description of this accounting method}}
+} $glob::stampt] -errors {
+    {IVD		{Bad Method Name}	{The first character of the name must be a letter.  Subsequent characters can be letters, numbers or underscore.}}
+}
+tabtext acct.meth_v	{Methods}		{A view showing each alternate (as opposed to "book") accounting method defined in the system.}
+
+tabtext acct.mmap	{Account Map}		{Native table indicating which accounts map to which other accounts in order to render accounting reports according to the specified method} {
+    {meth		{Method}		{The method this mapping rule applies to}}
+    {book_acct		{Book Account}		{When this account is found in the standard ledgers, it will be changed to the method account}}
+    {meth_acct		{Method Account}	{When the book account is found in the standard book ledgers, it will be changed in the ledger for this method to become this specified account}}
+    {cmt		{Comment}		{Include any comments here about why the account mapping is used in order to accomplish the specified method}}
+}
+tabtext acct.mmap_v	{Method Map}		{A view showing which accounts map to which other accounts in order to render accounting reports according to the specified method} {
+    {ba_name		{Book Account Name}	{The name of the account that will be changed}}
+    {ma_name		{Map Account Name}	{The name of the account that will be substituted for the book account}}
+}

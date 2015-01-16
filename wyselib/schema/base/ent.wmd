@@ -1,0 +1,52 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabdef base.ent -focus ent_name -fields [concat {
+    {id			ent	6	{0 1}		-hide 1 -write 0 -just r}
+    {ent_type		pdm	2	{3 1}		}
+    {title		ent	8	{1 2}		-spf exs}
+    {ent_name		ent	40	{1 1 2}		}
+    {fir_name		ent	14	{2 2}		-bg lightblue}
+    {mid_name		ent	12	{3 2}		}
+    {pref_name		ent	12	{1 3}		}
+    {inside		chk	2	{2 3}		-onv t -offv f}
+    {activ		chk	2	{3 3}		-ini t -onv t -offv f}
+    {born_date		ent	11	{1 4}		-spf cal}
+    {gender		pdm	2	{2 4}		-ini m}
+    {marital		pdm	2	{3 4}		-ini s}
+    {bank		ent	14	{1 5}		-tem {{{} {^[0-9]+:[0-9]+$}} {^[0-9]+:[0-9]+:[a-z]+$} "####:#### or ####:####:s"}}
+    {username		ent	12	{2 5}		}
+    {database		chk	3	{3 5}		-ini t -onv t -offv f}
+    {ent_cmt		ent	14	{1 6}		-spf edw}
+    {tax_id		ent	10	{2 6}		}
+    {country		ent	4	{3 6}		-spf scm -data country}
+} $glob::stampd]
+
+# A view with some additional pseudo fields
+tabdef base.ent_v -fields {
+    {std_name		ent	14	{1 7}		-opt 1 -sta readonly -wr 0}
+    {frm_name		ent	18	{2 7}		-opt 1 -sta readonly -wr 0}
+    {cas_name		ent	14	{3 7}		-opt 1 -sta readonly -wr 0 -just r}
+} -inherits base.ent
+
+tabdef base.ent_v_pub -focus ent_name -fields {
+    {id			ent	6	{0 1}		-hide 1 -write 0 -just r}
+    {name		ent	40	{1 1 2}		-sta readonly }
+    {type		ent	2	{1 2}		-sta readonly }
+    {username		ent	12	{2 2}		-sta readonly }
+    {activ		chk	2	{1 5}		-sta readonly -ini t -onv t -offv f}
+    {crt_date		ent	20	{1 6}		-opt 1 -sta readonly -wr 0}
+    {crt_by		ent	10	{2 6}		-opt 1 -sta readonly -wr 0}
+    {mod_date		ent	20	{3 6}		-opt 1 -sta readonly -wr 0}
+    {mod_by		ent	10	{4 6}		-opt 1 -sta readonly -wr 0}
+}
+
+tabdef base.ent_link -focus org_id -fields {
+    {org		ent	6	{1 1}		-just r}
+    {mem		ent	6	{1 2}		-just r}
+    {role		ent	30	{1 3}		-spf exs}
+}
+
+tabdef base.ent_link_v -fields {
+    {org_name		ent	30	{}		-depend org_id -title {:} -gmc {pack %w -in %p.org_id}}
+    {mem_name		ent	30	{}		-depend mem_id -title {:} -gmc {pack %w -in %p.mem_id}}
+} -inherits base.ent_link

@@ -1,0 +1,52 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+tabtext asset.asset	{Assets}		{Owned items which might be capitalized and might change value over time} [concat {
+    {asset_id		{Asset ID}		{A unique number assigned to each asset}}
+    {asset_type		{Asset Type}		{The kind of asset this record represents} {
+        {cap		{Capitalized}		{The asset is used in the business activity to produce income and will be depreciated over time}}
+        {tol		{Tools}			{Tools or equipment which do not appear on the balance sheet but are still desirable to be tracked}}
+        {inv		{Inventory}		{Bulk stores of a product or material which might be sold or used internally}}
+        {sec		{Security}		{A stock, bond mutual fund, etc.}}
+        {ani		{Animal}		{An individual animal such as livestock, but without a capital basis to be depreciated}}
+        {oth		{Other}			{A type of asset that doesn't fit any of the other categories}}
+    }}
+    {asset_cmt		{Comment}		{Other comments about the asset}}
+    {asset_stat		{Status}		{Tracks whether the asset is current or disposed} {
+        {curr		{Current}		{The asset is currently active and owned by the referenced entity}}
+        {disp		{Disp}			{The asset has been disposed of and/or is no longer active}}
+        {void		{Void}			{The asset record should be ignored}}
+    }}
+    {asset_class	{Class}			{A classification to be used differently by different types of assets}}
+    {own_id		{Owner}			{The ID of the entity that owns the asset}}
+    {units		{Units}			{The standard units of measure for this asset}}
+    {descr		{Description}		{A description of the asset}}
+    {location		{Location}		{An option field to designate where the asset is kept}}
+    {par		{Parent}		{The ID of a parent asset if such is applicable to this class of asset}}
+} $glob::stampt] -errors {
+    {XYZ		{XYZ}			{XYZ}}
+}
+
+#tabtext asset.asset_v	{Assets}		{A view of owned items which might be capitalized and might change value over time} {
+#    {own_name		{Owner Name}		{The standard format for the entity that owns the asset}}
+#    {frm_name		{Formal Name}		{A person's full name in a formal format: Last, Title First Middle}}
+#    {cas_name		{Casual Name}		{a person's full name in a casual format: First Last}}
+#}
+
+tabtext asset.event	{Asset Events}		{Holds an entry for each type of event occurring to potentially change the value of the asset} {
+    {event_asset	{Asset ID}		{The ID of the asset being affected by this event}}
+    {seq		{Sequence}		{Each event for a given asset ID is given a unique sequence number}}
+    {event_date		{Effective Date}	{The date this asset event becomes effective}}
+    {event_type		{Event Type}		{What type of event occurred regarding the asset} {
+        {app		{Appreciation}		{The asset has gained (or lost) value as a result of market variations}}
+        {dep		{Depreciation}		{The asset has lost value as a result of its natural life cycle running its course}}
+        {con		{Consumption}		{Some portion of the asset has been consumed}}
+        {rep		{Replenishment}		{Some amount has been replenished to increase the value and quanity of the asset}}
+        {obs		{Obsolescence}		{The asset has been deemed obsolete}}
+    }}
+    {event_cmt		{Comment}		{Comments about this asset event}}
+} -errors {
+    {XYZ		{XYZ}			{XYZ}}
+}
+
+#tabtext asset.event_v	{Asset Events}		{A view of the table holding an entry for each type of event occurring to potentially change the value of the asset} {
+#}

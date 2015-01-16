@@ -1,0 +1,397 @@
+# Store and retrieve documents
+#TODO:
+#X- Make unique on path, name
+#X- Implement update trigger, replace large object if necessary
+#X- Implement delete trigger
+#X- Can't update/delete a locked object
+#- Delete (and archive) large objects that are not found in doc.doc
+#- Create maintenance stored procedure to check file/object integrity
+#-  Recover from lost large object
+#-  Recover from lost or corrupted external file
+#- 
+#- Move to prod.doc:
+#- Implement link table for use with prodim
+#- Implement major/minor version numbers
+#- Build path as: product basename major minor
+#- All files unlocked on working
+#- All files locked when committed to production
+#- 
+
+namespace eval doc {
+    def cksum		{/bin/cksum}
+    def doc_root	{/usr/local/share/wyatt-docs}		;#store all docs under here
+    def doc_del		"$doc_root/.deleted"			;#any docs deleted or updated out of place
+    def logfile		"$doc_root/.vacuum.log"			;#log progress of cleaning/checking
+    def doc_trash	"$doc_root/.trash"			;#files appearing to be leftover from aborted transactions
+    def doc_stray	"$doc_root/.stray"			;#other files that don't occur in matched sets (arch, meta)
+    def doc_orphan	"$doc_root/.orphan"			;#large objects that don't have a matching document record
+    def doc_pk		{id}
+    def doc_v_in	{id path name version exten cmt locked blob}
+    def doc_v_up	$doc_v_in
+    def doc_se		[concat $doc_v_up size cksum checked $glob::stampfn]
+}
+schema doc -grant public
+
+sequence doc.doc_seq {doc} {minvalue 1000}
+
+# Contains an entry for each document
+#----------------------------------------------------------------
+table doc.doc {doc.doc_seq base.ent} {
+    id		int		primary key default nextval('doc.doc_seq')
+  , path	varchar[]	not null constraint "doc.doc.IPS" check (path[1] is not null and path[1] != '' and substring(path[1],0,1) != '.')
+  , name	varchar		not null constraint "doc.doc.IFN" check (name != '' and name ~ '[^\\*/<>()]' and substring(name,0,1) != '.')
+  , version	int		not null constraint "doc.doc.IVN" check (version >= 0)
+  , exten	varchar		not null default ''
+  , cmt		varchar
+  , locked	boolean		default 'f'
+  , size	bigint		not null
+  , cksum	bigint		not null
+  , blob	oid		not null unique
+  , checked	timestamp(0)
+  , constraint "!doc.doc.UFN"	unique	(path,name,version,exten)
+    subst($glob::stamps)
+}
+
+# Note how some documents depend on others
+#----------------------------------------------------------------
+table doc.link {doc.doc} {
+    outp	int		references doc.doc on update cascade on delete cascade
+  , inp		int		references doc.doc on update cascade
+  , type	varchar		not null constraint "doc.link.ITP" check (type in ('auto','link','manu','rend'))
+}
+
+# Basic view
+#----------------------------------------------------------------
+view doc.doc_v {doc.doc} {select
+    eval(fld_list $doc::doc_se d)
+  , array_to_string(d.path,'/') || '/' || d.name || case when d.version <= 0 then '' else '(' || d.version || ')' end || '.' || d.exten	as fullname
+  , coalesce(lo.blocks,0)	as blocks
+  , lo.bytes
+    from	doc.doc		d
+    left join	(select loid,count(*) as blocks,sum(octet_length(data)) as bytes from pg_largeobject group by 1) lo on lo.loid = d.blob
+}
+
+# When inserting a new document
+#----------------------------------------------------------------
+function doc.doc_tf_ins() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    declare
+        tiar	bigint[];
+    begin
+-- raise notice 'doc_ins:%', new.id;
+        if new.version is null then
+            new.version := (select coalesce(max(version)+1,0) from doc.doc where path = new.path and name = new.name and exten = new.exten);
+        end if;
+        tiar := doc.archive(new,1);
+        new.size := tiar[1];
+        new.cksum := tiar[2];
+        return new;
+    end;
+$$;}
+trigger doc_doc_tr_ins {} {before insert on doc.doc for each row execute procedure doc.doc_tf_ins();}
+
+# When updating a document
+#----------------------------------------------------------------
+function doc.doc_tf_upd() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    declare
+        tiar	bigint[];
+    begin
+        if session_user != 'dbadmin()' and old.locked then
+            raise exception '!doc.doc.DLK %', old.id;	-- Can't modify locked docs
+        end if;
+
+        if not eval(samelist path name version exten) then	-- if we are changing where the file is archived
+            if exists (select * from doc.doc where path = new.path and name = new.name and version = new.version and exten = new.exten) then
+                raise exception '!doc.doc.CFN % % % %', new.path, new.name, new.version, new.exten;		-- Conflicting record found
+            end if;
+            tiar := doc.archive(new, 1);
+            perform doc.archive(old, 0);
+        elseif new.blob != old.blob then			-- same archive name but new file contents
+            tiar := doc.archive(new, 1);
+            perform lo_unlink(old.blob);			-- get rid of the old large object
+        elseif not eval(samelist size cksum) then		-- if trying to change size or checksum
+            tiar := doc.archive(new, 1);			-- rearchive, fresh copy
+        end if;
+        if tiar is not null then				-- if size,cksum got modified
+            new.size  := tiar[1];
+            new.cksum := tiar[2];
+        end if;
+        return new;
+    end;
+$$;}
+trigger doc_doc_tr_upd {} {before update on doc.doc for each row execute procedure doc.doc_tf_upd();}
+
+# When deleting a document
+#----------------------------------------------------------------
+function doc.doc_tf_del() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    begin
+        if session_user != 'dbadmin()' and old.locked then
+            raise exception '!doc.doc.DLK %', old.id;	-- Can't modify locked docs
+        end if;
+        perform doc.archive(old, 0);
+        return old;
+    end;
+$$;}
+trigger doc_doc_tr_del {} {before delete on doc.doc for each row execute procedure doc.doc_tf_del();}
+
+# Store (or delete) a backup copy of the large object in the filesystem
+# $1: doc record (new/old)
+# $2: 0=delete, 1=store
+#----------------------------------------------------------------
+function doc.archive(doc.doc,int) {doc.doc} {
+  returns bigint[] language pltclu as $$
+ 
+    set path "subst($doc::doc_root)/[join [split [lindex $1(path) 0] ,] /]"
+    if {![file exists $path]} {file mkdir $path}
+    set base "$1(name)"
+    if {$1(version) > 0} {append base "($1(version))"}
+    if {$1(exten) != {}} {append base ".$1(exten)"}
+    set fname "$path/$base"
+    set mfname "$path/.$base"
+#elog NOTICE "id:$1(id) path:$path fname:$fname"
+    if {!$2} {				;#if deleting
+        if {"subst($doc::doc_del)" != {}} {		;#if a delete directory specified
+            set dpath "subst($doc::doc_del)/[join [split [lindex $1(path) 0] ,] /]"
+            if {![file exists $dpath]} {file mkdir $dpath}
+            set suff {}
+            set sver 0
+            while {[file exists $dpath/$base$suff]} {set suff "-[incr sver]"}
+            file rename -force $mfname $dpath/.$base$suff
+            file rename -force $fname $dpath/$base$suff
+        } else {
+            file delete -force $mfname
+            file delete -force $fname
+        }
+        return_null
+    }
+
+    spi_exec "select lo_export($1(blob),'$fname')"
+
+    regsub -all {'} $1(cmt) {''} 1(cmt)		;#escape quotes in comment
+    set fp [open $mfname w]			;#create file for metadata
+    puts $fp [array get 1]
+    close $fp
+    
+    lassign [exec subst($doc::cksum) $fname] cksum size
+#elog NOTICE " cksum:$cksum size:$size"
+    return "{$size,$cksum}"
+$$;}
+
+# Check the integrity of the document database
+#----------------------------------------------------------------
+# lg_obj	doc	arch	meta	case	action
+#     no	 no	 no	yes	1	Stray?		Log error, move meta file to Stray
+#     no	 no	yes	 no	2	Stray?		Log error. move arch file to Stray
+#     no	 no	yes	yes	3	Failed Trans	If recent, delete, else log and move to Stray
+#     no	yes	 no	  ?	4,5	Oops?		Log error.
+#     no	yes	yes	  ?	6,7	New DB Regen	Import doc to LO, re-create meta-data
+#    yes	 no	  ?	 no	8,A	Oops?		Log and save file by its OID in Orphan
+#    yes	 no	 no	yes	9	Oops?		Log if not recent, move meta, LO to Trash
+#    yes	 no	yes	yes	B	Oops?		Log if not recent, move meta, arch, LO to Trash
+#    yes	yes	 no	  ?	C,D	File Damage	Log, re-write archive and meta
+#    yes	yes	yes	 no	E	File Damage	Re-write meta-data
+#    yes	yes	yes	yes	F	OK		Check doc against LO size and cksum
+#----------------------------------------------------------------
+function doc.vacuum() {doc.doc} {
+  returns varchar language pltclu as $$
+
+    #----------------------------------------------------------------
+    proc logit {msg} {					;#post to the log file
+        set fp [open subst($doc::logfile) a]
+        puts $fp "[clock format [clock seconds] -format "%Y-%b-%d_%H:%M:%S"]: $msg"
+        close $fp
+    }
+    #----------------------------------------------------------------
+    proc read_file {fname} {				;#return the contents of a file
+        set fp [open $fname r]
+        set data [read $fp]
+        close $fp
+        return $data
+    }
+    #----------------------------------------------------------------
+    proc write_file {fname data} {
+        set fp [open $fname w]
+        puts -nonewline $fp $data
+        close $fp
+    }
+
+    # Fill temporary table with archive file information from a single folder
+    #----------------------------------------------------------------
+    proc check_folder {root dir} {				;#look at all the archive files in dir
+        proc date_fmt {secs} {return "'[clock format $secs -format {%Y-%b-%d_%H:%M:%S}]'"}
+
+        set rdir "$root/$dir"
+        set empty 1
+        foreach sub [glob -nocomplain -tails -types d -directory $rdir *] {
+            if {$sub == {.} || $sub == {..}} continue
+            check_folder $root $dir/$sub			;#recurse through sub-directories
+            set empty 0
+        }
+logit "Folder: $root $dir"
+        set names {}
+        foreach name [glob -nocomplain -tails -types f -directory $rdir * .*] {
+            set empty 0
+            if {[string range $name 0 0] == {.}} {			;#if this is a hidden file
+                set name [string range $name 1 end]			;#its name without the leading dot
+                if {[lsearch -exact $names $name] >= 0} continue	;#already got this one
+                set size_meta [file size $rdir/.$name]
+                set modi_meta [date_fmt [file mtime $rdir/.$name]]
+                if {[file exists $rdir/$name]} {
+                    set size_arch [file size $rdir/$name]
+                    set modi_arch [date_fmt [file mtime $rdir/$name]]
+                } else {
+                    set size_arch {null}
+                    set modi_arch {null}
+                }
+            } else {							;#this is a regular file
+                if {[lsearch -exact $names $name] >= 0} continue	;#already got this one
+                set size_arch [file size $rdir/$name]
+                set modi_arch [date_fmt [file mtime $rdir/$name]]
+                if {[file exists $rdir/.$name]} {
+                    set size_meta [file size $rdir/.$name]
+                    set modi_meta [date_fmt [file mtime $rdir/.$name]]
+                } else {
+                    set size_meta {null}
+                    set modi_meta {null}
+                }
+            }
+        lappend names $name
+        spi_exec "insert into doc_arch (dirname,filename,size_arch,size_meta,modi_arch,modi_meta) values ('$dir', '$name', $size_arch, $size_meta, $modi_arch, $modi_meta)"
+        }
+        if {$empty} {
+            logit "Removing empty directory: $rdir"
+            file delete $rdir
+        }
+    }
+
+    # Main
+    #----------------------------------------------------------------
+    logit {Starting}
+    set result {}
+
+    set d1 {temporary}		;set d1 {}		;#uncomment for debugging	
+    spi_exec "
+        create $d1 table if not exists doc_arch (dirname varchar, filename varchar, size_arch bigint, size_meta bigint, modi_arch timestamp, modi_meta timestamp);
+        create or replace $d1 view doc_arch_v as select *, dirname || '/' || filename as fullname_r from doc_arch;
+        create or replace $d1 view doc_join_v as select * from doc.doc_v d full join doc_arch_v a on a.fullname_r = d.fullname;
+        delete from doc_arch;				-- use if in debug mode
+    "
+    foreach dir [glob -nocomplain -tails -directory subst($doc::doc_root) -types d *] {
+        check_folder subst($doc::doc_root) $dir
+    }
+
+    set errs {}				;# Find case 3,B: apparent aborted transactions - move to trash
+    #----------------------------------------------------------------
+    spi_exec -array r {select * from doc_join_v where bytes is null and id is null and size_arch is not null and size_meta is not null and modi_arch > current_timestamp - '1 day'::interval order by fullname_r} {
+        lappend errs "  $r(fullname_r)"
+#        file rename -force $r(dirname)/$r(filename) $r(dirname)/.$r(filename) subst($doc::doc_trash)
+    }
+    if {[llength $errs] > 0} {append result "\nCleanups (-> subst($doc::doc_trash)):\n[join $errs "\n"]"}
+
+    set errs {}				;# Find case 1,2,3,9,A,B - strays
+    #----------------------------------------------------------------
+    spi_exec -array r {select * from doc_join_v where bytes is null and id is null order by fullname_r} {
+        foreach f {{} .} {
+            if {[file exists [set fn "$r(dirname)/$f$r(filename)"]]} {
+#                file rename -force $fn subst($doc::doc_stray)
+                lappend errs "  $fn"
+            }
+        }
+    }
+    if {[llength $errs] > 0} {append result "\nStrays (-> subst($doc::doc_stray)):\n[join $errs "\n"]"}
+    
+    set errs {}				;# Find remaining case 8 - orphans
+    #----------------------------------------------------------------
+    spi_exec -array r {select lo.loid from pg_largeobject lo where pageno = 0 and not exists (select * from doc.doc where blob = lo.loid)} {
+        set fname subst($doc::doc_orphan)/$r(loid)
+        lappend errs "  $r(loid) -> $fname"
+#        spi_exec "begin; select lo_export($r(loid),'$fname'), lo_unlink(old.blob); end;"
+    }
+    if {[llength $errs] > 0} {append result "\nOrphans (moved to subst($doc::doc_orphan)):\n[join $errs "\n"]"}
+
+    set errs {}				;# Find case 4,5 - Unrecoverable
+    #----------------------------------------------------------------
+    spi_exec -array r {select * from doc_join_v where bytes is null and id is not null and size_arch is null order by fullname} {
+        lappend errs "  Doc:$r(id), $r(fullname)"
+    }
+    if {[llength $errs] > 0} {append result "\nMissing LO and arch (Consult backups!):\n[join $errs "\n"]"}
+    
+    set errs {}				;# Find case C,D,E - Reconstruct archive
+    #----------------------------------------------------------------
+    spi_exec -array r {select * from doc_join_v where bytes is not null and id is not null and (size_arch is null or size_meta is null) order by fullname} {
+        lappend errs "  Doc:$r(id), $r(fullname)"
+#        spi_exec "update doc.doc set size = null where id = $r(id);"	;# force re-archive
+    }
+    if {[llength $errs] > 0} {append result "\nMissing archive (Re-archived):\n[join $errs "\n"]"}
+    
+    set errs {}				;# Find case 6,7 - Reconstruct large object from archive
+    #----------------------------------------------------------------
+    spi_exec -array r {select * from doc_join_v where bytes is null and id is not null and size_arch is not null order by fullname} {
+        lappend errs "  $r(fullname)"
+#        spi_exec "
+#             alter table doc.doc disable trigger doc_doc_tr_upd;		-- so we don't re-archive right away
+#             update doc.doc set blob = lo_import('$r(fname)') where id = $r(id);
+#             alter table doc.doc enable trigger doc_doc_tr_upd;
+#         "
+    }
+    if {[llength $errs] > 0} {append result "\nMissing LO (Re-constructing):\n[join $errs "\n"]"}
+    
+    set errs {}				;# Find case F - Verify
+    #----------------------------------------------------------------
+    spi_exec -array r {select * from doc_join_v where bytes is not null and id is not null and size_arch is not null and size_meta is not null order by checked nulls first limit 2} {
+        lappend errs "  Doc:$r(id), $r(fullname)"
+    }
+    if {[llength $errs] > 0} {append result "\nFailed Verify ():\n[join $errs "\n"]"}
+    
+
+    
+#    spi_exec -array r {select * from doc_join_v where blocks > 0 and id is null order by fullname} {
+#logit "  array:[array get r]"
+#        lappend result [array get r]
+##        foreach tag {size_arch size_meta modi_arch modi_meta} {if {![info exists r($tag)]} {set r($tag) {}}}
+##        logit [format {%-50s %12s %4s %20s %20s} $r(fullname) $r(size_arch) $r(size_meta) $r(modi_arch) $r(modi_meta)]
+#    }
+
+    logit "Finished with changes: [llength $result]"
+    return $result
+$$;}
+
+return
+
+
+
+
+
+# After any change
+#----------------------------------------------------------------
+function doc.doc_tf_chk() {doc.doc doc.archive(doc.doc,int)} {
+  returns trigger language plpgsql as $$
+    declare
+        trec	doc.doc;
+        tid	int;
+    begin
+        trec.version := 0;
+        trec.exten := '';
+        trec.path := array['_orphan'];		-- for each orphan, store it in the _orphan folder
+        for tid in select loid from pg_largeobject lo where pageno = 0 and not exists (select blob from doc.doc where blob = lo.loid) loop
+            trec.name := tid::varchar;		-- Make a name from its oid
+            perform doc.archive(trec, 1);	-- Archive it
+raise notice 'Orphan:%', tid;
+--            perform lo_unlink(tid);		-- and delete the large object from the database
+        end loop;
+        return old;
+    end;
+$$;}
+trigger doc_doc_tr_chk {} {after insert or update or delete on doc.doc for each statement execute procedure doc.doc_tf_chk();}
+
+
+# Fetch a document from the filesystem
+#----------------------------------------------------------------
+function doc.doc_fetch() {doc.doc} {
+  returns varchar language plpgsql as $$
+    begin
+        return old;
+    end;
+$$;}

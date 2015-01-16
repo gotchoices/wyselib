@@ -1,0 +1,28 @@
+# Copyright WyattERP
+#------------------------------------------
+
+tabtext whold_mod	{Tax Modules}	{Contains an entry defining each tax withholding module (such as for federal and state taxes)} {
+    {module		{Module}		{The name of the module.  This must match up with the name as defined in the backend stored procedures.}}
+    {descr		{Description}		{Describes what the module is for.}}
+    {cmt		{Comment}		{Any other notes about this module (such as the years for which the current data set is valid).}}
+}
+
+tabtext whold_dat	{Tax Table Data}	{Contains entries read by various tax withholding modules (like federal and state taxes)} {
+    {module		{Module}		{The name of the module.  This must match up with the name as defined in the backend stored procedures.}}
+    {seq		{Seq}			{As multiple entries are made for one module, this number is automatically incremented to make each entry unique}}
+    {type		{Period}		{The standard pay period interval this entry applies to} {
+        {we	{Weekly}	{The withholding is done once per week}}
+        {bw	{Bi-Weekly}	{The withholding is done every two weeks}}
+        {sm	{Semi-Monthly}	{The withholding is done twice per month}}
+        {mo	{Monthly}	{The withholding is done once per month}}
+        {qu	{Quarterly}	{The withholding is done every three months (four times a year)}}
+        {sa	{Semi-Annual}	{The withholding is done twice per year}}
+        {an	{Annual}	{The withholding is done once per year}}
+        {ot	{One-Time}	{The withholding will be done only once}}
+    }}
+    {code		{Code}			{A key word that will be understood by the individual withholding module to indicate what this entry is for (depends on the individual module)}}
+    {v1			{Value 1}		{A numeric that will be understood by the individual withholding module to indicate what this entry is for (depends on the individual module)}}
+    {v2			{Value 2}		{A numeric that will be understood by the individual withholding module to indicate what this entry is for (depends on the individual module)}}
+    {v3			{Value 3}		{A numeric that will be understood by the individual withholding module to indicate what this entry is for (depends on the individual module)}}
+    {v4			{Value 4}		{A numeric that will be understood by the individual withholding module to indicate what this entry is for (depends on the individual module)}}
+}
