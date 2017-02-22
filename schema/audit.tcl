@@ -110,14 +110,14 @@ namespace eval audit {
 #----------------------------------------------------------------
 other audit_type {} {
     create type audit_type as enum ('update','delete');
-} {drop type audit_type}
+} {drop type if exists audit_type}
 
 # Procedure to build an audit table and its associated triggers
 #----------------------------------------------------------------
 proc audit::audit {table cols {priv {}} {users base.ent}} {
     set create [field $table create]				;#get table's sql create script from wyseman, skip up through opening paren
-    if {![regexp {create table [a-zA-Z_.]+ \((.*)\); select} $create junk body]} {
-        err "Can't find sql body for table: $table"
+    if {![regexp {create table [a-zA-Z_.]+ \((.*)\).*;} $create junk body]} {
+        error "Can't find sql body for table: $table"
         return
     }
     set obody {}						;#accumulate parsed characters
@@ -161,7 +161,7 @@ proc audit::audit {table cols {priv {}} {users base.ent}} {
         }
     }
     if {$pk == {}} {
-        err "Can't parse locate primary key for table: $table"
+        error "Can't parse locate primary key for table: $table"
         return
     }
 #puts "      pk:$pk pksql:$pksql"

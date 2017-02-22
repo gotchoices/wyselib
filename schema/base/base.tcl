@@ -1,5 +1,6 @@
 # Variables for the base namesapce
 #--------------------------------------------------------
+require ../common.tcl ../audit.tcl ../glob.tcl
 
 namespace eval base {
     def ent_pk          {id}
@@ -18,4 +19,3 @@ namespace eval base {
     def ent_link_v_up   {role}
     def ent_link_se     [concat $ent_link_v_in supr_path $glob::stampfn]
 }
-

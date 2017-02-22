@@ -4,7 +4,7 @@
 #TODO:
 #- 
 
-schema base -grant public
+require base.tcl
 
 # An entity can be a person, company, group, etc
 #----------------------------------------------------------------
@@ -31,7 +31,7 @@ table base.ent {base.country} {
 
     subst($base::ent_local)	-- locally defined columns
     subst($glob::stamps)
-} -ver 1
+}
 index {} base.ent ent_type
 index {} base.ent username
 index {} base.ent proxy
@@ -113,7 +113,6 @@ view base.ent_v {base.ent} {
                 case when e.mid_name is null then '' else ' ' || e.mid_name end
             else '' end												as frm_name
       , case when e.fir_name is null then '' else coalesce(e.pref_name,e.fir_name) || ' ' end || e.ent_name	as cas_name
-      , e. oid as _oid
     from	base.ent	e;
 
     eval(rule_insert base.ent_v base.ent $base::ent_v_in {} $glob::stampin);
@@ -129,7 +128,6 @@ view base.ent_link_v {base.ent_link base.ent_v} {
     select eval(fld_list $base::ent_link_se el)
       , oe.std_name		as org_name
       , me.std_name		as mem_name
-      , el. oid as _oid
     from	base.ent_link	el
     join	base.ent_v	oe on oe.id = el.org
     join	base.ent_v	me on me.id = el.mem;

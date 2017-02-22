@@ -1,5 +1,5 @@
 LIBNAME=wyselib
-VERSION=0.10
+VERSION=0.20
 OBJS=acct.tcl base.tcl pdoc.tcl prod.tcl proj.tcl tran.tcl init.tcl
 
 #Allow the user to install where he wants
@@ -31,4 +31,4 @@ clean:
 	rm -f pkgIndex.tcl
 
 release: 
-	mkrelease
+	mkrelease ${LIBNAME} ${VERSION}

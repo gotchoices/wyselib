@@ -1,6 +1,8 @@
 # Definitions useable across all wyselib modules
 #include(Copyright)
 
+module wyselib
+
 namespace eval glob {}
 def glob::dba		{dba}
 def glob::lang		{en}

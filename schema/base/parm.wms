@@ -4,6 +4,7 @@
 #TODO:
 #- 
 
+require base.tcl
 namespace eval base {
     def parm_pk		{module parm}
     def parm_in		{module parm type cmt}	;#value specified explicitly in triggers

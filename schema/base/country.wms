@@ -3,6 +3,8 @@
 # Copyright WyattERP all rights reserved
 #TODO:
 #- 
+require base.tcl
+schema base -grant public
 
 # Table of countries
 #----------------------------------------------------------------
@@ -15,4 +17,4 @@ table base.country {base} {
   , dial_code	varchar(20)
   , iso_3	varchar(4)	not null unique
   , iana	varchar(6)
-}
+} -ver 1

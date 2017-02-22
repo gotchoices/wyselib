@@ -1,0 +1,6 @@
+2017	Version 0.20
+	Changes to work with new ruby-gem-based wyseman.
+
+2007?	Version 0.10
+	Initial attempt to generalize certain core functions of any ERP
+	into a common library.

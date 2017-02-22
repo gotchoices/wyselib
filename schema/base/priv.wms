@@ -9,6 +9,8 @@
 #- allow others besides dba to grant specified privs
 #- implement crt_by, mod_by for priv table
 #- 
+
+require base.tcl
 namespace eval base {
     def priv_pk 	{grantee priv}
     def priv_v_in 	{grantee priv level cmt}
@@ -21,7 +23,7 @@ namespace eval base {
 #----------------------------------------------------------------
 other base_priv_level {} {
     create type base_priv_level as enum ('role','limit','user','super');
-} {drop type base_priv_level}
+} {drop type if exists base_priv_level}
 
 # Track which privs/levels and roles are granted to each user
 #----------------------------------------------------------------
@@ -42,7 +44,6 @@ view base.priv_v {base.priv base.ent_v} {
   , e.username
   , e.database
   , g.priv_list
-  , p.oid as _oid
 
     from	base.priv	p
     join	base.ent_v	e on e.username = p.grantee
