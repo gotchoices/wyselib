@@ -1,4 +1,7 @@
 # Create a GUI for entering/editing transaction journal entries
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
+package provide wyselib 0.20
+
 #TODO:
 #X- Allow to put conjugated account code in a single field and have the GUI split it into fields
 #X- Allow to enter the offset account for non-split entries

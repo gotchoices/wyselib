@@ -1,6 +1,37 @@
 # Common TCL functions for use by any schema file
 #include(Copyright)
-package require wylib
+
+# Set a variable if it has not been set already
+# ----------------------------------
+proc def {obj args} {
+    upvar $obj o
+    if {[info exists o]} return		;#if already defined
+    if {[llength $args] >= 1} {set o {*}$args}
+    return $o
+}
+
+# Remove a named element from a list
+#------------------------------------------
+proc lremove {list args} {
+    foreach element $args {
+        if {[set idx [lsearch -exact $list $element]] >= 0} {
+            set list [lreplace $list $idx $idx]
+        }
+    }
+    return $list
+}
+
+#Does a list contain a specified element
+#------------------------------------------
+proc lcontain {list element} { 
+    if {[lsearch -exact $list $element] >= 0} {return true} else {return false}
+}
+
+#Replace one substring with another
+#------------------------------------------
+proc translit {find repl string} { 
+    return [string map -nocase [list $find $repl] $string]
+}
 
 # Short-hand for subst
 #------------------------------------------

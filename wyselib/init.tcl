@@ -1,7 +1,7 @@
 # Run when this library is first required
 #------------------------------------------
-#Copyright WyattERP, all other rights reserved
-package provide wyselib 0.10
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
+package provide wyselib 0.20
 package require wylib
 
 #TODO:

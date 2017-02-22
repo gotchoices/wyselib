@@ -3,6 +3,7 @@
 # Copyright WyattERP all rights reserved
 #TODO:
 #- 
+require base.tcl
 namespace eval base {
     def addr_pk		{addr_ent addr_seq}
     def addr_v_in	{addr_ent addr_spec city state zip country addr_cmt prime status shipable}
@@ -82,7 +83,6 @@ trigger base_addr_tr_biud {} {
 view base.addr_v {base.addr base.ent_v} {
     select eval(fld_list $base::addr_se a)
       , oe.std_name
-      , a.oid			as _oid
 
     from	base.addr	a
     join	base.ent_v	oe	on oe.id = a.addr_ent;

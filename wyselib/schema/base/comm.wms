@@ -3,6 +3,7 @@
 # Copyright WyattERP all rights reserved
 #TODO:
 #- 
+require base.tcl
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
     def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_label status}
@@ -30,7 +31,7 @@ table base.comm {base.ent} {
 }
 index {} base.comm comm_spec
 
-# Generate unique sequence for new address entry
+# Generate unique sequence for new communication entry
 #----------------------------------------------------------------
 function base.comm_tf_seq() {base.comm} {
   returns trigger security definer language plpgsql as $$
@@ -50,7 +51,6 @@ trigger base_comm_tr_seq {} {
 view base.comm_v {base.comm base.ent_v} {
     select eval(fld_list $base::comm_se c)
       , oe.std_name
-      , c.oid		as _oid
 
     from	base.comm	c
     join	base.ent_v	oe	on oe.id = c.comm_ent;
