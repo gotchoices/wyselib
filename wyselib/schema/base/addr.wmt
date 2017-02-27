@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabtext base.addr		{Addresses}		{Addresses (home, mailing, etc.) pertaining to entities} [concat {
     {addr_ent			{Entity ID}		{The ID number of the entity this address applies to}}
     {addr_seq			{Sequence}		{A unique number assigned to each new address for a given entity}}
@@ -20,4 +22,3 @@ tabtext base.addr		{Addresses}		{Addresses (home, mailing, etc.) pertaining to e
 tabtext base.addr_v		{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {
     {std_name			{entity Name}		{The name of the entity this address pertains to}}
 }
-

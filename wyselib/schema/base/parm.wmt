@@ -1,5 +1,6 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
 
 tabtext base.parm	{System Parameters}	{Contains parameter settings of several types for configuring and controlling various modules across the database} [concat {
     {module		{Module}		{The system or module within the ERP this setting is applicable to}}

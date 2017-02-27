@@ -17,4 +17,4 @@ table base.country {base} {
   , dial_code	varchar(20)
   , iso_3	varchar(4)	not null unique
   , iana	varchar(6)
-} -ver 1
+}
