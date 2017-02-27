@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabtext base.priv	{Privileges}		{Privileges assigned to each system user} {
     {grantee		{Grantee}		{The user receiving the privilege}}
     {priv		{Privilege}		{The name of the privilege being granted}}

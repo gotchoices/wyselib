@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabdef base.addr -focus addr_spec -fields [concat {
     {addr_seq		ent	5	{10 1}		-state readonly -just r -hide 1 -write 0}
     {zip		ent	10	{1 1}		-spf zip}

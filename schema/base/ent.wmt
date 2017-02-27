@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a group} [concat {
     {id			{Entity ID}		{A unique number assigned to each entity}}
     {ent_type		{Entity Type}		{The kind of entity this record represents} {

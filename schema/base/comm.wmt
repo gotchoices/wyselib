@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabtext base.comm		{Communication}		{Communication points (phone, email, fax, etc.) for entities} [concat {
     {comm_ent			{Entity}			{The ID number of the entity this communication point belongs to}}
     {comm_seq			{Sequence}		{A unique number assigned to each new address for a given entity}}

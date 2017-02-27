@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabtext base.country	{Countries}		{Contains standard ISO data about international countries} {
     {code		{Country Code}		{The ISO 2-letter country code.  This is the offical value to use when entering countries in wylib applications.}}
     {com_name		{Country}		{The common name of the country in English}}

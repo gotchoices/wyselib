@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabdef base.parm_v -focus module -fields [concat {
     {module		ent	12	{1 1}		-spf exs}
     {parm		ent	24	{2 1}		}

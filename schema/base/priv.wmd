@@ -1,5 +1,7 @@
 # Copyright WyattERP all rights reserved
 #------------------------------------------
+require ../common.tcl ../glob.tcl
+
 tabdef base.priv -focus priv -fields {
     {grantee		ent	12	{0 0}		-state readonly}
     {priv		ent	12	{1 0}		-spf exs}
