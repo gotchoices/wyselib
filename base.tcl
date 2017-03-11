@@ -59,7 +59,7 @@ proc base::ent_pre_com {w} {
 # Do before deleting the contact record
 #------------------------------------------
 proc base::ent_pre_dlr {w} {
-    if {![base::priv_has super entim]} {return 0}
+    if {![base::priv_has 2 entim]} {return 0}
     if {[dia::ask {Are you sure you want to delete this entity:} 1 {Delete} Cancel] < 0} {return 0}
     return 1
 }
@@ -210,11 +210,11 @@ proc base::priv_has {args} {
 
     argform {level priv} args
     argnorm {{level 1} {privilege 2 priv}} args
-    lassign "user [lib::cfig appname]" level priv
+    lassign "2 [lib::cfig appname]" level priv
     foreach s {level priv} {xswitchs $s args $s}
 #puts "priv_has: level:$level priv:$priv"
     if {![info exists prc(has.$priv.$level)]} {
-        lassign [sql::one "select case when base.priv_has('$priv','$level') then 1 else 0 end;"] prc(has.$priv.$level)
+        lassign [sql::one "select case when base.priv_has('$priv',$level) then 1 else 0 end;"] prc(has.$priv.$level)
     }
     if {[lcontain $cfig(su) [user_username]]} {return 1}	;#superuser
     return $prc(has.$priv.$level)

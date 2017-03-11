@@ -287,7 +287,7 @@ proc empl::build_empl {w {table {}}} {
         $m tools mi payr {Payroll Module} -under 4 -s Pay -help {Launch the payroll window} -command "top::top pay -title Payroll: -build {payroll::payroll %w} -reopen 1"
         $m tools mi oldu {Clone User} -under 0 -help {Make privileges for the current user similar to another user you will specify} -command "clone_privs $w"
     }
-    if {[base::priv_has limit -priv emplkeys]} {
+    if {[base::priv_has 1 -priv emplkeys]} {
         $m tools mi sep
         $m tools mi keys {Edit Keys} -under 5 -s Keys -help {Allows entering and editing of key allocations (building keys, keycards, lockers, etc) for each employee} -command "top::top keys -title {Key Allocations:} -build {top::dbep %w \$empl::cfig(keye) \$empl::cfig(keyp)} -reopen 1"
     }
