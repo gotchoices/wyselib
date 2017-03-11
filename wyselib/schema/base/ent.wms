@@ -10,7 +10,7 @@ require base.tcl
 #----------------------------------------------------------------
 table base.ent {base.country} {
     id		int		check (id > 0) primary key
-  , ent_type	char		not null check(ent_type in ('p','o','g'))
+  , ent_type	char		not null default 'p' check(ent_type in ('p','o','g','r'))
   , ent_name	varchar		not null
   , fir_name	varchar		constraint "!base.ent.CFN" check(case when ent_type != 'p' then fir_name is null end)
   , mid_name	varchar		constraint "!base.ent.CMN" check(case when fir_name is null then mid_name is null end)
@@ -25,7 +25,7 @@ table base.ent {base.country} {
   , activ	boolean		not null default true
   , inside	boolean		not null default true
   , country	varchar(3)	not null default 'US' references base.country on update cascade
-  , tax_id	varchar		unique
+  , tax_id	varchar       , unique(country, tax_id)
   , bank	varchar
   , proxy	int		constraint "!ent.ent.OPR" check (proxy != id)
 

@@ -6,11 +6,10 @@
 require base.tcl
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
-    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_label status}
+    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt active}
     def comm_v_up	[lremove $comm_v_in comm_ent]
     def comm_se		[concat $comm_pk $comm_v_up $glob::stampfn]
     def comm_types	{phone email cell fax text web pager other}
-	 def comm_labels  {phone work other}
     def comm_local	{}
 }
 
@@ -24,8 +23,7 @@ table base.comm {base.ent} {
   , comm_spec	varchar
   , comm_type	varchar		not null check(comm_type in ('eval(join $base::comm_types {','})'))
   , comm_cmt	varchar
-  , comm_label varchar		default false check(comm_label in ('eval(join $base::comm_labels {','})'))
-  , status		boolean
+  , active	boolean		not null default true
     subst($base::comm_local)	-- locally defined columns
     subst($glob::stamps)
 }
