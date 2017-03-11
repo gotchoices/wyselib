@@ -1,0 +1,6 @@
+#!/bin/sh
+# Initialize entities
+
+cat <<EOF
+insert into base.ent (ent_name,ent_type,username,database,country) values ('Admin','r',session_user,true,'US');
+EOF

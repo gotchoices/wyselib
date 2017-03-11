@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+# Function to initialize data in the country table
+#include(Copyright)
+#Get data file using: 
+#wget -q http://www.andrewpatton.com/countrylist.csv
+
+require 'csv'
+#require 'wyseman'			#For direct DB writing
+#require 'wyseman/db'
+#db = Wyseman::DB.new();
+if ! "".respond_to? :scrub		#For ruby < 2.1
+  require 'scrub_rb'
+end
+
+$stderr = StringIO.new			#To suppress printing of stderr
+
+done = []
+qlist = []
+file = File.join(File.dirname(__FILE__),'countrylist.csv')
+
+CSV.parse(File.read(file).scrub) {|row|
+  n, com_name, form_name, type, sub_type, sov, capital, cur_code, cur_name, dial_code, iso_2, iso_3, iso_n, iana = row
+#p row
+  next if com_name == '' || iso_2 == ''
+  if done.any? {|w| w == iso_2} 
+    $stderr.puts 'Skipping duplicate: ' + iso_2 + ' line:' + n; next
+  end
+  if dial_code && dial_code.split.length > 1
+    dial_code = dial_code.split[0]
+    $stderr.puts 'Fudging bad dial code: ' + dial_code + ' line:' + n
+  end
+  if cur_code && cur_code.split.length > 1
+    cur_code = cur_code.split[0]
+    $stderr.puts 'Fudging bad currency code: ' + cur_code + ' line:' + n
+  end
+  if iana && iana.length > 3
+    $stderr.puts 'Skipping bad iana code: ' + iana + ' line:' + n; next
+  end
+  if iana && iana.length > 3
+    $stderr.puts 'Skipping bad iana code: ' + iana + ' line:' + n; next
+  end
+  if !iso_3 || iso_3 == ''
+    $stderr.puts 'Skipping blank iso_3 code at line:' + n; next
+  end
+  if !iso_2 || iso_2 == ''
+    $stderr.puts 'Skipping blank iso_2 code: at line:' + n; next
+  end
+  done << iso_2			#Keep track of what we've done
+#p iso_2, com_name  
+  qlist << "insert into base.country (code,com_name,capital,cur_code,cur_name,dial_code,iso_3,iana) values ('#{iso_2.gsub("'","''")}','#{com_name.gsub("'","''")}','#{capital.to_s.gsub("'","''")}','#{cur_code.to_s.gsub("'","''")}','#{cur_name.to_s.gsub("'","''")}','#{dial_code.to_s.gsub(",","''")}','#{iso_3.to_s.gsub("'","''")}','#{iana.to_s.gsub("'","''")}')"
+}
+#p qlist
+
+#db.x qlist.join(";\n"); db.close		#Write direct to db
+puts qlist.join(";\n") + ";\n"			#To stdout

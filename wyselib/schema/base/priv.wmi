@@ -1,0 +1,6 @@
+#!/bin/sh
+# Initialize permissions
+
+cat <<EOF
+select base.priv_grants();
+EOF
