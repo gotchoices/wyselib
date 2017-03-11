@@ -116,11 +116,11 @@ proc proj::proj_build {w} {
 #    }
 #    gl::ar_agingp $m tools
 
-    if {[base::priv_has super -priv projman]} {
+    if {[base::priv_has 3 -priv projman]} {
         $m tools mi sep
         $m tools mi open {Reopen Project} -help {Set the status of a closed project back to open} -command "$w.e set status {open}; $w.e update"
     }
-#    if {[base::priv_has limit -priv commis]} {
+#    if {[base::priv_has 1 -priv commis]} {
 #        $m tools mi sep
 #        $m tools mi coml {Commission Register} -help {Open a preview window on the register showing commissions earned vs/ commissions/draws paid} -command "top::top rg_v_cm -title {Commission Register}   -build {top::dbp %w -table rg_v_cm $::cnf(cmv)} -reopen 1"
 #        $m tools mi comm {Project Commissions} -help {Open a toplevel window for entering/viewing/editing commission formulae} -command "top::top comm -title {Project Commissions:} -build {top::dbep %w \$::cnf(cmse) \$::cnf(cmsp)} -reopen 1"
