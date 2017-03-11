@@ -21,16 +21,16 @@ namespace eval base {
 
 # Levels describe how much of a given permission a user has
 #----------------------------------------------------------------
-other base_priv_level {} {
-    create type base_priv_level as enum ('role','limit','user','super');
-} {drop type if exists base_priv_level}
+#other base_priv_level {} {
+#    create type base_priv_level as enum ('role','limit','user','super');
+#} {drop type if exists base_priv_level}
 
 # Track which privs/levels and roles are granted to each user
 #----------------------------------------------------------------
-table base.priv {base.ent base_priv_level} {
+table base.priv {base.ent} {
     grantee	varchar		references base.ent (username) on update cascade on delete cascade
   , priv	varchar		
-  , level	base_priv_level	not null
+  , level	int		not null
   , priv_level	varchar		not null
   , cmt		varchar
   , primary key (grantee, priv)
@@ -57,7 +57,9 @@ view base.priv_v {base.priv base.ent_v} {
     {privedit	s {i u d}}
 }
 
-# Force grant all applicable permissions to all enabled users (used for new database instances)
+# Create all users who should have database access
+# Force grant all applicable permissions to all enabled users
+# This is necessary for new database instances
 #----------------------------------------------------------------
 function base.priv_grants() {base.priv} {
   returns int language plpgsql as $$
@@ -80,39 +82,33 @@ function base.priv_grants() {base.priv} {
 $$;}
 
 # When inserting/updating an entity, manage DB access correctly
-# bretb have altered trigger to create basic roles when a new user is added to database
-# this is a temporary step towars moving more responsibility to HR
-# this trigger is hard coded to ATI we need to make change to grab the right empler
 #----------------------------------------------------------------
 function base.ent_tf_iuacc() {base.ent} {
   returns trigger language plpgsql security definer as $$
     declare
-        trec	record;
-        dep	record;
+      trec	record;
     begin
-        if new.username is null then		-- Can't have database access without a username
-            new.database := false;
-        end if;
-        if TG_OP = 'UPDATE' then
-            if new.username != old.username then	-- if trying to change the user's username
+      if new.username is null then		-- Can't have database access without a username
+        new.database := false;
+      end if;
+      if TG_OP = 'UPDATE' then
+        if new.username != old.username then	-- if trying to change an existing username
 -- raise notice 'Change drop: %', old.username;
-                execute 'drop user ' || '"' || old.username || '"';	-- drop the old name
-            end if;
+          execute 'drop user ' || '"' || old.username || '"';	-- drop the old account
         end if;
+      end if;
 
-        if new.database and not exists (select usename from pg_user where usename = new.username) then
+      if new.database and not exists (select usename from pg_shadow where usename = new.username) then
 -- raise notice 'Create: %', new.username;
-            execute 'create user ' || '"' || new.username || '"';
-            select into dep * from empl.role_link where dept = (select dept from empl.empl where emple = new.id and emplr = 1);
-            insert into base.priv (grantee,priv,level) values (new.username,dep.role,'role');
---            for trec in select * from base.priv where grantee = new.username loop
-            execute 'grant "' || dep.role || '_role' || '" to ' || new.username;
---            end loop;
-        elseif not new.database and exists (select usename from pg_shadow where usename = new.username) then
+        execute 'create user ' || '"' || new.username || '"';
+        for trec in select * from base.priv where grantee = new.username loop
+          execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
+        end loop;
+      elseif not new.database and exists (select usename from pg_shadow where usename = new.username) then
 -- raise notice 'Drop: %', new.username;
-            execute 'drop user ' || '"' || new.username || '"';
-        end if;
-        return new;
+        execute 'drop user ' || '"' || new.username || '"';
+      end if;
+      return new;
     end;
 $$;}
 trigger base_ent_tr_iuacc {} {
@@ -172,19 +168,22 @@ trigger base_priv_tr_ad {} {
 # If not, recurse into any role groups he belongs to to see if we can find the priv there
 # Usage: base.priv_role(rolename,priv,level)
 #----------------------------------------------------------------
-function {base.priv_role(name,varchar,varchar)} {base wm.role_members} {
+function {base.priv_role(name,varchar,int)} {base wm.role_members} {
   returns boolean security definer language plpgsql stable as $$
     declare
       trec	record;
     begin
+      if $1 = current_database() then		-- Always true for DBA
+        return true;
+      end if;
       for trec in 
         select * from (select role, member, (regexp_split_to_array(role,'_'))[1] as rpriv,
                                             (regexp_split_to_array(role,'_'))[2] as rlevel
-            from wm.role_members where member = $1) sq where sq.rpriv = $2 or sq.rlevel = 'role' order by sq.rlevel::base_priv_level desc loop
+            from wm.role_members where member = $1) sq where sq.rpriv = $2 or sq.rlevel = '0' order by sq.rlevel desc loop
 -- raise notice 'Checking % % % % %', $1, trec.role, trec.rpriv, trec.rlevel, trec.member;
-          if trec.rpriv = $2 and trec.rlevel::base_priv_level >= $3::base_priv_level then
+          if trec.rpriv = $2 and trec.rlevel >= $3 then
               return true;
-          elsif trec.rlevel = 'role' then
+          elsif trec.rlevel = 0 then
               if base.priv_role(trec.role,$2,$3) then return true; end if;
           end if;
         end loop;
@@ -195,7 +194,7 @@ $$;}
 # Determine if the current user has a certain privilege level
 # Usage: priv_has(priv,level)
 #----------------------------------------------------------------
-function {base.priv_has(varchar,varchar)} {base.priv_role(name,varchar,varchar)} {
+function {base.priv_has(varchar,int)} {base.priv_role(name,varchar,int)} {
   returns boolean language sql stable as $$
       select base.priv_role(session_user,$1,$2);
 $$}
@@ -208,8 +207,8 @@ function {base.pop_role(rname varchar)} {base.priv_v} {
     declare
         trec	record;
     begin
-        for trec in select username from base.priv_v where priv = rname and level = 'role' and username is not null loop
-            execute 'grant "' || rname || '_role" to ' || trec.username;
+        for trec in select username from base.priv_v where priv = rname and level = 0 and username is not null loop
+            execute 'grant "' || rname || '_0" to ' || trec.username;
         end loop;
     end;
 $$;}

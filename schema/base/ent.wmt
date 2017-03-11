@@ -6,8 +6,9 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
     {id			{Entity ID}		{A unique number assigned to each entity}}
     {ent_type		{Entity Type}		{The kind of entity this record represents} {
         {p		{Person}		{The entity is an individual}}
-        {o		{Organization}		{The entity is a organization (such as a company or partnership) which may employ or include members of individual people or other organizations}}
-        {g		{Group}			{The entity is an group of people, companies, and/or other groups}}
+        {o		{Organization}		{The entity is an organization (such as a company or partnership) which may employ or include members of individual people or other organizations}}
+        {g		{Group}			{The entity is a group of people, companies, and/or other groups}}
+        {r		{Role}			{The entity is a role or position that may not correspond to a particular person or company}}
     }}
     {ent_cmt		{Ent Comment}		{Any other notes relating to this entity}}
     {ent_name		{Entity Name}		{Company name, personal surname, or group name}}

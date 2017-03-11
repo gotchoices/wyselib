@@ -97,6 +97,12 @@ proc rule_upfields {fields ffields} {
 # Update on multiple joined tables
 # Produce a separate rule for each table needing an update
 # Produce an additional insert in the case where a record doesn't exist yet
+#    fields:	columns to update in the specified table
+#  keyfield:	columns that form primary key in specified table
+#   ffields:	fields to receive a forced value on each update
+#     where:	expression that must be true in order for the specified table update rule to fire
+#   efields:	fields to insert to if the specified table doesn't yet contain a linked record
+#  effields:	fields to insert a forced value to if the specified table doesn't yet contain a linked record
 #----------------------------------------------------------------
 proc rule_upmulti {view tabrecs} {
     set vcnt 1
