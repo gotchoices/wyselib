@@ -1,5 +1,5 @@
 # Definitions useable across all wyselib modules
-#include(Copyright)
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 
 module wyselib
 

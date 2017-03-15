@@ -1,6 +1,6 @@
 # Macros for creating a Transaction Journal for a specified subsystem
 #------------------------------------------
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 #TODO:
 #X-   Practice rapid entry
 #X-   Which has precidence?  credit/debit or amount, separate code fields or coding

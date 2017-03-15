@@ -1,5 +1,5 @@
 # Common TCL functions for use by any schema file
-#include(Copyright)
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 
 # Set a variable if it has not been set already
 # ----------------------------------

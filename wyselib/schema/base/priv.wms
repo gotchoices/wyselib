@@ -38,7 +38,7 @@ table base.priv {base.ent} {
 
 # Base view of user grants which includes expanded version of the username
 #----------------------------------------------------------------
-view base.priv_v {base.priv base.ent_v} {
+view base.priv_v {base.priv base.ent_v wm.role_members} {
   select eval(fld_list $base::priv_se p)
   , e.std_name
   , e.username

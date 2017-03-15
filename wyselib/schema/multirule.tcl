@@ -1,5 +1,7 @@
-# Create rules to allow to insert/update/delete multiple tables joined together into a single view
-#include(Copyright)
+#Create rules to allow to insert/update/delete multiple tables joined together into a single view
+#This uses primarily rules, but suffers from the defect that it can't handle a "returning" clause.
+#It is superceded by multiview.tcl which uses view triggers.
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 #----------------------------------------------------------------
 # Used, for example with empl.empl_v to insert/update records
 # If record exists in:		and:		do:
@@ -36,7 +38,7 @@ proc rule_infields {fields ffields} {
     return [list ([join $fields ,]) values ([join $fvals ,])]
 }
 
-# Insert on multiple joined tables with an auto generated key
+# Insert on multiple joined tables with an auto generated key (Caution: can't do "returning")
 # The first given table will be inserted within a called function to generate the key
 # Subsequent tables (except the last one) will also be inserted in the function
 # The last table will be inserted in the rule using the key on a single field (so the operation will properly return an insert status)
@@ -49,7 +51,7 @@ proc rule_inmulta {view tabrecs} {
     set kflist {}					;#list of fields to find primary key in
     foreach tabrec $tabrecs {				;#for each table
         lassign $tabrec table fields keyfield ffields
-#puts "table:$table fields:$fields keyfield:$keyfield ffields:$ffields"
+#puts "table:$table fields:$fields\n  keyfield:$keyfield ffields:$ffields"
         if {[llength $keyfield] > 1} {lassign $keyfield keyfield keytype} else {set keytype {int}}	;#can specify type of primary key if not integer
         if {$rcnt == 0} {				;#only do for first record
             set    body "if exists (select * from $table where $keyfield = rid) then\n"
@@ -61,7 +63,7 @@ proc rule_inmulta {view tabrecs} {
             set fkeytype $keytype
         } elseif {$rcnt < $lrec} {			;#do for all middle records (not first or last)
             append body "insert into $table [rule_infields $fields [concat $ffields $keyfield rid]];\n"
-#       } else {					;#nothing for last record (processed in rule instead)
+#       } else {					;#nothing for last record (processed in rule below instead)
         }
         set kflist [concat new.$keyfield $kflist]
         incr rcnt
@@ -69,9 +71,56 @@ proc rule_inmulta {view tabrecs} {
 
     function "${view}_insfunc(new $view)" $view "returns $fkeytype language plpgsql security definer as \$\$
     declare rid $fkeytype default coalesce([join $kflist ,]); begin\n    $body\n    return rid;\n    end;\$\$;"
-        
+
+#Can't find a good way to generate a "returning" record, "returning *" returns what is in our insert (only the last table) and we have to match the entire view record field list exactly in name and type.
+#set aflist [list user_ent null::varchar null::varchar null::varchar null::varchar null::varchar null::varchar null::varchar null::varchar null::varchar null::date null::varchar null::boolean null::boolean null::boolean null::varchar null::varchar null::varchar null::int null::text null::text null::text *]
+#puts "RULE:insert into $table [rule_infields $fields [concat $ffields $keyfield ${view}_insfunc(new)]] returning [join $aflist ,];"
     rule [translit . _ $view]_insrule [list ${view}_insfunc($view)] "on insert to $view do instead\n
-        insert into $table [rule_infields $fields [concat $ffields $keyfield ${view}_insfunc(new)]]"
+        insert into $table [rule_infields $fields [concat $ffields $keyfield ${view}_insfunc(new)]];"
+    return {}
+}
+
+# Insert on multiple joined tables with an auto generated key (alternate implementation)
+# This is implemented as a view trigger firing instead of the insert
+# This does not return sql--it creates wyseman objects directly
+# Table Record: {table_name {fields to insert} primary_key {fields with forced values}
+#    fields:	columns to insert, if necessary in the specified table
+#  keyfield:	columns that form primary key in specified table
+#   ffields:	fields to receive a forced value on each insert
+#   ufields:	fields to update if the specified record (in the first table) already exists
+#----------------------------------------------------------------
+proc trig_inmulta {view tabrecs} {
+    set rcnt 0
+    set lrec [expr [llength $tabrecs] - 1]		;#last record we will consider
+    set kflist {}					;#list of fields to find primary key in
+    foreach tabrec $tabrecs {				;#for each table
+        lassign $tabrec table fields keyfield ffields ufields
+#puts "table:$table fields:$fields\n  keyfield:$keyfield ffields:$ffields ufields:$ufields"
+        if {[llength $keyfield] > 1} {lassign $keyfield keyfield keytype} else {set keytype {int}}	;#can specify type of primary key if not integer
+        if {$rcnt == 0} {				;#only do for first record
+            set    body "if exists (select $keyfield from $table where $keyfield = rid) then\n"
+            append body "        update $table set [rule_upfields {} $ufields] where [fld_list_eq $keyfield new { and }];\n\n"
+            append body "    else\n"
+#            append body "        execute (select 'new.active = true; new.country = null');\n"
+            append body "        execute 'select string_agg(val,'','') from wm.column_def where obj = ''$view'';' into str;\n"
+#            append body "        raise notice 'ts:%', str;\n"
+            append body "        execute 'select ' || str || ';' into new using new;\n"
+            append body "        insert into $table [rule_infields $fields $ffields] returning into new.$keyfield $keyfield;\n"
+            append body "    end if;\n"
+            set fkeyfield $keyfield
+            set fkeytype $keytype
+        } elseif {$rcnt <= $lrec} {			;#do for remaining records
+            append body "insert into $table [rule_infields $fields [concat $ffields $keyfield new.id]];\n"
+        }
+        set kflist [concat new.$keyfield $kflist]
+        incr rcnt
+    }
+
+    set func "returns trigger language plpgsql security definer as \$\$\ndeclare\n  rid $fkeytype default coalesce([join $kflist ,]);  str varchar;\nbegin\n    $body\n    return new;\n    end;\$\$;"
+#puts "\nFunc:$func"
+    function "${view}_insfunc()" $view $func
+
+    trigger [translit . _ $view]_tr_ins [list ${view}_insfunc()] "instead of insert on $view for each row execute procedure ${view}_insfunc();"
     return {}
 }
 
