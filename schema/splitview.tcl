@@ -1,6 +1,6 @@
 # Implement insert,update,delete triggers on a view which joins multiple tables
 #------------------------------------------
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 #TODO:
 #X- implement for prod.prod_v_vers
 #X- generalize for use elsewhere

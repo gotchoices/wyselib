@@ -3,7 +3,8 @@
 # Copyright WyattERP all rights reserved
 #TODO:
 #- 
-require base.tcl
+require base.tcl ../trigview.tcl
+
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
     def comm_v_in	{comm_ent comm_type comm_spec comm_cmt active}
@@ -53,8 +54,8 @@ view base.comm_v {base.comm base.ent_v} {
     from	base.comm	c
     join	base.ent_v	oe	on oe.id = c.comm_ent;
 
-    eval(rule_insert base.comm_v base.comm $base::comm_v_in {} $glob::stampin);
-    eval(rule_update base.comm_v base.comm $base::comm_v_up $base::comm_pk {} $glob::stampup);
+    eval(trigview::insert base.comm_v base.comm $base::comm_v_in $base::comm_pk $glob::stampin);
+    eval(trigview::update base.comm_v base.comm $base::comm_v_up $base::comm_pk $glob::stampup);
     eval(rule_delete base.comm_v base.comm $base::comm_pk);
 } -grant {
     {entim	s {i u} d}

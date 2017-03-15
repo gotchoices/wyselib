@@ -32,7 +32,7 @@ audit::audit base.parm $base::parm_audit glman
 
 # Base view with limited access
 #----------------------------------------------------------------
-view base.parm_v {base.parm} {select eval(fld_list $base::parm_se)
+view base.parm_v {base.parm norm_date(date) norm_bool(boolean)} {select eval(fld_list $base::parm_se)
   , case when type = 'int'	then v_int::text
          when type = 'date'	then norm_date(v_date)
          when type = 'text'	then v_text

@@ -1,6 +1,6 @@
 # Implement insert,update,delete triggers on a single table view
 #------------------------------------------
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 #TODO:
 #- 
 

@@ -3,7 +3,8 @@
 # Copyright WyattERP all rights reserved
 #TODO:
 #- 
-require base.tcl
+require base.tcl ../trigview.tcl
+
 namespace eval base {
     def addr_pk		{addr_ent addr_seq}
     def addr_v_in	{addr_ent addr_spec city state pcode country addr_cmt prim active physical}
@@ -52,7 +53,7 @@ trigger base_addr_tr_seq {} {
 function base.addr_tf_biud() {base.addr} {
   returns trigger language plpgsql security definer as $$
     declare
-        cnt	int;
+        seq	int;
     begin
         if TG_OP = 'UPDATE' then
             if new.prim != old.prim then
@@ -63,8 +64,13 @@ function base.addr_tf_biud() {base.addr} {
                 update base.addr set prim = false where addr_ent = new.addr_ent and prim = true;
             end if;
         elsif TG_OP = 'DELETE' then
-            if old.prim = true then
-                raise exception '!base.addr.CPS';
+            if old.prim is true then
+                select into seq addr_seq from base.addr where addr_ent = old.addr_ent and addr_seq <> old.addr_seq order by addr_seq desc limit 1;
+                if FOUND then
+                    update base.addr set prim = true where addr_ent = new.addr_ent and addr_seq = seq;
+--                else					-- OK to delete last address
+--                    raise exception '!base.addr.CPS';
+                end if;
                 return old;
             else 
 		return old;
@@ -87,8 +93,8 @@ view base.addr_v {base.addr base.ent_v} {
     from	base.addr	a
     join	base.ent_v	oe	on oe.id = a.addr_ent;
 
-    eval(rule_insert base.addr_v base.addr $base::addr_v_in {} $glob::stampin);
-    eval(rule_update base.addr_v base.addr $base::addr_v_up $base::addr_pk {} $glob::stampup);
+    eval(trigview::insert base.addr_v base.addr $base::addr_v_in $base::addr_pk $glob::stampin);
+    eval(trigview::update base.addr_v base.addr $base::addr_v_up $base::addr_pk $glob::stampup);
     eval(rule_delete base.addr_v base.addr $base::addr_pk);
 } -grant {
     {entim	s {i u} d}
