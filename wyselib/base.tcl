@@ -7,7 +7,7 @@ package provide wyselib 0.20
 #- 
 
 namespace eval base {
-    namespace export build priv_has priv_run priv_check priv_alarm priv_me user_eid user_name user_username menu_parm build_priv build_comm build_addr
+    namespace export build priv_has priv_run priv_check priv_alarm priv_me user_eid user_name user_username menu_parm build_priv build_comm build_addr build_parm
     variable prc	;#cache of values from privilege table
     variable cfig
     set cfig(su)	{}
@@ -33,7 +33,7 @@ namespace eval base {
     set cfig(prive) "base.priv_v $wyselib::dbebuts -adr.pre {base::priv_pre_com %w add} -upr.pre {base::priv_pre_com %w upd} -dlr.pre {base::priv_pre_com %w del}"
     set cfig(privp) "$wyselib::dbpbuts -display {grantee std_name priv_level database priv_list}"
 
-    set cfig(addre) "$wyselib::dbebuts -check {f {addr_spec country prime} r {city state}} -adr.pre base::addr_pre_add"
+    set cfig(addre) "$wyselib::dbebuts -check {f {addr_spec country prim} r {city state}} -adr.pre base::addr_pre_add"
     set cfig(addrp) "$wyselib::dbpbuts -disp {addr_spec city state zip addr_cmt addr_ent comm_seq} -order {addr_ent addr_seq}"
     
     set cfig(comme) [concat $wyselib::dbebuts {
@@ -95,7 +95,7 @@ proc base::priv_pre_com {w {func add}} {
 # Menu/builder: product types
 #----------------------------------------------------
 top::menu base parm {} {System Parameters} {Open a toplevel window for viewing/editing parameters used in various modules throughout the database.}
-proc base::parm_build {w} {return [top::dbep $w $base::cfig(parme) $base::cfig(parmp)]}
+proc base::build_parm {w} {return [top::dbep $w $base::cfig(parme) $base::cfig(parmp)]}
 
 # Build toplevel window to view and edit privledges
 #------------------------------------------------------
