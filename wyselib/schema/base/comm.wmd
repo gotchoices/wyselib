@@ -3,13 +3,12 @@
 require ../common.tcl ../glob.tcl
 
 tabdef base.comm -focus comm_spec -fields [concat {
-    {comm_seq		ent	5	{10 1}		-state readonly -just r -hide 1 -write 0}
+    {comm_seq		ent	 5	{10 1}		-state readonly -just r -hide 1 -write 0}
     {comm_spec		ent	28	{1 1}		}
-    {status         chk 2   {2 1}       -ini false -onvalue true -offvalue false}
-    {comm_type		pdm	5	{1 2}		-init phone}
-    {comm_label     pdm 7   {2 2}       }
+    {comm_inact		chk	 2	{2 1}		-ini false -onvalue true -offvalue false}
+    {comm_type		pdm	 5	{1 2}		-init phone}
     {comm_cmt		ent	50	{1 3 2}		}
-    {comm_ent		ent	5	{1 5 2}		-opt 1 -state readonly -just r}
+    {comm_ent		ent	 5	{1 5 2}		-opt 1 -state readonly -just r}
 } $glob::stampd]
 
 tabdef base.comm_v -fields {

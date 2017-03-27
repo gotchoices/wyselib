@@ -4,14 +4,14 @@ require ../common.tcl ../glob.tcl
 
 tabdef base.addr -focus addr_spec -fields [concat {
     {addr_seq		ent	5	{10 1}		-state readonly -just r -hide 1 -write 0}
-    {zip		ent	10	{1 1}		-spf zip}
+    {pcode		ent	10	{1 1}		-spf zip}
     {state		ent	2	{2 1}		-spf scm -data state}
     {city		ent	14	{3 1}		}
     {country		ent	3	{4 1}		-spf scm -data country}
     {addr_spec		ent	30	{1 2 2}		-spf edw}
-    {prime		chk	2	{1 3}		-ini false -onvalue t -offvalue f}
-    {status		chk	2	{2 3}		-ini false -onvalue t -offvalue f}
-    {shipable		chk	2	{3 3}		-ini false -onvalue t -offvalue f}
+    {addr_prim		chk	2	{1 3}		-ini false -onvalue t -offvalue f}
+    {addr_inac		chk	2	{2 3}		-ini false -onvalue t -offvalue f}
+    {physical		chk	2	{3 3}		-ini false -onvalue t -offvalue f}
     {addr_cmt		ent	50	{1 5 4}		-spf edw}
     {addr_ent		ent	5	{1 6 2}		-opt 1 -sta readonly -just r}
 } $glob::stampd]
