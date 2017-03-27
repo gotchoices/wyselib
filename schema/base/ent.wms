@@ -22,7 +22,7 @@ table base.ent {base.country} {
   , born_date	date		constraint "!base.ent.CBD" check(case when ent_type = 'p' and inside then born_date is not null end)
   , username	varchar		unique
   , database	boolean		not null default false
-  , activ	boolean		not null default true
+  , ent_inact	boolean		not null default false
   , inside	boolean		not null default true
   , country	varchar(3)	not null default 'US' references base.country on update cascade
   , tax_id	varchar       , unique(country, tax_id)

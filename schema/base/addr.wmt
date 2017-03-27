@@ -5,18 +5,18 @@ require ../common.tcl ../glob.tcl
 tabtext base.addr		{Addresses}		{Addresses (home, mailing, etc.) pertaining to entities} [concat {
     {addr_ent			{Entity ID}		{The ID number of the entity this address applies to}}
     {addr_seq			{Sequence}		{A unique number assigned to each new address for a given entity}}
-    {addr_spec			{Address}		{Street address or PO Box.  This can occupy multiple lines if necessary.}}
-    {status			{Active}		{If checked this address is still a valid address.}}
-    {prime			{Primary}		{If checked this address is the primary address for contacting this entity.}}
-    {shipable			{Ship}			{If checked this address can be shipped to.}}
+    {addr_spec			{Address}		{Street address or PO Box.  This can occupy multiple lines if necessary}}
+    {addr_inact			{Inactive}		{If checked this address is no longer a valid address}}
+    {addr_prim			{Primary}		{If checked this address is the primary address for contacting this entity}}
+    {physical			{Physical}		{If checked this is a physical address, such as can be shipped to}}
     {addr_cmt			{Comment}		{Any other notes about this address}}
     {city			{City}			{The name of the city this address is in}}
-    {state			{State}			{The name of the state or province this address is in.}}
-    {zip			{Zip}			{Zip or other mailing code applicable to this address.}}
+    {state			{State}			{The name of the state or province this address is in}}
+    {pcode			{Zip/Postal}		{Zip or other mailing code applicable to this address.}}
     {country			{Country}		{The name of the country this address is in.  Use standard international country code abbreviations.}}
 } $glob::stampt] -errors {
     {CCO			{Country}		{The country must always be specified (and in standard form)}}
-    {CPS			{Prime}			{There must be at least one address checked as primary}}
+    {CPS			{Primary}		{There must be at least one address checked as primary}}
 }
 
 tabtext base.addr_v		{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {

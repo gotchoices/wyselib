@@ -7,7 +7,7 @@ require base.tcl ../trigview.tcl
 
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
-    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt active}
+    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_inact}
     def comm_v_up	[lremove $comm_v_in comm_ent]
     def comm_se		[concat $comm_pk $comm_v_up $glob::stampfn]
     def comm_types	{phone email cell fax text web pager other}
@@ -24,7 +24,7 @@ table base.comm {base.ent} {
   , comm_spec	varchar
   , comm_type	varchar		not null check(comm_type in ('eval(join $base::comm_types {','})'))
   , comm_cmt	varchar
-  , active	boolean		not null default true
+  , comm_inact	boolean		not null default false
     subst($base::comm_local)	-- locally defined columns
     subst($glob::stamps)
 }

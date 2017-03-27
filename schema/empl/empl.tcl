@@ -21,7 +21,7 @@ namespace eval empl {
     def addr_v_up       [lremove $addr_v_in addr_ent]
     def addr_se         [concat $addr_pk $addr_v_up $glob::stampfn] 
     def comm_pk         {comm_ent comm_seq}
-    def comm_v_in       {comm_ent comm_type comm_spec comm_cmt comm_label status}
+    def comm_v_in       {comm_ent comm_type comm_spec comm_cmt status}
     def comm_v_up       [lremove $comm_v_in comm_ent]
     def comm_se         [concat $comm_pk $comm_v_up $glob::stampfn]
     def local_wmd	{}

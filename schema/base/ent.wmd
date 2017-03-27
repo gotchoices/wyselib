@@ -11,7 +11,7 @@ tabdef base.ent -focus ent_name -fields [concat {
     {mid_name		ent	12	{3 2}		}
     {pref_name		ent	12	{1 3}		}
     {inside		chk	2	{2 3}		-onv t -offv f}
-    {activ		chk	2	{3 3}		-ini t -onv t -offv f}
+    {ent_inact		chk	2	{3 3}		-ini f -onv t -offv f}
     {born_date		ent	11	{1 4}		-spf cal}
     {gender		pdm	2	{2 4}		-ini m}
     {marital		pdm	2	{3 4}		-ini s}

@@ -28,7 +28,7 @@ namespace eval base {
     set cfig(ente) "base.ent_v -slaves {{priv p} {com p} {addr p}} $wyselib::dbebuts
         -dlr.pre base::ent_pre_dlr -adr.pre base::ent_pre_com -upr.pre base::ent_pre_com
     "
-    set cfig(entp) "-selectmode extended $wyselib::dbpbuts -disp {id ent_type activ std_name username born_date ent_cmt}"
+    set cfig(entp) "-selectmode extended $wyselib::dbpbuts -disp {id ent_type inact std_name username born_date ent_cmt}"
 
     set cfig(prive) "base.priv_v $wyselib::dbebuts -adr.pre {base::priv_pre_com %w add} -upr.pre {base::priv_pre_com %w upd} -dlr.pre {base::priv_pre_com %w del}"
     set cfig(privp) "$wyselib::dbpbuts -display {grantee std_name priv_level database priv_list}"

@@ -29,7 +29,7 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
     }}
     {username		{Username}		{The login name for this person, if a user on this system}}
     {database		{Data Access}		{A flag indicating that this entity has access to the ERP database}}
-    {activ		{Active}		{A flag indicating that this entity is current, in business, or alive}}
+    {ent_inact		{Inactive}		{A flag indicating that this entity is no longer current, in business, or alive}}
     {inside		{Inside}		{A flag indicating that this person is somehow associated with this site (user, member, employee, etc.).  Inside people will be given an ID number in a lower range than outside people and companies.}}
     {country		{Country}		{The country of primary citizenship (for people) or legal organization (companies)}}
     {tax_id		{TID/SSN}		{The number by which the country recognizes this person or company for taxation purposes}}
