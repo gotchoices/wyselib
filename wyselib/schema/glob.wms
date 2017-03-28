@@ -79,6 +79,17 @@ $$;}
 #    return [llength $2]
 #$$;}
 
+#Check a string to see if it contains a date
+#-------------------------------------------
+function {is_date(s text)} {} {returns boolean language plpgsql immutable as $$
+    begin 
+      perform s::date;
+      return true;
+    exception when others then
+      return false;
+    end;
+$$;}
+
 #Case insensitive operators (for consistency with other operators)
 #-------------------------------------------
 function eqnocase(text,text) {} {

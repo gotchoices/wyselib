@@ -49,6 +49,20 @@ view base.parm_v {base.parm norm_date(date) norm_bool(boolean)} {select eval(fld
 function base.parm_v_tf_ins() {base.parm_v} {
   returns trigger language plpgsql as $$
     begin
+        if new.type is null then
+            case when new.value ~ '^[0-9]+$' then
+                new.type = 'int';
+            when new.value ~ '^[0-9]+\.*[0-9]*$' then
+                new.type = 'float';
+            when is_date(new.value) then
+                new.type = 'date';
+            when lower(new.value) in ('t','f','true','false','yes','no') then
+                new.type = 'boolean';
+            else
+                new.type = 'text';
+            end case;
+        end if;
+    
         case when new.type = 'int' then
             insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_int) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::int);
         when new.type = 'date' then
@@ -96,6 +110,29 @@ function base.parm_v_tf_del() {base.parm_v} {
     end;
 $$;}
 trigger base_parm_v_tr_del {} {instead of delete on base.parm_v for each row execute procedure base.parm_v_tf_del();}
+
+# Set the value of a parameter, with a polymorphic value
+#----------------------------------------------------------------
+function {base.parmset(m varchar, p varchar, v anyelement, t varchar default null)} {base.parm} {
+  returns anyelement language plpgsql as $$
+    begin
+      if exists (select type from base.parm where module = m and parm = p) then
+        update base.parm_v set value = v where module = m and parm = p;
+      else
+        insert into base.parm_v (module,parm,value,type) values (m,p,v,t);
+      end if;
+      return v;
+    end;
+$$;}
+
+# Set the value of a parameter with a text value
+#----------------------------------------------------------------
+function {base.parmsett(m varchar, p varchar, v varchar, t varchar default null)} {base.parmset(varchar,varchar,anyelement,varchar)} {
+  returns varchar language plpgsql as $$
+    begin
+      return base.parmset(m,p,v,t);
+    end;
+$$;}
 
 # Return the specified parameter value or a default value if the parameter is not found
 #----------------------------------------------------------------
