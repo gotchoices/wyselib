@@ -59,12 +59,14 @@ function base.ent_tf_id() {base.ent} {
             end if;
         end if;
         if new.id is null then
-            if not new.inside then		-- use big number for outside people and companies
-                select into new.id coalesce(max(id)+1,subst($base::ent_outmin)) from base.ent where id >= subst($base::ent_outmin);
-            elseif new.ent_type = 'o' then	-- use really small numbers for inside company entities
-                select into new.id coalesce(max(id)+1,subst($base::ent_entmin)) from base.ent where id < subst($base::ent_insmin);
-            else				-- medium sized numbers for employees
-                select into new.id coalesce(max(id)+1,subst($base::ent_insmin)) from base.ent where id >= subst($base::ent_insmin) and id < subst($base::ent_outmin);
+            if new.ent_type = 'p' then		-- use separate range for people, companies, groups, roles
+                select into new.id coalesce(max(id)+1,subst($base::ent_permin)) from base.ent where id >= subst($base::ent_permin);
+            elseif new.ent_type = 'g' then
+                select into new.id coalesce(max(id)+1,subst($base::ent_grpmin)) from base.ent where id >= subst($base::ent_grpmin) and id < subst($base::ent_permin);
+            elseif new.ent_type = 'o' then
+                select into new.id coalesce(max(id)+1,subst($base::ent_orgmin)) from base.ent where id >= subst($base::ent_orgmin) and id < subst($base::ent_grpmin);
+            else
+                select into new.id coalesce(max(id)+1,subst($base::ent_rolmin)) from base.ent where id >= subst($base::ent_rolmin) and id < subst($base::ent_orgmin);
             end if;
         end if;
         return new;
@@ -113,6 +115,7 @@ view base.ent_v {base.ent} {
                 case when e.mid_name is null then '' else ' ' || e.mid_name end
             else '' end												as frm_name
       , case when e.fir_name is null then '' else coalesce(e.pref_name,e.fir_name) || ' ' end || e.ent_name	as cas_name
+      , e.fir_name || case when e.mid_name is null then '' else ' ' || e.mid_name end				as giv_name
     from	base.ent	e;
 
     eval(rule_insert base.ent_v base.ent $base::ent_v_in {} $glob::stampin);
