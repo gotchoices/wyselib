@@ -63,7 +63,7 @@ set trigview::insfunc {
     trec record;					-- temporary record for single table
     str  varchar;					-- command string
   begin
-    execute $trigview::dquery1 into str using '$table';	-- get default field assignments from data dictionary
+    execute $trigview::dquery1 into str using '$view';	-- get default field assignments from data dictionary
     execute $trigview::dquery2 into trec using new;	-- force nulls to defaults, where appropriate
     insert into $table [infields $fields $ffields trec $keyfield] returning [join $keyfield ,] into [fld_list $keyfield new];
     select into new * from $view where [fld_list_eq $keyfield new { and }];	-- Fill new with any auto-populated values
