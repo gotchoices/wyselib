@@ -18,7 +18,9 @@ tabtext base.comm	{Communication}		{Communication points (phone, email, fax, etc
     {comm_spec		{Num/Addr}		{The number or address to use when communication via this method and communication point}}
     {comm_cmt		{Comment}		{Any other notes about this communication point}}
     {comm_inact		{Inactive}		{This box is checked to indicate that this record is no longer current}}
-} $glob::stampt]
+} $glob::stampt] -errors {
+    {CPC		{Primary}		{There must be at least one communication point of each type checked as primary}}
+}
 
 tabtext base.comm_v	{Communication}		{View of users' communication points (phone, email, fax, etc.) with additional helpful fields} {
     {std_name		{Entity Name}		{The name of the entity this communication point pertains to}}

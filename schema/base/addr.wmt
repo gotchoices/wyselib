@@ -16,7 +16,7 @@ tabtext base.addr		{Addresses}		{Addresses (home, mailing, etc.) pertaining to e
     {country			{Country}		{The name of the country this address is in.  Use standard international country code abbreviations.}}
 } $glob::stampt] -errors {
     {CCO			{Country}		{The country must always be specified (and in standard form)}}
-    {CPS			{Primary}		{There must be at least one address checked as primary}}
+    {CPA			{Primary}		{There must be at least one address checked as primary}}
 }
 
 tabtext base.addr_v		{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {

@@ -7,7 +7,7 @@ require base.tcl ../trigview.tcl
 
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
-    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_inact}
+    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_inact comm_prim}
     def comm_v_up	[lremove $comm_v_in comm_ent]
     def comm_se		[concat $comm_pk $comm_v_up $glob::stampfn]
     def comm_types	{phone email cell fax text web pager other}
@@ -25,6 +25,8 @@ table base.comm {base.ent} {
   , comm_type	varchar		not null check(comm_type in ('eval(join $base::comm_types {','})'))
   , comm_cmt	varchar
   , comm_inact	boolean		not null default false
+  , comm_prim	boolean		not null default false constraint "!base.comm.CPC" check(case when comm_inact is true then comm_prim is false end)
+  , dirty	boolean		not null default false
     subst($base::comm_local)	-- locally defined columns
     subst($glob::stamps)
 }
@@ -43,6 +45,63 @@ function base.comm_tf_seq() {base.comm} {
 $$;}
 trigger base_comm_tr_seq {} {
     before insert on base.comm for each row execute procedure base.comm_tf_seq();
+}
+
+# Trigger on base.comm to make sure there is not more than one primary communication point of the same type
+# -----------------------------------------------------------------
+function base.comm_tf_biud() {base.comm} {
+  returns trigger language plpgsql security definer as $$
+    begin
+        if TG_OP = 'UPDATE' then
+            if new.comm_inact then
+                new.comm_prim = false;
+                new.dirty = true;
+            end if;
+            if new.comm_prim and not old.comm_prim then		-- Setting this as the new primary
+                update base.comm set comm_prim = false where comm_ent = new.comm_ent and comm_type = new.comm_type and comm_seq <> new.comm_seq and comm_prim;
+                new.dirty = true;
+            end if;
+        elsif TG_OP = 'INSERT' then
+            if new.comm_prim is true then			-- If this is primary, all others are now not
+raise notice 'BIU IN, falsing others: %', new.comm_ent;
+                update base.comm set comm_prim = false where comm_ent = new.comm_ent and comm_type = new.comm_type and comm_prim;
+            elsif not exists (select comm_seq from base.comm where comm_ent = new.comm_ent and comm_type = new.comm_type and not comm_inact) then
+raise notice 'BIU IN, forcing true: %', new.comm_ent;
+                new.comm_prim = true;				-- First and only commess is always primary
+            end if;
+        elsif TG_OP = 'DELETE' then
+            update base.comm set dirty = true where comm_ent = old.comm_ent and comm_type = old.comm_type and comm_seq <> old.comm_seq and not comm_inact;
+            return old;
+        end if;
+        return new;
+    end;
+$$;}
+trigger base_comm_tr_biud {} {
+    before insert or update or delete on base.comm for each row execute procedure base.comm_tf_biud();
+}
+
+# Make sure at least one active record is left marked as primary
+# -----------------------------------------------------------------
+function base.comm_tf_aiud() {base.comm} {
+  returns trigger language plpgsql security definer as $$
+    declare
+        kr	record;
+        seq	int;
+    begin
+        for kr in select distinct comm_ent,comm_seq,comm_type from base.comm where dirty loop
+            if not exists (select comm_seq from base.comm where comm_ent = kr.comm_ent and comm_type = kr.comm_type and not comm_inact and comm_prim) then
+                select into seq comm_seq from base.comm where comm_ent = kr.comm_ent and comm_type = kr.comm_type and not comm_inact order by comm_seq desc limit 1;
+                if FOUND then
+raise notice 'AIU IN, forcing true: %', seq;
+                    update base.comm set comm_prim = true where comm_ent = kr.comm_ent and comm_seq = seq;
+                end if;
+            end if;
+        end loop;
+        return old;
+    end;
+$$;}
+trigger base_comm_tr_aiud {} {
+    after insert or update or delete on base.comm for each statement execute procedure base.comm_tf_aiud();
 }
 
 #Base communication view
