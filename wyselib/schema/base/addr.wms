@@ -7,10 +7,11 @@ require base.tcl ../trigview.tcl
 
 namespace eval base {
     def addr_pk		{addr_ent addr_seq}
-    def addr_v_in	{addr_ent addr_spec city state pcode country addr_cmt addr_prim addr_inact physical}
+    def addr_v_in	{addr_ent addr_spec city state pcode country addr_cmt addr_type addr_prim addr_inact}
     def addr_v_up	[lremove $addr_v_in addr_ent]
     def addr_se		[concat $addr_pk $addr_v_up $glob::stampfn]
     def addr_local	{}
+    def addr_types	{bill ship}
 }
 
 # Contains an entry for each address for an entity
@@ -19,20 +20,20 @@ table base.addr {base.ent} {
     addr_ent	int		references base.ent on update cascade on delete cascade
   , addr_seq	int	      , primary key (addr_ent, addr_seq)
   , addr_spec	varchar		not null
-  , addr_inact	boolean		not null default false
+  , addr_type	varchar		not null check(addr_type in ('eval(join $base::addr_types {','})'))
   , addr_prim	boolean		not null default false constraint "!base.addr.CPA" check(case when addr_inact is true then addr_prim is false end)
-  , dirty	boolean		not null default false
-  , physical	boolean		not null default false
   , addr_cmt	varchar
- 
+  , addr_inact	boolean		not null default false
   , city	varchar
   , state	varchar
   , pcode	varchar
   , country	varchar(3)	constraint "!base.addr.CCO" not null default 'US' references base.country on update cascade
-    subst($glob::stamps)
+  , dirty	boolean		not null default false
     subst($base::addr_local)	-- locally defined columns
+    subst($glob::stamps)
 }
 index {} base.addr dirty
+index {} base.addr addr_type
 
 # Generate unique sequence for new address entry
 #----------------------------------------------------------------
@@ -60,19 +61,19 @@ function base.addr_tf_biud() {base.addr} {
                 new.dirty = true;
             end if;
             if new.addr_prim and not old.addr_prim then		-- Setting this as the new primary
-                update base.addr set addr_prim = false where addr_ent = new.addr_ent and addr_seq <> new.addr_seq and addr_prim;
+                update base.addr set addr_prim = false where addr_ent = new.addr_ent and addr_type = new.addr_type and addr_seq <> new.addr_seq and addr_prim;
                 new.dirty = true;
             end if;
         elsif TG_OP = 'INSERT' then
             if new.addr_prim is true then			-- If this is primary, all others are now not
 -- raise notice 'BIU IN, falsing others: %', new.addr_ent;
-                update base.addr set addr_prim = false where addr_ent = new.addr_ent and addr_prim;
-            elsif not exists (select addr_seq from base.addr where addr_ent = new.addr_ent and not addr_inact) then
+                update base.addr set addr_prim = false where addr_ent = new.addr_ent and addr_type = new.addr_type and addr_prim;
+            elsif not exists (select addr_seq from base.addr where addr_ent = new.addr_ent and addr_type = new.addr_type and not addr_inact) then
 -- raise notice 'BIU IN, forcing true: %', new.addr_ent;
                 new.addr_prim = true;				-- First and only address is always primary
             end if;
         elsif TG_OP = 'DELETE' then
-            update base.addr set dirty = true where addr_ent = old.addr_ent and addr_seq <> old.addr_seq and not addr_inact;
+            update base.addr set dirty = true where addr_ent = old.addr_ent and addr_type = old.addr_type and addr_seq <> old.addr_seq and not addr_inact;
             return old;
         end if;
         return new;
@@ -90,9 +91,9 @@ function base.addr_tf_aiud() {base.addr} {
         kr	record;
         seq	int;
     begin
-        for kr in select distinct addr_ent,addr_seq from base.addr where dirty loop
-            if not exists (select addr_seq from base.addr where addr_ent = kr.addr_ent and not addr_inact and addr_prim) then
-                select into seq addr_seq from base.addr where addr_ent = kr.addr_ent and not addr_inact order by addr_seq desc limit 1;
+        for kr in select distinct addr_ent,addr_seq,addr_type from base.addr where dirty loop
+            if not exists (select addr_seq from base.addr where addr_ent = kr.addr_ent and addr_type = kr.addr_type and not addr_inact and addr_prim) then
+                select into seq addr_seq from base.addr where addr_ent = kr.addr_ent and addr_type = kr.addr_type and not addr_inact order by addr_seq desc limit 1;
                 if FOUND then
 -- raise notice 'AIU IN, forcing true: %', seq;
                     update base.addr set addr_prim = true where addr_ent = kr.addr_ent and addr_seq = seq;
@@ -121,3 +122,17 @@ view base.addr_v {base.addr base.ent_v} {
 } -grant {
     {entim	s {i u} d}
 }
+
+# Base address view to join with ent to make a flat view
+#----------------------------------------------------------------
+lassign {} flist jlist
+set i 0; foreach t $base::addr_types {
+    lappend flist "a$i.addr_spec as \"${t}_addr\""
+    lappend flist "a$i.city as \"${t}_city\""
+    lappend flist "a$i.state as \"${t}_state\""
+    lappend flist "a$i.pcode as \"${t}_pcode\""
+    lappend flist "a$i.country as \"${t}_country\""
+    lappend jlist "left join base.addr a$i on a$i.addr_ent = e.id and a$i.addr_type = '$t' and a$i.addr_prim"
+    incr i
+}
+view base.addr_v_flat {base.addr base.ent_v} "select e.id, [join $flist {, }] from base.ent e [join $jlist];"

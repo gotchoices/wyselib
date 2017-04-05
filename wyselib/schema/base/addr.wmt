@@ -2,23 +2,28 @@
 #------------------------------------------
 require ../common.tcl ../glob.tcl
 
-tabtext base.addr		{Addresses}		{Addresses (home, mailing, etc.) pertaining to entities} [concat {
-    {addr_ent			{Entity ID}		{The ID number of the entity this address applies to}}
-    {addr_seq			{Sequence}		{A unique number assigned to each new address for a given entity}}
-    {addr_spec			{Address}		{Street address or PO Box.  This can occupy multiple lines if necessary}}
-    {addr_inact			{Inactive}		{If checked this address is no longer a valid address}}
-    {addr_prim			{Primary}		{If checked this address is the primary address for contacting this entity}}
-    {physical			{Physical}		{If checked this is a physical address, such as can be shipped to}}
-    {addr_cmt			{Comment}		{Any other notes about this address}}
-    {city			{City}			{The name of the city this address is in}}
-    {state			{State}			{The name of the state or province this address is in}}
-    {pcode			{Zip/Postal}		{Zip or other mailing code applicable to this address.}}
-    {country			{Country}		{The name of the country this address is in.  Use standard international country code abbreviations.}}
+tabtext base.addr	{Addresses}		{Addresses (home, mailing, etc.) pertaining to entities} [concat {
+    {addr_ent		{Entity ID}		{The ID number of the entity this address applies to}}
+    {addr_seq		{Sequence}		{A unique number assigned to each new address for a given entity}}
+    {addr_spec		{Address}		{Street address or PO Box.  This can occupy multiple lines if necessary}}
+    {addr_type		{Type}			{The kind of address} {
+        {phys		{Physical}		{Where the entity has people living or working}}
+        {mail		{Mailing}		{Where mail and correspondence is received}}
+        {ship		{Shipping}		{Where materials are picked up or delivered}}
+        {bill		{billing}		{Where invoices and other accounting information are sent}}
+    }}
+    {addr_prim		{Primary}		{If checked this is the primary address for contacting this entity}}
+    {addr_cmt		{Comment}		{Any other notes about this address}}
+    {city		{City}			{The name of the city this address is in}}
+    {state		{State}			{The name of the state or province this address is in}}
+    {pcode		{Zip/Postal}		{Zip or other mailing code applicable to this address.}}
+    {country		{Country}		{The name of the country this address is in.  Use standard international country code abbreviations.}}
+    {addr_inact		{Inactive}		{If checked this address is no longer a valid address}}
 } $glob::stampt] -errors {
-    {CCO			{Country}		{The country must always be specified (and in standard form)}}
-    {CPA			{Primary}		{There must be at least one address checked as primary}}
+    {CCO		{Country}		{The country must always be specified (and in standard form)}}
+    {CPA		{Primary}		{There must be at least one address checked as primary}}
 }
 
-tabtext base.addr_v		{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {
-    {std_name			{entity Name}		{The name of the entity this address pertains to}}
+tabtext base.addr_v	{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {
+    {std_name		{entity Name}		{The name of the entity this address pertains to}}
 }

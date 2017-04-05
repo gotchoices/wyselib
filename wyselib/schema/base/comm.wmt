@@ -5,17 +5,18 @@ require ../common.tcl ../glob.tcl
 tabtext base.comm	{Communication}		{Communication points (phone, email, fax, etc.) for entities} [concat {
     {comm_ent		{Entity}		{The ID number of the entity this communication point belongs to}}
     {comm_seq		{Sequence}		{A unique number assigned to each new address for a given entity}}
-    {comm_type		{Medium}		{The method of communication} {
-        {phone          {Phone}                 {A way to contact the entity via telephone}}
-        {email          {Email}                 {A way to contact the entity via email}}
-        {cell           {Cell}                  {A way to contact the entity via cellular telephone}}
-        {fax            {FAX}                   {A way to contact the entity via faxsimile}}
-        {text           {Text Message}          {A way to contact the entity via email to text messaging}}
-        {web            {Web Address}           {A World Wide Web address URL for this entity}}
-        {pager          {Pager}                 {A way to contact the entity via a mobile pager}}
-        {other          {Other}                 {Some other contact method for the entity}}
-    }}
     {comm_spec		{Num/Addr}		{The number or address to use when communication via this method and communication point}}
+    {comm_type		{Medium}		{The method of communication} {
+        {phone		{Phone}			{A way to contact the entity via telephone}}
+        {email		{Email}			{A way to contact the entity via email}}
+        {cell		{Cell}			{A way to contact the entity via cellular telephone}}
+        {fax		{FAX}			{A way to contact the entity via faxsimile}}
+        {text		{Text Message}		{A way to contact the entity via email to text messaging}}
+        {web		{Web Address}		{A World Wide Web address URL for this entity}}
+        {pager		{Pager}			{A way to contact the entity via a mobile pager}}
+        {other		{Other}			{Some other contact method for the entity}}
+    }}
+    {comm_prim		{Primary}		{If checked this is the primary method of this type for contacting this entity}}
     {comm_cmt		{Comment}		{Any other notes about this communication point}}
     {comm_inact		{Inactive}		{This box is checked to indicate that this record is no longer current}}
 } $glob::stampt] -errors {
