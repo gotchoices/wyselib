@@ -35,7 +35,7 @@ table base.ent {base.country} {
 index {} base.ent ent_type
 index {} base.ent username
 index {} base.ent proxy
-audit::audit base.ent $base::ent_audit
+audit::audit base.ent $base::ent_audit glman
 
 # Links entities to other entities as members, employees, etc.
 #----------------------------------------------------------------
