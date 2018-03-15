@@ -15,9 +15,9 @@
 #tabdef prod.part_v -focus pnum -fields [concat {
 #    {pnum		ent	6	{0 0}	-hide 1}
 #    {base_r		ent	10	{1 1}	-state readonly -write 0}
-#    {parms		ent	18	{}	-depend base -title {:} -gmc {pack %w -in %p.base_r}}
+#    {parms		ent	18	{}	-depend base -title {:} -in base_r}
 #    {weight		ent	6	{1 3}	-state readonly}
-#    {cost		ent	6	{}	-depend price -title {Cost:} -gmc {pack %w -in %p.price}}
+#    {cost		ent	6	{}	-depend price -title {Cost:} -in price}
 #    {partname		ent	12	{1 4}	-hide 1 -state readonly}
 #} $glob::stampd]
 

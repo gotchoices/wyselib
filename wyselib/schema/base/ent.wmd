@@ -4,30 +4,31 @@ require ../common.tcl ../glob.tcl
 
 tabdef base.ent -focus ent_name -fields [concat {
     {id			ent	6	{0 1}		-hide 1 -write 0 -just r}
-    {ent_type		pdm	2	{3 1}		}
-    {title		ent	8	{1 2}		-spf exs}
-    {ent_name		ent	40	{1 1 2}		}
-    {fir_name		ent	14	{2 2}		-bg lightblue}
-    {mid_name		ent	12	{3 2}		}
-    {pref_name		ent	12	{1 3}		}
+    {ent_type		pdm	2	{3 1}		-ini p}
+    {title		ent	8	{1 2}		-spf exs -tem {^[a-zA-Z\.]*$}}
+    {ent_name		ent	40	{1 1 2}		-tem {^[\w\. ]+$}}
+    {fir_name		ent	14	{2 2}		-bg {#e0f0ff} -tem {^[\w\.]*$}}
+    {mid_name		ent	12	{3 2}		-tem {^[\w\. ]*$}}
+    {pref_name		ent	12	{1 3}		-tem {^[\w\. ]*$}}
     {inside		chk	2	{2 3}		-onv t -offv f}
     {ent_inact		chk	2	{3 3}		-ini f -onv t -offv f}
-    {born_date		ent	11	{1 4}		-spf cal}
-    {gender		pdm	2	{2 4}		-ini m}
-    {marital		pdm	2	{3 4}		-ini s}
-    {bank		ent	14	{1 5}		-tem {{{} {^[0-9]+:[0-9]+$}} {^[0-9]+:[0-9]+:[a-z]+$} "####:#### or ####:####:s"}}
-    {username		ent	12	{2 5}		}
+    {born_date		ent	11	{1 4}		-spf cal -tem {^\d{4}[-/\.]\d{1,2}[-/\.]\d{1,2}$}}
+    {gender		pdm	2	{2 4}		-ini {}}
+    {marital		pdm	2	{3 4}		-ini {}}
+    {bank		ent	14	{1 5}		-tem {^(|\d+:\d+|\d+:\d+:\d+)$} -hint {####:#### or ####:####:s}}
+    {username		ent	12	{2 5}		-tem {[]}}
     {database		chk	3	{3 5}		-ini t -onv t -offv f}
     {ent_cmt		ent	14	{1 6}		-spf edw}
-    {tax_id		ent	10	{2 6}		}
+    {tax_id		ent	10	{2 6}		-hint {###-##-####}}
     {country		ent	4	{3 6}		-spf scm -data country}
-} $glob::stampd]
+} $glob::stampd] -display {id ent_type ent_name fir_name born_date}
 
 # A view with some additional pseudo fields
 tabdef base.ent_v -fields {
     {std_name		ent	14	{1 7}		-opt 1 -sta readonly -wr 0}
     {frm_name		ent	18	{2 7}		-opt 1 -sta readonly -wr 0}
-    {cas_name		ent	14	{3 7}		-opt 1 -sta readonly -wr 0 -just r}
+    {cas_name		ent	14	{3 7}		-opt 1 -sta readonly -wr 0}
+    {giv_name		ent	14	{4 7}		-opt 1 -sta readonly -wr 0}
 } -inherits base.ent
 
 tabdef base.ent_v_pub -focus ent_name -fields {
@@ -49,6 +50,6 @@ tabdef base.ent_link -focus org_id -fields {
 }
 
 tabdef base.ent_link_v -fields {
-    {org_name		ent	30	{}		-depend org_id -title {:} -gmc {pack %w -in %p.org_id}}
-    {mem_name		ent	30	{}		-depend mem_id -title {:} -gmc {pack %w -in %p.mem_id}}
+    {org_name		ent	30	{}		-depend org_id -title {:} -in org_id}
+    {mem_name		ent	30	{}		-depend mem_id -title {:} -in mem_id}
 } -inherits base.ent_link

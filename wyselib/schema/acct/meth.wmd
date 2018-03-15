@@ -17,6 +17,6 @@ tabdef acct.mmap -focus book_acct -fields [concat {
 } $glob::stampd]
 
 tabdef acct.mmap_v -focus book_acct -fields {
-    {ba_name		ent	20	{}		-depend book_acct -title {:} -gmc {pack %w -in %p.book_acct}}
-    {ma_name		ent	20	{}		-depend meth_acct -title {:} -gmc {pack %w -in %p.meth_acct}}
+    {ba_name		ent	20	{}		-depend book_acct -title {:} -in book_acct}
+    {ma_name		ent	20	{}		-depend meth_acct -title {:} -inmeth_acct}
 } -inherits acct.mmap

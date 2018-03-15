@@ -1,8 +1,6 @@
 # Copyright Action Target Inc. all rights reserved
 #------------------------------------------
 tabdef empl.empl -focus ent_name -fields [concat {
-<<<<<<< empl.wmd
-=======
     {emple		ent	5	{11 1}		-hide 1 -just r}
     {emplr		ent	5	{12 1}		-hide 1 -just r}
     {title		ent	8	{1 1}		-spf exs}
@@ -40,14 +38,13 @@ tabdef empl.empl -focus ent_name -fields [concat {
 #A view with some additional pseudo fields
 tabdef empl.empl_v -fields {
     {current		chk	2	{1 6}		-state disabled -write 0 -onvalue t -offvalue f}
-    {prox_name		ent	20	{}		-depend proxy -title {:} -gmc {pack %w -in %p.proxy}}
-    {supr_name		ent	20	{}		-depend superv -title {:} -gmc {pack %w -in %p.superv}}
+    {prox_name		ent	20	{}		-depend proxy -title {:} -in proxy}
+    {supr_name		ent	20	{}		-depend superv -title {:} -in superv}
     {std_name		ent	40	{1 2 2}		-state readonly -wr 0}
 } -inherits empl.empl
 
 #A view for supervisors to see their own subordinates
 tabdef empl.empl_v_sup -focus ent_name -fields [concat {
->>>>>>> 1.10
     {emple		ent	5	{11 1}		-hide 1 -just r}
     {emplr		ent	5	{12 1}		-hide 1 -just r}
     {ent_name		ent	20	{1 1}		}
@@ -78,8 +75,8 @@ tabdef empl.empl_v_sup -focus ent_name -fields [concat {
     {term_date		ent	11	{2 11}		-tem date -spf cal}
     {ins_code		ent	6	{3 11}		-just r}
     {ent_cmt		ent	14	{3 12}		-opt 1 -state readonly -write 0}
-    {prox_name		ent	12	{}		-depend proxy -title {:} -gmc {pack %w -in %p.proxy}}
-    {supr_name		ent	12	{}		-depend superv -title {:} -gmc {pack %w -in %p.superv}}
+    {prox_name		ent	12	{}		-depend proxy -title {:} -in proxy}
+    {supr_name		ent	12	{}		-depend superv -title {:} -in superv}
     {hour_rate		ent	8	{1 12}		-opt 1 -state readonly -write 0 -just r}
     {norm_rate		ent	8	{2 12}		-opt 1 -state readonly -write 0 -just r}
     {std_name		ent	14	{1 13}		-opt 1 -sta readonly -wr 0}
@@ -115,5 +112,5 @@ tabdef empl.addr_v -fields [concat {
 } $glob::stampd]
 
 tabdef empl.comm_v -fields {
-    {std_name           ent     14      {}              -opt 1 -depend comm_ent -title {:} -gmc {pack %w -in %p.comm_ent}}
+    {std_name           ent     14      {}              -opt 1 -depend comm_ent -title {:} -in comm_ent}
 } -inherits base.comm

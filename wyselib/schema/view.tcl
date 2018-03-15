@@ -43,7 +43,7 @@ $dd         if not ($del_where) then return null; end if;
   }
 }
 
-# Build an insert trigger for a split view
+# Build standard insert, update, delete triggers for a view
 #----------------------------------------------------------------
 proc view::triggers {view table pkey args} {
     argform {columns insert update delete} args
