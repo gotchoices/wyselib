@@ -24,8 +24,8 @@ tabdef acct.proj -focus type -fields [concat {
 } $glob::stampd]
     
 tabdef acct.proj_v -fields {
-    {own_name		ent	20	{}		-depend owner  -title {:} -gmc {pack %w -in %p.owner} -takefocus 0}
-    {par_name		ent	30	{}		-depend par -title {:} -gmc {pack %w -in %p.par} -takefocus 0}
+    {own_name		ent	20	{}		-depend owner  -title {:} -in owner -takefocus 0}
+    {par_name		ent	30	{}		-depend par -title {:} -in par -takefocus 0}
 } -inherits acct.proj
 
 return
@@ -44,8 +44,8 @@ tabdef proj_passwd -focus passwd -fields {
 
 tabdef proj_passwd_v -fields {
     {valid		ent     2	{2 3}		-state readonly -takefocus 0}
-    {empname		ent	20	{}		-depend empl_id  -title {:} -gmc {pack %w -in %p.empl_id}}
-    {proname		ent	20	{}		-depend proj_id  -title {:} -gmc {pack %w -in %p.proj_id}}
+    {empname		ent	20	{}		-depend empl_id  -title {:} -in empl_id}
+    {proname		ent	20	{}		-depend proj_id  -title {:} -in proj_id}
 } -inherits proj_passwd
 
 tabdef proj_passwd_v_me -inherits proj_passwd_v
@@ -63,9 +63,9 @@ tabdef proj_ftr -focus amount -fields {
 }
 
 tabdef proj_ftr_v -fields {
-    {crtname		ent	20	{}		-opt 1 -depend crt_by  -title {:} -gmc {pack %w -in %p.crt_by}}
-    {toname		ent	20	{}		-depend to_proj -title {:} -gmc {pack %w -in %p.to_proj}}
-    {frname		ent	20	{}		-depend fr_proj -title {:} -gmc {pack %w -in %p.fr_proj}}
+    {crtname		ent	20	{}		-opt 1 -depend crt_by  -title {:} -in crt_by}
+    {toname		ent	20	{}		-depend to_proj -title {:} -in to_proj}
+    {frname		ent	20	{}		-depend fr_proj -title {:} -in fr_proj}
 } -inherits proj_ftr
 
 tabdef proj_ftr_v_me -inherits proj_ftr_v

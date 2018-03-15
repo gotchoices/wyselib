@@ -67,13 +67,13 @@ return
 tabdef prd_part_v_potool -focus pnum -fields {
     {pnum               ent     6       {1 0}   -hide 1}
     {base               ent     10      {1 1}	-state readonly -write 0}
-    {parm               ent     18      {}	    -depend base -title {Param:} -gmc {pack %w -in %p.base}}
+    {parm               ent     18      {}	-depend base -title {Param:} -in base}
     {elevel             ent     2       {2 1}	-state readonly -write 0 -just r}
     {weight             ent     6       {1 3}	-state readonly}
     {price              ent     12      {1 2}	-just r -state readonly}
-    {cost				ent     6       {}	    -depend price -title {Cost:} -gmc {pack %w -in %p.price}}
-    {gsa				chk     2       {2 3}   -onvalue t -offvalue f -state disabled -write 0}
-    {gprice				ent     8       {}	    -depend weight -title {GSA Price:} -gmc {pack %w -in %p.weight}}
+    {cost		ent     6       {}	-depend price -title {Cost:} -in price}
+    {gsa		chk     2       {2 3}   -onvalue t -offvalue f -state disabled -write 0}
+    {gprice		ent     8       {}	-depend weight -title {GSA Price:} -in weight}
     {partname           ent     12      {1 4}   -hide 1 -state readonly}
 }
 
@@ -94,13 +94,13 @@ tabdef prd_part_inv_v_base -focus base -fields {
 tabdef prd_part_inv_v_prodim -fields {
     {inv                ent     3       {0 0}       -just r -spf scm -data inve}
     {title              ent     20      {1 0}       -state readonly}
-    {pnum               ent     6       {0 1 2}       -just r -spf scm -data part}
-    {partname           ent     32      {}          -depend pnum -title {:} -gmc {pack %w -in %p.pnum}}
+    {pnum               ent     6       {0 1 2}     -just r -spf scm -data part}
+    {partname           ent     32      {}          -depend pnum -title {:} -in pnum}
     {buylev             ent     6       {0 2}       -just r}
     {reclev             ent     6       {1 2}       -just r}
     {recbuy             ent     6       {2 2}       -just r}
     {docount            chk     1       {2 0}       -onvalue t -offvalue f}
-    {lstcnt             ent     12      {}          -depend docount -title {:} -gmc {pack %w -in %p.docount}}
+    {lstcnt             ent     12      {}          -depend docount -title {:} -in docount}
 }
 
 #-------------------------------------------
@@ -109,11 +109,11 @@ tabdef prd_part_inv_v -fields {
     {pnum               ent     6       {2 0}   -hide 1}
     {buylev             ent     6       {1 1}   -state readonly -write 0 -just r}
     {reclev             ent     6       {2 1}   -state readonly -write 0 -just r}
-    {cgrlev             ent     6       {}      -depend reclev -title {:} -gmc {pack %w -in %p.reclev}}
+    {cgrlev             ent     6       {}      -depend reclev -title {:} -in reclev}
     {recbuy             ent     6       {4 1}   -state readonly -write 0 -just r}
     {vlead              ent     6       {5 1}   -state readonly -write 0 -just r}
-    {mlead              ent     6       {}      -depend vlead -title {:} -gmc {pack %w -in %p.vlead}}
-	{base				ent		10		{6 1}	-hide 1}
+    {mlead              ent     6       {}      -depend vlead -title {:} -in vlead}
+    {base		ent	10	{6 1}	-hide 1}
 }
 
 
@@ -149,9 +149,9 @@ tabdef prd_part_v_mat -focus descr -fields {
 tabdef prd_base_v -fields {
     {base               ent     10      {0 0}   -hide 1}
     {status             ent     1       {1 1}   -state readonly}
-    {units              ent     4       {}   	-depend status -title {Units:} -gmc {pack %w -in %p.status}}
+    {units              ent     4       {}   	-depend status -title {Units:} -in status}
     {revision           ent     2       {3 1}   -state readonly} 
-    {minrev		ent	2	{} 	-state readonly -depend revision -title {.} -gmc {pack %w -in %p.revision}}   
+    {minrev		ent	2	{} 	-state readonly -depend revision -title {.} -in revision}
     {price              ent     14      {4 1}   -state readonly}
     {descr              ent     40      {1 2 4} -state readonly}
     {spec               ent     38      {1 3 4}  -spf edw }
@@ -169,9 +169,9 @@ tabdef prd_base_v_prodim -fields {
     {verified           chk     2       {3 2}       -ini f -onvalue t -offvalue f -state disabled -title {Ver:} }
     {spec               mle     {55 4}  {0 4 4}     -spf edw}
     {crt_by             ent     5       {0 5}       -opt 1 -state readonly}
-    {crtname            ent     12      {}          -opt 1 -depend crt_by -title {:} -gmc {pack %w -in %p.crt_by}}
+    {crtname            ent     12      {}          -opt 1 -depend crt_by -title {:} -in crt_by}
     {crt_date           ent     12      {2 5}       -opt 1 -state readonly}
     {mod_by             ent     5       {0 6}       -opt 1 -state readonly}
-    {modname            ent     12      {}          -opt 1 -depend mod_by -title {:} -gmc {pack %w -in %p.mod_by}}
+    {modname            ent     12      {}          -opt 1 -depend mod_by -title {:} -in mod_by}
     {mod_date           ent     12      {2 6}       -opt 1 -state readonly}
 }

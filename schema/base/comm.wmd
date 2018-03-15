@@ -12,6 +12,6 @@ tabdef base.comm -focus comm_spec -fields [concat {
 } $glob::stampd]
 
 tabdef base.comm_v -fields {
-    {std_name		ent	14	{}		-opt 1 -depend comm_ent -title {:} -gmc {pack %w -in %p.comm_ent}}
+    {std_name		ent	14	{}		-opt 1 -depend comm_ent -title {:} -in comm_ent}
 } -inherits base.comm
 
