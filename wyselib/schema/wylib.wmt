@@ -1,0 +1,77 @@
+tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wylib view widgets} {
+    {ruid		{Record ID}		{A unique ID number generated for each data record}}
+    {component		{GUI Component}		{The part of the graphical interface that accesses this data}}
+    {access		{Access}		{Who is allowed to access this data, and how} {
+        {priv		{Private}		{Only the owner of this data can read, write or delete it}}
+        {read		{Public Read}		{The owner can read and write, all others can read, or see it}}
+        {write		{Public Write}		{Anyone can read, write, or delete this data}}
+    }}
+    {owner		{Owner}			{The user entity who created and has full permission to the data in this record}}
+    {data		{JSON Data}		{A record in JSON (JavaScript Object Notation) in a format known and controlled by the view or other accessing module}}
+} -mess {
+    {IAT		{Invalid Access Type}	{Access type must be: priv, read, or write}}
+    {dbe		{Edit}			{Insert, change and delete records from the database view}}
+    {dbeColMenu		{Column}		{Operations you can perform on this column of the preview}}
+    {dbeMenu		{Editing}		{A menu of functions for editing a database record}}
+    {dbeInsert		{Add New}		{Insert a new record into the database table}}
+    {dbeUpdate		{Update}		{Modify changed fields in the existing database record}}
+    {dbeDelete		{Delete}		{Delete this database record (can not be un-done)}}
+    {dbeClear		{Clear}			{Empty the editing fields, discontinue editing any database record that may have been loaded}}
+    {dbeLoadRec		{Load Record}		{Load a specific record from the database by its primary key}}
+    {dbePrimary		{Primary Key}		{The value that uniquely identifies the current record among all the rows in the database table}}
+    {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
+    {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
+    {winClose		{Close Window}		{Close this window}}
+    {winSave		{Save State}		{Save the layout and operating state of this window, and all its subordinate windows}}
+    {winRestore		{Restore State}		{Restore a previously saved state}}
+    {winToTop		{Move To Top}		{Make this window show above others of its peers}}
+    {winToBottom	{Move To Bottom}	{Place this window behind others of its peers}}
+    {winMinimize	{Minimize}		{Shrink window down to an icon by which it can be re-opened}}
+    {dbpMenu		{Preview}		{A menu of functions for operating on the preview list below}}
+    {dbpReload		{Reload}		{Reload the records specified in the previous load}}
+    {dbpLoad		{Load Default}		{Load the records shown in this view, by default}}
+    {dbpLoadAll		{Load All}		{Load all records from this table}}
+    {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
+    {dbpFilter		{Filter}		{Load records according to filter criteria}}
+    {dbpVisible		{Visible}		{A menu of columns where you can decide which ones are visible in the preview}}
+    {dbpVisCheck	{Visible}		{Check the box to make this column visible}}
+    {dbpColAuto		{Auto Size}		{Adjust the width of this column to be optimal for its contents}}
+    {dbpColHide		{Hide Column}		{Remove this column from the display}}
+    {dbpNext		{Next Record}		{Move the selection down one line and execute (normally edit) that new line}}
+    {dbpPrev		{Prior Record}		{Move the selection up one line and execute (normally edit) that new line}}
+    {X.dbpColSel		{Visible Columns}	{Show or hide individual columns}}
+    {X.dbpFooter		{Footer}		{Check the box to turn on column summaries, at the bottom}}
+    {dbs		{Filter Search}		{Load records according to filter criteria}}
+    {dbsSearch		{Query Search}		{Run the configured selection query, returning matching records}}
+    {dbsSave		{Save Query}		{Save the current query for future use}}
+    {dbsRecall		{Recall Query}		{Recall a named query which has been previously saved}}
+    {modOK		{OK}			{Press this button to acknowledge you have seen the posted message}}
+    {modYes		{OK}			{Press this button to acknowledge you wish to proceed with the current operation}}
+    {modCancel		{Cancel}		{Press this button if you want to abandon the operation and not proceed}}
+    {modError		{Error}			{Something went wrong}}
+    {modNotice		{Notice}		{The message is a warning or advice for the user}}
+    {modConfirm		{Confirm}		{The user is asked to confirm before proceeding, or cancel to abandon the operation}}
+    {modQuery		{Query}			{The user is asked for certain input data, and a confirmation before proceeding}}
+    {23505		{Key Violation}		{An operation would have resulted in multiple records having duplicated data, which is required to be unique}}
+    {X		{}		{}}
+}
+
+tabtext wylib.data -lang fi {GUI Data} {Wylib-näkymäkomponenttien käyttämät konfigurointi- ja asetustiedot} {
+    {ruid		{Tunnistaa}		{Kullekin datatietueelle tuotettu yksilöllinen ID-numero}}
+    {component		{Komponentti}		{GUI:n osa joka käyttää tämä data}}
+    {access		{Pääsy}		{Kuka saa käyttää näitä tietoja ja miten} {
+        {priv		{Yksityinen}		{Vain näiden tietojen omistaja voi lukea, kirjoittaa tai poistaa sen}}
+        {read		{Julkinen Lukea}	{Omistaja voi lukea ja kirjoittaa, kaikki muut voivat lukea tai nähdä sen}}
+        {write		{Julkinen Kirjoittaa}	{Jokainen voi lukea, kirjoittaa tai poistaa näitä tietoja}}
+    }}
+} -mess {
+    {IAT		{Virheellinen käyttötyyppi}	{Käytön tyypin on oltava: priv, lukea tai kirjoittaa}}
+    {dbpMenu		{Esikatselu}		{Toimintojen valikko, joka toimii alla olevassa esikatselussa}}
+    {dbpReload		{Ladata}		{Päivitä edellisessä kuormassa määritetyt tietueet}}
+    {dbpLoad		{Ladata Oletus}		{Aseta tässä näkymässä näkyvät kirjaukset oletuksena}}
+    {dbpLoadAll		{Loadata Kaikki}	{Lataa kaikki taulukon tiedot}}
+    {dbpFilter		{Suodattaa}		{Lataa tietueet suodatuskriteerien mukaisesti}}
+    {dbpVisible		{Näkyvyys}		{Sarakkeiden valikko, josta voit päättää, mitkä näkyvät esikatselussa}}
+    {dbpVisCheck	{Ilmoita näkyvyydestä}	{Kirjoita tämä ruutu näkyviin, jotta tämä sarake voidaan näyttää}}
+    {dbpFooter		{Yhteenveto}		{Ota ruutuun käyttöön sarakeyhteenveto}}
+}

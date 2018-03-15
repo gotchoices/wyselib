@@ -1,0 +1,43 @@
+# Schema to support wylib components
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+require common.tcl glob.tcl view.tcl
+
+namespace eval wylib {
+    def data_pk		{ruid}
+    def data_v_in	{component access data}
+    def data_v_up	{access data}
+    def data_se		[concat $data_v_in $glob::stampfn]
+}
+schema wylib -grant public
+
+# Store JSON structures related to wylib widgets
+#----------------------------------------------------------------
+table wylib.data {wylib base.ent} {
+    ruid	serial primary key
+  , component	varchar
+  , access	varchar(5)	not null constraint "!wylib.data.IAT" check (access in ('priv', 'read', 'write'))
+  , owner	int		not null default base.curr_eid() references base.ent on update cascade on delete cascade
+  , data	jsonb
+    subst($glob::stamps)
+}
+#index {} wylib.data comp access crt_by
+
+# Basic view
+#----------------------------------------------------------------
+view wylib.data_v {wylib.data base.ent_v} {
+    select eval(fld_list $wylib::data_se wd)
+      , oe.std_name
+
+    from	wylib.data	wd
+    join	base.ent_v	oe	on oe.id = wd.owner
+    where	access = 'read' or owner = base.curr_eid()
+} -grant {
+    {pub	s {i u} d}
+}
+view::triggers wylib.data_v wylib.data $wylib::data_pk \
+	-ins [list -c $wylib::data_v_in -f "$glob::stampin"] \
+	-upd [list -c $wylib::data_v_up -f $glob::stampup -w {old.owner = base.curr_eid() or old.access = 'write'}] \
+	-del [list -w {old.owner = base.curr_eid() or old.access = 'write'}] \
