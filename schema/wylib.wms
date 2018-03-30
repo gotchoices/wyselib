@@ -15,7 +15,7 @@ schema wylib -grant public
 
 # Store JSON structures related to wylib widgets
 #----------------------------------------------------------------
-table wylib.data {wylib base.ent} {
+table wylib.data {wylib base.ent base.curr_eid()} {
     ruid	serial primary key
   , component	varchar
   , access	varchar(5)	not null constraint "!wylib.data.IAT" check (access in ('priv', 'read', 'write'))
