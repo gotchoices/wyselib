@@ -19,6 +19,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeClear		{Clear}			{Empty the editing fields, discontinue editing any database record that may have been loaded}}
     {dbeLoadRec		{Load Record}		{Load a specific record from the database by its primary key}}
     {dbePrimary		{Primary Key}		{The value that uniquely identifies the current record among all the rows in the database table}}
+    {dbeActions		{Actions}		{Perform various commands pertaining to this particular view and record}}
+    {dbeSubords		{Preview}		{Toggle the viewing of views and records which relate to the currently loaded record}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
@@ -53,6 +55,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {modConfirm		{Confirm}		{The user is asked to confirm before proceeding, or cancel to abandon the operation}}
     {modQuery		{Query}			{The user is asked for certain input data, and a confirmation before proceeding}}
     {23505		{Key Violation}		{An operation would have resulted in multiple records having duplicated data, which is required to be unique}}
+    {subWindow		{Subordinate View}	{Open a preview of records in another table that relate to the currently loaded record from this view}}
     {X		{}		{}}
 }
 
@@ -74,4 +77,5 @@ tabtext wylib.data -lang fi {GUI Data} {Wylib-näkymäkomponenttien käyttämät
     {dbpVisible		{Näkyvyys}		{Sarakkeiden valikko, josta voit päättää, mitkä näkyvät esikatselussa}}
     {dbpVisCheck	{Ilmoita näkyvyydestä}	{Kirjoita tämä ruutu näkyviin, jotta tämä sarake voidaan näyttää}}
     {dbpFooter		{Yhteenveto}		{Ota ruutuun käyttöön sarakeyhteenveto}}
+    {dbeActions		{Tehköjä}		{Tehdä muutamia asioita tämän mukaisesti}}
 }
