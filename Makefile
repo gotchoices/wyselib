@@ -1,5 +1,5 @@
 LIBNAME=wyselib
-VERSION=0.20
+VERSION=0.30
 OBJS=acct.tcl base.tcl pdoc.tcl prod.tcl proj.tcl tran.tcl init.tcl
 
 #Allow the user to install where he wants
