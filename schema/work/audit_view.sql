@@ -20,7 +20,7 @@ create function base.ent_audit_f(eid int) returns setof base.ent_audit_v languag
         arec	base.ent_audit_v;
         trec	base.ent;
         c	varchar;
-        cd	timestamp(0);
+        cd	timestamptz;
         tv	varchar;
     begin
         select into trec * from base.ent where ent_id = eid;

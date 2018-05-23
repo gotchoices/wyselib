@@ -65,7 +65,7 @@ namespace eval audit {
     set db_objects	{
         table %T_audit {audit_type %E %T} {%S
           , a_seq	int		check (a_seq >= 0)
-          , a_date	timestamp(0)	not null default current_timestamp
+          , a_date	timestamptz	not null default current_timestamp
           , a_by	name		not null default session_user references %E (username) on update cascade
           , a_action	audit_type	not null default 'update'
           , a_column	varchar		not null

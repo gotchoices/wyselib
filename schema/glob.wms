@@ -50,7 +50,7 @@ $$;}
 
 # Convert the month to an alpha string
 #-------------------------------------------
-function norm_date(timestamp) {} {
+function norm_date(timestamptz) {} {
   returns text immutable language sql as $$
     select to_char($1,'YYYY-Mon-DD HH24:MI:SS');
 $$;}

@@ -8,8 +8,8 @@ def glob::dba		{dba}
 def glob::lang		{en}
 
 def glob::stamps	{
-  , crt_date    timestamp(0)	not null default current_timestamp
-  , mod_date    timestamp(0)	not null default current_timestamp
+  , crt_date    timestamptz	not null default current_timestamp
+  , mod_date    timestamptz	not null default current_timestamp
   , crt_by      name		not null default session_user references base.ent (username) on update cascade
   , mod_by	name		not null default session_user references base.ent (username) on update cascade
 }

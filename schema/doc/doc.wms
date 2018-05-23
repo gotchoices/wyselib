@@ -29,7 +29,7 @@ table doc.doc {doc.doc_seq base.ent} {
   , size	bigint		not null
   , cksum	bigint		not null
   , blob	oid		not null unique
-  , checked	timestamp(0)
+  , checked	timestamptz
   , constraint "!doc.doc.UFN"	unique	(path,name,version,exten)
     subst($glob::stamps)
 }
