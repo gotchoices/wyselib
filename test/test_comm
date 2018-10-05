@@ -1,0 +1,60 @@
+#!/usr/bin/ruby
+require 'wyseman'
+require 'wyseman/db'
+
+DatabaseName	= File.read(File.join(File.dirname(__FILE__), 'DBNAME')).strip
+db = Wyseman::DB.new({dbname: DatabaseName})
+
+#Delete any test users other than admin
+res = db.doDelete('base.ent', Hash['id',100])
+
+#Load in our sample user
+baseSql= %Q{
+	INSERT INTO base.ent
+		(id, ent_type, ent_name, fir_name, mid_name, pref_name, title, gender, marital, ent_cmt, born_date, username, database, ent_inact, inside, country, tax_id, bank, proxy)
+	 VALUES	(100, 'o', 'Ahoy Chips', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2017-01-01', NULL, false, false, true, 'US', '234-56-7890', NULL, NULL);
+	
+	INSERT INTO base.comm 
+		(comm_ent, comm_seq, comm_spec, comm_type, comm_prim, comm_cmt, comm_inact)
+	 VALUES (100, 1, '901-346-6789', 'phone', false, 'Main', false)
+	      , (100, 2, '800-555-5555', 'phone', false, 'Customer Service', false)
+	      ,	(100, 3, 'info@ahoy.chip', 'email', false, NULL, false)
+	      ,	(100, 4, 'www.ahoy.chip', 'web', false, NULL, false)
+	      ,	(100, 5, '1234', 'phone', false, NULL, false)
+	      ,	(100, 6, '12345', 'phone', false, NULL, true);
+}
+res = db.exec(baseSql)
+#printf("Result:%s\n", res)
+
+res = db.doSelect('*', 'base.ent', {id:100})
+printf("Tuples:%s id:%s\n", res.ntuples, res[0]['id'])
+raise 'Failure to insert test data' if res.ntuples != 1 or res[0]['id'] != '100'
+
+def comSelect(db)
+  db.doSelect('comm_seq,comm_type,comm_cmt,comm_prim', 'base.comm_v', {comm_ent:100, comm_type:'phone', comm_prim:true})
+end
+
+#Imported with correct primary record
+res = comSelect(db)
+printf("Phone primary:%s\n", res[0])
+raise 'Wrong phone record primary' if res.ntuples != 1 or res[0]['comm_seq'] != '1'
+
+#Can change primary record
+res = db.doUpdate('base.comm_v', {comm_prim:'true'}, {comm_ent:100, comm_seq:2})
+res = comSelect(db)
+printf("Phone primary:%s\n", res[0])
+raise "Couldn't set new phone record primary" if res.ntuples != 1 or res[0]['comm_seq'] != '2'
+
+#Setting inactive moves primary away from our record
+res = db.doUpdate('base.comm_v', {comm_inact:'true'}, "comm_ent = 100 and comm_type = 'phone' and comm_seq < 5")
+res = comSelect(db)
+printf("Phone primary:%s\n", res[0])
+raise "Primary records should resolve to 5" if res.ntuples != 1 or res[0]['comm_seq'] != '5'
+
+#Attempt to clear primary fails
+res = db.doUpdate('base.comm_v', {comm_inact:'false'}, "comm_ent = 100")
+res = db.doUpdate('base.comm_v', {comm_prim:'false'}, "comm_ent = 100 and comm_seq = 5")
+res = comSelect(db)
+printf("Phone primary:%s\n", res[0])
+raise "Primary records should still be 5" if res.ntuples != 1 or res[0]['comm_seq'] != '5'
+

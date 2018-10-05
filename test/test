@@ -1,0 +1,19 @@
+#!/bin/bash
+#Initialize a sample database and run all automated tests
+
+schemadir="../schema"
+dbname=$(cat ./DBNAME)
+echo "DB Name:$dbname"
+
+dropdb $dbname 2>/dev/null
+createdb $dbname
+
+wyseman --dbname=$dbname ${schemadir}/*.wms ${schemadir}/base/*.wms
+wyseman --dbname=$dbname ${schemadir}/*.wmt ${schemadir}/base/*.wmt
+wyseman --dbname=$dbname ${schemadir}/base/*.wmd
+wyseman --dbname=$dbname ${schemadir}/base/*.wmi
+
+./test_addr
+./test_comm
+
+echo "Remember to: dropdb $dbname"
