@@ -8,7 +8,7 @@ require base.tcl ../trigview.tcl
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
     def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_inact comm_prim}
-    def comm_v_up	[lremove $comm_v_in comm_ent comm_prim]
+    def comm_v_up	[lremove $comm_v_in comm_ent]
     def comm_se		[concat $comm_pk $comm_v_up $glob::stampfn]
     def comm_types	{phone email cell fax text web pager other}
     def comm_local	{}
@@ -24,12 +24,10 @@ table base.comm {base.ent} {
   , comm_prim	boolean		not null default false constraint "!base.comm.CPC" check(case when comm_inact is true then comm_prim is false end)
   , comm_cmt	varchar
   , comm_inact	boolean		not null default false
-  , dirty	boolean		not null default false
   , unique (comm_ent, comm_seq, comm_type)		-- Needed for comm_prim FK to work
     subst($base::comm_local)	-- locally defined columns
     subst($glob::stamps)
 }
-index {} base.comm dirty
 index {} base.comm comm_spec
 index {} base.comm comm_type
 
@@ -41,22 +39,7 @@ table base.comm_prim {base.comm} {
   , prim_type	varchar
   , primary key (prim_ent, prim_seq, prim_type)
   , foreign key (prim_ent, prim_seq, prim_type) references base.comm (comm_ent, comm_seq, comm_type)
-    on update cascade on delete cascade
-}
-
-# Generate unique sequence for new communication entry
-#----------------------------------------------------------------
-function base.comm_tf_seq() {base.comm} {
-  returns trigger security definer language plpgsql as $$
-    begin
-        if new.comm_seq is null then
-            select into new.comm_seq coalesce(max(comm_seq),0)+1 from base.comm where comm_ent = new.comm_ent;
-        end if;
-        return new;
-    end;
-$$;}
-trigger base_comm_tr_seq {} {
-    before insert on base.comm for each row execute procedure base.comm_tf_seq();
+    on update cascade on delete cascade deferrable
 }
 
 # Make the specified communication point primary
@@ -102,12 +85,16 @@ $$;}
 function base.comm_tf_bi() {base.comm} {
   returns trigger language plpgsql security definer as $$
     begin
+        if new.comm_seq is null then			-- Generate unique sequence for new communication entry
+            select into new.comm_seq coalesce(max(comm_seq),0)+1 from base.comm where comm_ent = new.comm_ent;
+        end if;
         if new.comm_inact then				-- Can't be primary if inactive
             new.comm_prim = false;
         elsif not exists (select comm_seq from base.comm where comm_ent = new.comm_ent and comm_type = new.comm_type) then
             new.comm_prim = true;			-- First record of its type becomes primary
         end if;
         if new.comm_prim then				-- If this is primary, all others are now not
+            set constraints base.comm_prim_prim_ent_fkey deferred;
             perform base.comm_make_prim(new.comm_ent, new.comm_seq, new.comm_type);
         end if;
         new.comm_prim = false;				-- We don't actually store the status in this field
@@ -130,6 +117,7 @@ function base.comm_tf_bu() {base.comm} {
         elsif new.comm_prim and not old.comm_prim then
             prim_it = true;
         end if;
+--raise notice 'X:% % %', old.comm_prim, new.comm_prim, prim_it;
         if prim_it then
             perform base.comm_make_prim(new.comm_ent, new.comm_seq, new.comm_type);
         elsif not prim_it then
@@ -172,8 +160,8 @@ trigger base_comm_tr_aiud {} {
 
 #Base communication view
 #----------------------------------------------------------------
-view base.comm_v {base.comm base.ent_v} {
-    select eval(fld_list $base::comm_se c)
+view base.comm_v {base.comm base.ent_v base.comm_prim} {
+    select eval(fld_list [lremove $base::comm_se comm_prim] c)
       , oe.std_name
       , cp.prim_seq is not null and cp.prim_seq = c.comm_seq	as comm_prim
 

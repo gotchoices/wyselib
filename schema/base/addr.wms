@@ -2,6 +2,7 @@
 #------------------------------------------
 # Copyright WyattERP all rights reserved
 #TODO:
+#- Get rid of dirty
 #- 
 require base.tcl ../trigview.tcl
 
@@ -28,78 +29,132 @@ table base.addr {base.ent} {
   , state	varchar
   , pcode	varchar
   , country	varchar(3)	constraint "!base.addr.CCO" not null default 'US' references base.country on update cascade
-  , dirty	boolean		not null default false
+  , unique (addr_ent, addr_seq, addr_type)		-- Needed for addr_prim FK to work
     subst($base::addr_local)	-- locally defined columns
     subst($glob::stamps)
 }
-index {} base.addr dirty
 index {} base.addr addr_type
 
-# Generate unique sequence for new address entry
+# Stores a pointer indicating which addr record is primary for any given type
 #----------------------------------------------------------------
-function base.addr_tf_seq() {base.addr} {
+table base.addr_prim {base.addr} {
+    prim_ent	int
+  , prim_seq	int
+  , prim_type	varchar
+  , primary key (prim_ent, prim_seq, prim_type)
+  , foreign key (prim_ent, prim_seq, prim_type) references base.addr (addr_ent, addr_seq, addr_type)
+    on update cascade on delete cascade deferrable
+}
+
+# Make the specified address primary
+# -----------------------------------------------------------------
+function {base.addr_make_prim(ent int, seq int, typ text)} {base.addr base.addr_prim} {
+  returns void language plpgsql security definer as $$
+    begin
+--raise notice 'Prim it: % % %', ent, seq, typ;
+        update base.addr_prim set prim_seq = seq where prim_ent = ent and prim_type = typ;
+        if not found then
+            insert into base.addr_prim (prim_ent,prim_seq,prim_type) values (ent,seq,typ);
+        end if;
+    end;
+$$;}
+    
+# Un-make the specified address primary
+# -----------------------------------------------------------------
+function {base.addr_remove_prim(ent int, seq int, typ text)} {base.addr base.addr_prim} {
+  returns void language plpgsql security definer as $$
+    declare
+        prim_rec	record;
+        addr_rec	record;
+    begin
+--raise notice 'Unprim it: % % %', ent, seq, typ;
+        select * into prim_rec from base.addr_prim where prim_ent = ent and prim_seq = seq and prim_type = typ;
+        if found then			-- If the addr we are deleting was a primary, find the next latest record
+            select * into addr_rec from base.addr where addr_ent = prim_rec.prim_ent and addr_type = prim_rec.prim_type and addr_seq != seq and not addr_inact order by addr_seq desc limit 1;
+            if found then		-- And make it the new primary
+--raise notice '  new seq:%', addr_rec.addr_seq;
+                update base.addr_prim set prim_seq = addr_rec.addr_seq where prim_ent = addr_rec.addr_ent and prim_type = addr_rec.addr_type;
+            else
+--raise notice '  nuke:% % %', ent, seq, typ;
+                delete from base.addr_prim where prim_ent = ent and prim_seq = seq and prim_type = typ;
+            end if;
+        else
+--raise notice 'Z:% % %', ent, seq, typ;
+        end if;
+    end;
+$$;}
+    
+# Triggers on base.addr inserts to make sure there is exactly one primary address for each type
+# -----------------------------------------------------------------
+function base.addr_tf_bi() {base.addr} {
   returns trigger language plpgsql security definer as $$
     begin
-        if new.addr_seq is null then
+        if new.addr_seq is null then			-- Generate unique sequence for new addrunication entry
             select into new.addr_seq coalesce(max(addr_seq),0)+1 from base.addr where addr_ent = new.addr_ent;
         end if;
+        if new.addr_inact then				-- Can't be primary if inactive
+            new.addr_prim = false;
+        elsif not exists (select addr_seq from base.addr where addr_ent = new.addr_ent and addr_type = new.addr_type) then
+            new.addr_prim = true;			-- First record of its type becomes primary
+        end if;
+        if new.addr_prim then				-- If this is primary, all others are now not
+            set constraints base.addr_prim_prim_ent_fkey deferred;
+            perform base.addr_make_prim(new.addr_ent, new.addr_seq, new.addr_type);
+        end if;
+        new.addr_prim = false;				-- We don't actually store the status in this field
         return new;
     end;
 $$;}
-trigger base_addr_tr_seq {} {
-    before insert on base.addr for each row execute procedure base.addr_tf_seq();
+trigger base_addr_tr_bi {} {
+    before insert on base.addr for each row execute procedure base.addr_tf_bi();
 }
 
-# Trigger on base.addr to make sure there is not more than one primary address
+# On update
 # -----------------------------------------------------------------
-function base.addr_tf_biud() {base.addr} {
+function base.addr_tf_bu() {base.addr} {
+  returns trigger language plpgsql security definer as $$
+    declare
+        prim_it		boolean;			-- Make it primary (tri-state)
+    begin
+        if new.addr_inact or (not new.addr_prim and old.addr_prim) then	-- Can't be primary if inactive
+            prim_it = false;
+        elsif new.addr_prim and not old.addr_prim then
+            prim_it = true;
+        end if;
+--raise notice 'X:% % %', old.addr_prim, new.addr_prim, prim_it;
+        if prim_it then
+            perform base.addr_make_prim(new.addr_ent, new.addr_seq, new.addr_type);
+        elsif not prim_it then
+            perform base.addr_remove_prim(new.addr_ent, new.addr_seq, new.addr_type);
+        end if;
+        new.addr_prim = false;				-- We don't actually store the status here
+        return new;
+    end;
+$$;}
+trigger base_addr_tr_bu {} {
+    before update on base.addr for each row execute procedure base.addr_tf_bu();
+}
+
+# On delete
+# -----------------------------------------------------------------
+function base.addr_tf_bd() {base.addr} {
   returns trigger language plpgsql security definer as $$
     begin
-        if TG_OP = 'UPDATE' then
-            if new.addr_inact then
-                new.addr_prim = false;
-                new.dirty = true;
-            end if;
-            if new.addr_prim and not old.addr_prim then		-- Setting this as the new primary
-                update base.addr set addr_prim = false where addr_ent = new.addr_ent and addr_type = new.addr_type and addr_seq <> new.addr_seq and addr_prim;
-                new.dirty = true;
-            end if;
-        elsif TG_OP = 'INSERT' then
-            if new.addr_prim is true then			-- If this is primary, all others are now not
--- raise notice 'BIU IN, falsing others: %', new.addr_ent;
-                update base.addr set addr_prim = false where addr_ent = new.addr_ent and addr_type = new.addr_type and addr_prim;
-            elsif not exists (select addr_seq from base.addr where addr_ent = new.addr_ent and addr_type = new.addr_type and not addr_inact) then
--- raise notice 'BIU IN, forcing true: %', new.addr_ent;
-                new.addr_prim = true;				-- First and only address is always primary
-            end if;
-        elsif TG_OP = 'DELETE' then
-            update base.addr set dirty = true where addr_ent = old.addr_ent and addr_type = old.addr_type and addr_seq <> old.addr_seq and not addr_inact;
-            return old;
-        end if;
-        return new;
+        perform base.addr_remove_prim(old.addr_ent, old.addr_seq, old.addr_type);
+        return old;
     end;
 $$;}
-trigger base_addr_tr_biud {} {
-    before insert or update or delete on base.addr for each row execute procedure base.addr_tf_biud();
+trigger base_addr_tr_bd {} {
+    before delete on base.addr for each row execute procedure base.addr_tf_bd();
 }
 
-# Make sure at least one active record is left marked as primary
+# Make sure at least one active record is left marked as primary, where possible
 # -----------------------------------------------------------------
 function base.addr_tf_aiud() {base.addr} {
   returns trigger language plpgsql security definer as $$
-    declare
-        kr	record;
-        seq	int;
     begin
-        for kr in select distinct addr_ent,addr_seq,addr_type from base.addr where dirty loop
-            if not exists (select addr_seq from base.addr where addr_ent = kr.addr_ent and addr_type = kr.addr_type and not addr_inact and addr_prim) then
-                select into seq addr_seq from base.addr where addr_ent = kr.addr_ent and addr_type = kr.addr_type and not addr_inact order by addr_seq desc limit 1;
-                if FOUND then
--- raise notice 'AIU IN, forcing true: %', seq;
-                    update base.addr set addr_prim = true where addr_ent = kr.addr_ent and addr_seq = seq;
-                end if;
-            end if;
-        end loop;
+        insert into base.addr_prim (prim_ent, prim_seq, prim_type) 
+            select addr_ent,max(addr_seq),addr_type from base.addr where not addr_inact and not exists (select * from base.addr_prim cp where cp.prim_ent = addr_ent and cp.prim_type = addr_type) group by 1,3;
         return old;
     end;
 $$;}
@@ -109,12 +164,14 @@ trigger base_addr_tr_aiud {} {
 
 # Base address view
 #----------------------------------------------------------------
-view base.addr_v {base.addr base.ent_v} {
-    select eval(fld_list $base::addr_se a)
+view base.addr_v {base.addr base.ent_v base.addr_prim} {
+    select eval(fld_list [lremove $base::addr_se addr_prim] a)
       , oe.std_name
+      , ap.prim_seq is not null and ap.prim_seq = a.addr_seq	as addr_prim
 
     from	base.addr	a
-    join	base.ent_v	oe	on oe.id = a.addr_ent;
+    join	base.ent_v	oe	on oe.id = a.addr_ent
+    left join	base.addr_prim	ap	on ap.prim_ent = a.addr_ent and ap.prim_type = a.addr_type;
 
     eval(trigview::insert base.addr_v base.addr $base::addr_v_in $base::addr_pk $glob::stampin);
     eval(trigview::update base.addr_v base.addr $base::addr_v_up $base::addr_pk $glob::stampup);

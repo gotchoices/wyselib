@@ -28,3 +28,9 @@ tabtext base.addr	{Addresses}		{Addresses (home, mailing, etc.) pertaining to en
 tabtext base.addr_v	{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {
     {std_name		{entity Name}		{The name of the entity this address pertains to}}
 }
+
+tabtext base.addr_prim	{Primary Address}	{Internal table to track which address is the main one for each given type} {
+    {prim_ent		{Entity}		{The entity ID number of the main address}}
+    {prim_seq		{Sequence}		{The sequence number of the main address}}
+    {prim_spec		{Medium}		{The address type this record applies to}}
+}
