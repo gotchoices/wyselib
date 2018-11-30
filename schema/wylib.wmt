@@ -1,6 +1,8 @@
 tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wylib view widgets} {
     {ruid		{Record ID}		{A unique ID number generated for each data record}}
-    {component		{GUI Component}		{The part of the graphical interface that accesses this data}}
+    {component		{Component}		{The part of the graphical, or other user interface that uses this data}}
+    {name		{Name}			{A name explaining the version or configuration this data represents (i.e. Default, Searching, Alphabetical, Urgent, Active, etc.)}}
+    {descr		{Description}		{A full description of what this configuration is for}}
     {access		{Access}		{Who is allowed to access this data, and how} {
         {priv		{Private}		{Only the owner of this data can read, write or delete it}}
         {read		{Public Read}		{The owner can read and write, all others can read, or see it}}
@@ -10,6 +12,13 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {data		{JSON Data}		{A record in JSON (JavaScript Object Notation) in a format known and controlled by the view or other accessing module}}
 } -mess {
     {IAT		{Invalid Access Type}	{Access type must be: priv, read, or write}}
+    {appSave		{Save State}		{Save the layout and operating state of the whole application, and all its subordinate windows}}
+    {appRestore		{Load State}		{Restore the application layout and operating state from a previously saved state}}
+    {appDefault		{Default State}		{Reload the application to its default state (you can lose any unsaved configuration state)}}
+    {appStatePrompt	{Input Tag}		{Input a tag to identify this saved state}}
+    {appStateTag	{State Tag}		{The tag is a brief name you will refer to later when loading the saved state}}
+    {appStateDescr	{State Description}	{A full description of the saved state and what you use it for}}
+    {appEditState	{Edit States}		{Preview a list of saved states for this application}}
     {dbe		{Edit}			{Insert, change and delete records from the database view}}
     {dbeColMenu		{Column}		{Operations you can perform on this column of the preview}}
     {dbeMenu		{Editing}		{A menu of functions for editing a database record}}
@@ -21,6 +30,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbePrimary		{Primary Key}		{The value that uniquely identifies the current record among all the rows in the database table}}
     {dbeActions		{Actions}		{Perform various commands pertaining to this particular view and record}}
     {dbeSubords		{Preview}		{Toggle the viewing of views and records which relate to the currently loaded record}}
+    {dbeLoadPrompt	{Primary Key}		{Input the primary key values}}
+    {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
@@ -35,7 +46,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpLoadAll		{Load All}		{Load all records from this table}}
     {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
     {dbpFilter		{Filter}		{Load records according to filter criteria}}
-    {dbpVisible		{Visible}		{A menu of columns where you can decide which ones are visible in the preview}}
+    {dbpVisible		{Visible}		{Specify which ones are visible in the preview}}
     {dbpVisCheck	{Visible}		{Check the box to make this column visible}}
     {dbpColAuto		{Auto Size}		{Adjust the width of this column to be optimal for its contents}}
     {dbpColHide		{Hide Column}		{Remove this column from the display}}

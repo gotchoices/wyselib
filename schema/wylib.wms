@@ -2,14 +2,16 @@
 #------------------------------------------
 # Copyright WyattERP all rights reserved
 #TODO:
+#- Implement writing of permissions, per user
+#- Get rid of serial key and use (owner, component)?
 #- 
 require common.tcl glob.tcl view.tcl
 
 namespace eval wylib {
     def data_pk		{ruid}
-    def data_v_in	{component access data}
-    def data_v_up	{access data}
-    def data_se		[concat $data_v_in $glob::stampfn]
+    def data_v_in	{component name descr access data}
+    def data_v_up	{access name descr data}
+    def data_se		[concat $data_pk $data_v_in owner $glob::stampfn]
 }
 schema wylib -grant public
 
@@ -18,7 +20,9 @@ schema wylib -grant public
 table wylib.data {wylib base.ent base.curr_eid()} {
     ruid	serial primary key
   , component	varchar
-  , access	varchar(5)	not null constraint "!wylib.data.IAT" check (access in ('priv', 'read', 'write'))
+  , name	varchar
+  , descr	varchar
+  , access	varchar(5)	not null default 'read' constraint "!wylib.data.IAT" check (access in ('priv', 'read', 'write'))
   , owner	int		not null default base.curr_eid() references base.ent on update cascade on delete cascade
   , data	jsonb
     subst($glob::stamps)
@@ -29,7 +33,7 @@ table wylib.data {wylib base.ent base.curr_eid()} {
 #----------------------------------------------------------------
 view wylib.data_v {wylib.data base.ent_v} {
     select eval(fld_list $wylib::data_se wd)
-      , oe.std_name
+      , oe.std_name		as own_name
 
     from	wylib.data	wd
     join	base.ent_v	oe	on oe.id = wd.owner
@@ -41,3 +45,49 @@ view::triggers wylib.data_v wylib.data $wylib::data_pk \
 	-ins [list -c $wylib::data_v_in -f "$glob::stampin"] \
 	-upd [list -c $wylib::data_v_up -f $glob::stampup -w {old.owner = base.curr_eid() or old.access = 'write'}] \
 	-del [list -w {old.owner = base.curr_eid() or old.access = 'write'}] \
+
+# Insert, update or delete (if null data) a stored setting
+#----------------------------------------------------------------
+function {wylib.set_data(comp text, nam text, des text, own int, dat jsonb)} {wylib.data_v base.curr_eid()} {
+  returns boolean language plpgsql as $$
+    declare
+      userid	int = coalesce(own, base.curr_eid());
+      id	int;
+    begin
+      select ruid into id from wylib.data_v where owner = userid and component = comp and name = nam;
+
+      if dat is null then
+        if found then
+          delete from wylib.data_v where ruid = id;
+        end if;
+      elsif not found then
+        insert into wylib.data_v (component, name, descr, owner, access, data) values (comp, nam, des, userid, 'read', dat);
+      else
+        update wylib.data_v set descr = des, data = dat where ruid = id;
+      end if;
+      return true;
+    end;
+$$;}
+
+# Return a stored JSON setting
+#----------------------------------------------------------------
+function {wylib.get_data(comp text, nam text, own int)} {wylib.data_v base.curr_eid()} {
+  returns jsonb language sql stable as $$
+      select data from wylib.data_v where owner = coalesce(own,base.curr_eid()) and component = comp and name = nam;
+$$;}
+
+# Generate notifications about new or updated configuration data
+#----------------------------------------------------------------
+function wylib.data_tf_notify() {wylib} {
+  returns trigger language plpgsql security definer as $$
+    declare
+      trec	record;
+    begin
+      if TG_OP = 'DELETE' then trec = old; else trec = new; end if;
+      perform pg_notify('wylib', format('{"target":"data", "component":"%s", "name":"%s", "oper":"%s"}', trec.component, trec.name, TG_OP));
+      return null;
+    end;
+$$;}
+trigger wylib_data_tr_notify {} {
+    after insert or update or delete on wylib.data for each row execute procedure wylib.data_tf_notify();
+}
