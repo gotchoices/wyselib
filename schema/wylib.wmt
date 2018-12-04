@@ -14,7 +14,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {IAT		{Invalid Access Type}	{Access type must be: priv, read, or write}}
     {appSave		{Save State}		{Save the layout and operating state of the whole application, and all its subordinate windows}}
     {appRestore		{Load State}		{Restore the application layout and operating state from a previously saved state}}
-    {appDefault		{Default State}		{Reload the application to its default state (you can lose any unsaved configuration state)}}
+    {appDefault		{Default State}		{Reload the application to its default state (you will lose any unsaved configuration state)}}
     {appStatePrompt	{Input Tag}		{Input a tag to identify this saved state}}
     {appStateTag	{State Tag}		{The tag is a brief name you will refer to later when loading the saved state}}
     {appStateDescr	{State Description}	{A full description of the saved state and what you use it for}}
@@ -33,10 +33,11 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeLoadPrompt	{Primary Key}		{Input the primary key values}}
     {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
+    {winSave		{Save State}		{Save the layout and operating state of this window, and all its subordinate windows}}
+    {winRestore		{Load State}		{Restore the the window's layout and operating state from a previously saved state}}
+    {winDefault		{Default State}		{Reload the window to its default state (you will lose any unsaved configuration state)}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
-    {winSave		{Save State}		{Save the layout and operating state of this window, and all its subordinate windows}}
-    {winRestore		{Restore State}		{Restore a previously saved state}}
     {winToTop		{Move To Top}		{Make this window show above others of its peers}}
     {winToBottom	{Move To Bottom}	{Place this window behind others of its peers}}
     {winMinimize	{Minimize}		{Shrink window down to an icon by which it can be re-opened}}
