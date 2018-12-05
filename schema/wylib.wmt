@@ -12,7 +12,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {data		{JSON Data}		{A record in JSON (JavaScript Object Notation) in a format known and controlled by the view or other accessing module}}
 } -mess {
     {IAT		{Invalid Access Type}	{Access type must be: priv, read, or write}}
-    {appSave		{Save State}		{Save the layout and operating state of the whole application, and all its subordinate windows}}
+    {appSave		{Save State}		{Re-save the layout and operating state of the application to the current named configuration, if there is one}}
+    {appSaveAs		{Save State As}		{Save the layout and operating state of the application, and all its subordinate windows, using a named configuration}}
     {appRestore		{Load State}		{Restore the application layout and operating state from a previously saved state}}
     {appDefault		{Default State}		{Reload the application to its default state (you will lose any unsaved configuration state)}}
     {appStatePrompt	{Input Tag}		{Input a tag to identify this saved state}}
@@ -29,16 +30,18 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeLoadRec		{Load Record}		{Load a specific record from the database by its primary key}}
     {dbePrimary		{Primary Key}		{The value that uniquely identifies the current record among all the rows in the database table}}
     {dbeActions		{Actions}		{Perform various commands pertaining to this particular view and record}}
+    {dbePreview		{Preview Document}	{Preview this record as a document}}
     {dbeSubords		{Preview}		{Toggle the viewing of views and records which relate to the currently loaded record}}
     {dbeLoadPrompt	{Primary Key}		{Input the primary key values}}
     {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
-    {winSave		{Save State}		{Save the layout and operating state of this window, and all its subordinate windows}}
+    {winSave		{Save State}		{Re-save the layout and operating state of this window to the current named configuration, if there is one}}
+    {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}
     {winRestore		{Load State}		{Restore the the window's layout and operating state from a previously saved state}}
     {winDefault		{Default State}		{Reload the window to its default state (you will lose any unsaved configuration state)}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
-    {winToTop		{Move To Top}		{Make this window show above others of its peers}}
+    {winToTop		{Move To Top}		{Make this window show above others of its peers (can also double click on a window header)}}
     {winToBottom	{Move To Bottom}	{Place this window behind others of its peers}}
     {winMinimize	{Minimize}		{Shrink window down to an icon by which it can be re-opened}}
     {dbpMenu		{Preview}		{A menu of functions for operating on the preview list below}}
