@@ -49,10 +49,11 @@ view::triggers wylib.data_v wylib.data $wylib::data_pk \
 # Insert, update or delete (if null data) a stored setting
 #----------------------------------------------------------------
 function {wylib.set_data(comp text, nam text, des text, own int, dat jsonb)} {wylib.data_v base.curr_eid()} {
-  returns boolean language plpgsql as $$
+  returns int language plpgsql as $$
     declare
       userid	int = coalesce(own, base.curr_eid());
       id	int;
+      trec	record;
     begin
       select ruid into id from wylib.data_v where owner = userid and component = comp and name = nam;
 
@@ -61,11 +62,11 @@ function {wylib.set_data(comp text, nam text, des text, own int, dat jsonb)} {wy
           delete from wylib.data_v where ruid = id;
         end if;
       elsif not found then
-        insert into wylib.data_v (component, name, descr, owner, access, data) values (comp, nam, des, userid, 'read', dat);
+        insert into wylib.data_v (component, name, descr, owner, access, data) values (comp, nam, des, userid, 'read', dat) returning ruid into id;
       else
         update wylib.data_v set descr = des, data = dat where ruid = id;
       end if;
-      return true;
+      return id;
     end;
 $$;}
 
