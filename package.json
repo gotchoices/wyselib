@@ -1,0 +1,30 @@
+{
+  "name": "wyselib",
+  "version": "1.0.0",
+  "description": "WyattERP Schema Library",
+  "main": "dist/wyselib.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev-hot": "webpack-dev-server --hot --config build/webpack.test.conf.js",
+    "dev-build": "webpack --mode development --watch --progress --config build/webpack.dist.conf.js",
+    "build": "webpack --mode production --config build/webpack.dist.conf.js",
+    "tclpkg": "wmmkpkg wyselib 0.20 tcltk",
+    "lint": "eslint --ext .js src"
+  },
+  "keywords": [
+    "ERP",
+    "database",
+    "application"
+  ],
+  "author": "Kyle Bateman",
+  "license": "MIT",
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}

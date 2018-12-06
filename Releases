@@ -1,0 +1,13 @@
+Change Log:
+
+1.0.0	2018-Dec
+	- Added schema support for new Javascript version of wylib
+	- Moved legacy TCL modules to subdirectory
+	- Changed license from GPL-3 to MIT
+
+0.20	2017
+	Changes to work with new ruby-gem-based wyseman.
+
+0.10	2005
+	Initial attempt to generalize certain core functions of any ERP
+	into a common library.

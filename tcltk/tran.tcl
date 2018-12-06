@@ -1,5 +1,5 @@
 # Create a GUI for entering/editing transaction journal entries
-#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
+#Copyright WyattERP, all other rights reserved
 package provide wyselib 0.20
 
 #TODO:
