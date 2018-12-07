@@ -18,6 +18,7 @@
   ],
   "author": "Kyle Bateman",
   "license": "MIT",
+  "homepage": "https://github.com/gotchoices/wyselib",
   "babel": {
     "presets": [
       "env"
