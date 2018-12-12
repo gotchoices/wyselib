@@ -1,6 +1,6 @@
 {
   "name": "wyselib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WyattERP Schema Library",
   "main": "dist/wyselib.js",
   "scripts": {
@@ -24,8 +24,6 @@
       "env"
     ]
   },
-  "dependencies": {
-  },
-  "devDependencies": {
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
