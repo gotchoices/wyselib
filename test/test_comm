@@ -27,7 +27,7 @@ res = db.exec(baseSql)
 #printf("Result:%s\n", res)
 
 res = db.doSelect('*', 'base.ent', {id:100})
-printf("Tuples:%s id:%s\n", res.ntuples, res[0]['id'])
+#printf("Tuples:%s id:%s\n", res.ntuples, res[0]['id'])
 raise 'Failure to insert test data' if res.ntuples != 1 or res[0]['id'] != '100'
 
 def comSelect(db)
@@ -36,25 +36,25 @@ end
 
 #Imported with correct primary record
 res = comSelect(db)
-printf("Phone primary:%s\n", res[0])
+#printf("Phone primary:%s\n", res[0])
 raise 'Wrong phone record primary' if res.ntuples != 1 or res[0]['comm_seq'] != '1'
 
 #Can change primary record
 res = db.doUpdate('base.comm_v', {comm_prim:'true'}, {comm_ent:100, comm_seq:2})
 res = comSelect(db)
-printf("Phone primary:%s\n", res[0])
+#printf("Phone primary:%s\n", res[0])
 raise "Couldn't set new phone record primary" if res.ntuples != 1 or res[0]['comm_seq'] != '2'
 
 #Setting inactive moves primary away from our record
 res = db.doUpdate('base.comm_v', {comm_inact:'true'}, "comm_ent = 100 and comm_type = 'phone' and comm_seq < 5")
 res = comSelect(db)
-printf("Phone primary:%s\n", res[0])
+#printf("Phone primary:%s\n", res[0])
 raise "Primary records should resolve to 5" if res.ntuples != 1 or res[0]['comm_seq'] != '5'
 
 #Attempt to clear primary fails
 res = db.doUpdate('base.comm_v', {comm_inact:'false'}, "comm_ent = 100")
 res = db.doUpdate('base.comm_v', {comm_prim:'false'}, "comm_ent = 100 and comm_seq = 5")
 res = comSelect(db)
-printf("Phone primary:%s\n", res[0])
+#printf("Phone primary:%s\n", res[0])
 raise "Primary records should still be 5" if res.ntuples != 1 or res[0]['comm_seq'] != '5'
 

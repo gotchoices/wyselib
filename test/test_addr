@@ -26,7 +26,7 @@ res = db.exec(baseSql)
 #printf("Result:%s\n", res)
 
 res = db.doSelect('*', 'base.ent', {id:100})
-printf("Tuples:%s id:%s\n", res.ntuples, res[0]['id'])
+#printf("Tuples:%s id:%s\n", res.ntuples, res[0]['id'])
 raise 'Failure to insert test data' if res.ntuples != 1 or res[0]['id'] != '100'
 
 def comSelect(db)
@@ -35,25 +35,25 @@ end
 
 #Imported with correct primary record
 res = comSelect(db)
-printf("Ship primary:%s\n", res[0])
+#printf("Ship primary:%s\n", res[0])
 raise 'Wrong phone record primary' if res.ntuples != 1 or res[0]['addr_seq'] != '1'
 
 #Can change primary record
 res = db.doUpdate('base.addr_v', {addr_prim:'true'}, {addr_ent:100, addr_seq:2})
 res = comSelect(db)
-printf("Ship primary:%s\n", res[0])
+#printf("Ship primary:%s\n", res[0])
 raise "Couldn't set new ship record primary" if res.ntuples != 1 or res[0]['addr_seq'] != '2'
 
 #Setting inactive moves primary away from our record
 res = db.doUpdate('base.addr_v', {addr_inact:'true'}, "addr_ent = 100 and addr_type = 'ship' and addr_seq < 3")
 res = comSelect(db)
-printf("Phone primary:%s\n", res[0])
+#printf("Phone primary:%s\n", res[0])
 raise "Primary records should resolve to 3" if res.ntuples != 1 or res[0]['addr_seq'] != '3'
 
 #Attempt to clear primary fails
 res = db.doUpdate('base.addr_v', {addr_inact:'false'}, "addr_ent = 100")
 res = db.doUpdate('base.addr_v', {addr_prim:'false'}, "addr_ent = 100 and addr_seq = 3")
 res = comSelect(db)
-printf("Phone primary:%s\n", res[0])
+#printf("Phone primary:%s\n", res[0])
 raise "Primary records should still be 3" if res.ntuples != 1 or res[0]['addr_seq'] != '3'
 

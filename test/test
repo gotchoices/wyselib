@@ -1,19 +1,28 @@
 #!/bin/bash
 #Initialize a sample database and run all automated tests
+#TODO:
+#- Write tests for more than just base
+#- 
 
 schemadir="../schema"
 dbname=$(cat ./DBNAME)
-echo "DB Name:$dbname"
+logfname="/var/tmp/wyselib-test.log"
+rm -f ${logfname}; touch $logfname
+echo "Testing with Database: $dbname, Logging to: ${logfname}"
 
 dropdb $dbname 2>/dev/null
-createdb $dbname
+createdb $dbname >>$logfname
 
-wyseman --dbname=$dbname ${schemadir}/*.wms ${schemadir}/base/*.wms
-wyseman --dbname=$dbname ${schemadir}/*.wmt ${schemadir}/base/*.wmt
-wyseman --dbname=$dbname ${schemadir}/base/*.wmd
-wyseman --dbname=$dbname ${schemadir}/base/*.wmi
+wyseman --dbname=$dbname ${schemadir}/*.wms ${schemadir}/base/*.wms >>$logfname
+wyseman --dbname=$dbname ${schemadir}/*.wmt ${schemadir}/base/*.wmt >>$logfname
+wyseman --dbname=$dbname ${schemadir}/base/*.wmd >>$logfname
+wyseman --dbname=$dbname ${schemadir}/base/*.wmi >>$logfname
 
 ./test_addr
 ./test_comm
+./test_lang
 
-echo "Remember to: dropdb $dbname"
+echo -n "Ready to drop database: $dbname? "; read ans
+if [ $ans == "y" -o $ans == "Y" ]; then
+  dropdb $dbname
+fi

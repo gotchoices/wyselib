@@ -1,4 +1,8 @@
-tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wylib view widgets} {
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+require common.tcl glob.tcl
+
+tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wylib view widgets} [concat {
     {ruid		{Record ID}		{A unique ID number generated for each data record}}
     {component		{Component}		{The part of the graphical, or other user interface that uses this data}}
     {name		{Name}			{A name explaining the version or configuration this data represents (i.e. Default, Searching, Alphabetical, Urgent, Active, etc.)}}
@@ -10,7 +14,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     }}
     {owner		{Owner}			{The user entity who created and has full permission to the data in this record}}
     {data		{JSON Data}		{A record in JSON (JavaScript Object Notation) in a format known and controlled by the view or other accessing module}}
-} -mess {
+} $glob::stampt] -mess {
     {IAT		{Invalid Access Type}	{Access type must be: priv, read, or write}}
     {appSave		{Save State}		{Re-save the layout and operating state of the application to the current named configuration, if there is one}}
     {appSaveAs		{Save State As}		{Save the layout and operating state of the application, and all its subordinate windows, using a named configuration}}
@@ -74,6 +78,11 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {X		{}		{}}
 }
 
+tabtext wylib.data_v {GUI Data} {A view of configuration and preferences data accessed by Wylib view widgets} {
+    {own_name		{Owner Name}		{The name of the person who saved this configuration data}}
+}
+
+#The following Finnish sections are purely for testing purposes:
 tabtext wylib.data -lang fi {GUI Data} {Wylib-näkymäkomponenttien käyttämät konfigurointi- ja asetustiedot} {
     {ruid		{Tunnistaa}		{Kullekin datatietueelle tuotettu yksilöllinen ID-numero}}
     {component		{Komponentti}		{GUI:n osa joka käyttää tämä data}}

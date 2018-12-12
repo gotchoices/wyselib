@@ -4,7 +4,7 @@
   "description": "WyattERP Schema Library",
   "main": "dist/wyselib.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cd test; ./test",
     "dev-hot": "webpack-dev-server --hot --config build/webpack.test.conf.js",
     "dev-build": "webpack --mode development --watch --progress --config build/webpack.dist.conf.js",
     "build": "webpack --mode production --config build/webpack.dist.conf.js",

@@ -29,3 +29,13 @@ def glob::stampin {crt_by session_user mod_by session_user crt_date current_time
 def glob::stampup {mod_by session_user mod_date current_timestamp}
 def glob::stampfn {crt_by mod_by crt_date mod_date}
 def glob::stampva {session_user session_user current_timestamp current_timestamp}
+
+def glob::auditt	{
+    {a_seq   		{Sequence}	{A sequential number unique to each alteration}}
+    {a_date   		{Date/Time}	{Date and time of the change}}
+    {a_by   		{Altered By}	{The username of the user who made the change}}
+    {a_action  		{Action}	{The operation that produced the change (update, delete)}}
+    {a_column  		{Column}	{The name of the column that was changed}}
+    {a_value   		{Value}		{The old value of the column before the change}}
+    {a_reason  		{Reason}	{The reason for the change}}
+}

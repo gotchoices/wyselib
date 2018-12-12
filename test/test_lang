@@ -1,0 +1,22 @@
+#!/usr/bin/ruby
+#Make sure we have language data in English for all schema components
+#TODO:
+#- Test for more than just wylib,base schema?
+#- 
+#- 
+require 'wyseman'
+require 'wyseman/db'
+
+schemaList = "'" + %w[wylib base].join("','") + "'"
+
+DatabaseName	= File.read(File.join(File.dirname(__FILE__), 'DBNAME')).strip
+
+db = Wyseman::DB.new({dbname: DatabaseName})
+
+res = db.exec("select sch,tab from wm.table_lang where language = 'en' and help is null and sch in (#{schemaList}) order by 1,2")
+printf("Undocumented tables:%s\n", res.ntuples)
+raise 'Undocumented tables found' if res.ntuples > 0
+
+res = db.exec("select sch,tab,col from wm.column_lang where language = 'en' and help is null and sch in (#{schemaList}) order by 1,2",)
+printf("Undocumented columns:%s\n", res.ntuples)
+raise "Undocumented columns found: #{res.to_a.join("\n")}" if res.ntuples > 0

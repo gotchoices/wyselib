@@ -53,12 +53,12 @@ tabtext base.ent_v	{Entities}		{A view of Entities, which can be a person, a com
     {giv_name		{Given Name}		{A person's First given name}}
 }
 
-tabtext base.ent_link	{Entity Links}		{Links to show how one entity (like an employee) is linked to another (like his company)} {
+tabtext base.ent_link	{Entity Links}		{Links to show how one entity (like an employee) is linked to another (like his company)} [concat {
     {org		{Organization ID}	{The ID of the organization entity that the member entity belongs to}}
     {mem		{Member ID}		{The ID of the entity that is a member of the organization}}
     {role		{Member Role}		{The function or job description of the member within the organization}}
     {supr_path		{Super Chain}		{An ordered list of superiors from the top down for this member in this organization}}
-} -errors {
+} $glob::stampt] -errors {
     {NBP		{Illegal Entity Org}	{A personal entity can not be an organization (and have member entities)}}
     {PBC		{Illegal Entity Member}	{Only personal entities can belong to company entities}}
 }
@@ -67,4 +67,8 @@ tabtext base.ent_link_v	{Entity Links}		{A view showing links to show how one en
     {org_name		{Org Name}		{The name of the organization or group entity the member belongs to}}
     {mem_name		{Member Name}		{The name of the person who belongs to the organization}}
     {role		{Role}			{The job description or duty of the member with respect to the organization he belongs to}}
-}
+} $glob::stampt]
+
+tabtext base.ent_audit	{Entities Auditing}	{Table tracking changes to the entities table} [concat {
+    {id			{Entity ID}		{The ID of the entity that was changed}}
+} $glob::auditt]
