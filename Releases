@@ -1,5 +1,8 @@
 Change Log:
 
+1.0.2	2018-Dec
+	- Support additional language tags for wylib
+
 1.0.0	2018-Dec
 	- Added schema support for new Javascript version of wylib
 	- Moved legacy TCL modules to subdirectory
