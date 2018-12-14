@@ -42,7 +42,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {winSave		{Save State}		{Re-save the layout and operating state of this window to the current named configuration, if there is one}}
     {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}
     {winRestore		{Load State}		{Restore the the window's layout and operating state from a previously saved state}}
-    {winDefault		{Default State}		{Reload the window to its default state (you will lose any unsaved configuration state)}}
+    {winDefault		{Default State}		{Erase locally stored configuration data for this window}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
     {winToTop		{Move To Top}		{Make this window show above others of its peers (can also double click on a window header)}}
@@ -75,6 +75,16 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {modQuery		{Query}			{The user is asked for certain input data, and a confirmation before proceeding}}
     {23505		{Key Violation}		{An operation would have resulted in multiple records having duplicated data, which is required to be unique}}
     {subWindow		{Subordinate View}	{Open a preview of records in another table that relate to the currently loaded record from this view}}
+    {litToSub		{To Subgroup}		{Move this item to a deeper sub-group}}
+    {litLeft		{Left Side}		{Specify a field from the database to compare}}
+    {litRight		{Right Side}		{Specify a field from the database, or manual entry to compare}}
+    {litManual		{Manual Entry}		{Enter a value manually}}
+    {litRightVal	{Right Value}		{Specify an explicit right-hand value for the comparision}}
+    {litRemove		{Remove Item}		{Remove this item from the comparison list}}
+    {litCompare		{Comparison}		{Specify an operator for the comparison}}
+    {lstAndOr		{And/Or}		{Specify whether all conditions must be true (and), or just one or more (or)}}
+    {lstAddCond		{Add Condition}		{Add another condition for comparison}}
+    {lstRemove		{Remove Grouping}	{Remove this group of conditions}}
     {X		{}		{}}
 }
 
