@@ -115,7 +115,8 @@ view base.ent_v {base.ent} {
                 case when e.mid_name is null then '' else ' ' || e.mid_name end
             else '' end												as frm_name
       , case when e.fir_name is null then '' else coalesce(e.pref_name,e.fir_name) || ' ' end || e.ent_name	as cas_name
-      , e.fir_name || case when e.mid_name is null then '' else ' ' || e.mid_name end				as giv_name
+      , e.fir_name || case when e.mid_name is null then '' else ' ' || e.mid_name end				as giv_name	
+      , extract(year from age(e.born_date))									as age
     from	base.ent	e;
 
     eval(rule_insert base.ent_v base.ent $base::ent_v_in {} $glob::stampin);
