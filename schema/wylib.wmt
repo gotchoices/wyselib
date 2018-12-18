@@ -66,6 +66,17 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbsSearch		{Query Search}		{Run the configured selection query, returning matching records}}
     {dbsSave		{Save Query}		{Save the current query for future use}}
     {dbsRecall		{Recall Query}		{Recall a named query which has been previously saved}}
+    {dbsEqual		{=}			{The left and right side of the comparison are equal}}
+    {dbsLess		{<}			{The left value is less than the value on the right}}
+    {dbsLessEq		{<=}			{The left value is less than or equal to the value on the right}}
+    {dbsMore		{>}			{The left value is greater than the value on the right}}
+    {dbsMoreEq		{>=}			{The left value is greater than or equal to the value on the right}}
+    {dbsRexExp		{~}			{The left value matches a regular expression given on the value on the right}}
+    {dbsDiff		{Diff}			{The left side is different from the right, in a comparison where two nulls (unassigned values) can be thought of as being the same}}
+    {dbsIn		{In}			{The left value exists in a comma separated list you specify, or an array in another database field}}
+    {dbsNull		{Null}			{The value on the left is a null, or not assigned}}
+    {dbsTrue		{True}			{The left value is a boolean with a true value}}
+    {dbsNop		{<Nop>}			{This operation causes the whole comparison clause to be ignored}}
     {modOK		{OK}			{Press this button to acknowledge you have seen the posted message}}
     {modYes		{OK}			{Press this button to acknowledge you wish to proceed with the current operation}}
     {modCancel		{Cancel}		{Press this button if you want to abandon the operation and not proceed}}
@@ -78,9 +89,10 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {litToSub		{To Subgroup}		{Move this item to a deeper sub-group}}
     {litLeft		{Left Side}		{Specify a field from the database to compare}}
     {litRight		{Right Side}		{Specify a field from the database, or manual entry to compare}}
-    {litManual		{Manual Entry}		{Enter a value manually}}
+    {litManual		{Manual Entry}		{Enter a value manually to the right}}
     {litRightVal	{Right Value}		{Specify an explicit right-hand value for the comparision}}
     {litRemove		{Remove Item}		{Remove this item from the comparison list}}
+    {litNot		{Not}			{If asserted, the sense of the comparison will be negated, or made opposite}}
     {litCompare		{Comparison}		{Specify an operator for the comparison}}
     {lstAndOr		{And/Or}		{Specify whether all conditions must be true (and), or just one or more (or)}}
     {lstAddCond		{Add Condition}		{Add another condition for comparison}}
