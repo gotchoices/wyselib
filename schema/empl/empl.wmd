@@ -41,7 +41,7 @@ tabdef empl.empl_v -fields {
     {prox_name		ent	20	{}		-depend proxy -title {:} -in proxy}
     {supr_name		ent	20	{}		-depend superv -title {:} -in superv}
     {std_name		ent	40	{1 2 2}		-state readonly -wr 0}
-} -inherits empl.empl
+}
 
 #A view for supervisors to see their own subordinates
 tabdef empl.empl_v_sup -focus ent_name -fields [concat {
@@ -113,4 +113,4 @@ tabdef empl.addr_v -fields [concat {
 
 tabdef empl.comm_v -fields {
     {std_name           ent     14      {}              -opt 1 -depend comm_ent -title {:} -in comm_ent}
-} -inherits base.comm
+}

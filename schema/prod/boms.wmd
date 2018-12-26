@@ -20,7 +20,7 @@ tabdef prod.proc -focus oper_r -fields [concat {
 
 #------------------------------------------------------------
 tabdef prod.proc_v -focus oper_r -fields {
-} -inherits prod.proc
+}
 
 #------------------------------------------------------------
 tabdef prod.note -focus type -fields [concat {
@@ -35,7 +35,7 @@ tabdef prod.note -focus type -fields [concat {
 
 #------------------------------------------------------------
 tabdef prod.note_v -focus type -fields {
-} -inherits prod.note
+}
 
 #------------------------------------------------------------
 tabdef prod.boms -focus quant -fields [concat {
@@ -52,4 +52,4 @@ tabdef prod.boms -focus quant -fields [concat {
 
 #------------------------------------------------------------
 tabdef prod.boms_v -focus quant -fields {
-} -inherits prod.boms
+}

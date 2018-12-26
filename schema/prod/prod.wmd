@@ -59,7 +59,7 @@ tabdef prod.parm -focus var -fields [concat {
 
 #-------------------------------------------
 tabdef prod.parm_v -focus var -fields {
-} -inherits prod.parm
+}
 
 return
 

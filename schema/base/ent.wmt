@@ -23,7 +23,7 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
         {f		{Female}		{The person is female}}
     }}
     {marital		{Marital Status}	{Whether the person is married (m) or single (s)} {
-        {{}		{N/A}			{Maritcal status is not applicable (such as for organizations or groups)}}
+        {{}		{N/A}			{Marital status is not applicable (such as for organizations or groups)}}
         {m		{Married}		{The person is in a current marriage}}
         {s		{Single}		{The person has never married or is divorced or is the survivor of a deceased spouse}}
     }}
@@ -35,7 +35,7 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
     {tax_id		{TID/SSN}		{The number by which the country recognizes this person or company for taxation purposes}}
     {bank		{Bank Routing}		{Bank routing information: bank_number<:.;,>account_number}}
     {proxy		{Proxy}			{ID of another person authorized to act on behalf of this employee where necessary in certain administrative functions of the ERP (like budgetary approvals)}}
-} $glob::stampt] -errors {
+} $glob::stampt] -messages {
     {CFN		{First Name}		{A first name is required for personal entities}}
     {CMN		{Middle Name}		{A middle name is prohibited for non-personal entities}}
     {CPN		{Pref Name}		{A preferred name is prohibited for non-personal entities}}
@@ -52,6 +52,8 @@ tabtext base.ent_v	{Entities}		{A view of Entities, which can be a person, a com
     {cas_name		{Casual Name}		{A person's full name in a casual format: First Last}}
     {giv_name		{Given Name}		{A person's First given name}}
     {age		{Age}			{Age, in years, of the entity}}
+} -messages {
+    {directory		{Directory}		{Report showing basic contact data for the selected entities}}
 }
 
 tabtext base.ent_link	{Entity Links}		{Links to show how one entity (like an employee) is linked to another (like his company)} [concat {

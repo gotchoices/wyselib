@@ -13,7 +13,7 @@ tabtext base.priv	{Privileges}		{Privileges assigned to each system user} {
     }}
     {priv_level		{Priv Level}		{Shows the name the privilege level will refer to in the database.  This is formed by joining the privilege name and the level with an underscore.}}
     {cmt		{Comment}		{Comments about this privilege allocation to this user}}
-} -errors {
+} -messages {
     {NUN	{No username found}	{The specified user has no username--This probably means he has not been added as a database user}}
     {UAE	{User already exists}	{The specified username was found to already exist as a user in the database}}
     {ENF	{Employee not found}	{While adding a user, the specified ID was not found to belong to anyone in the empl database table}}
@@ -25,4 +25,7 @@ tabtext base.priv_v	{Privileges}		{Privileges assigned to each entity} {
     {std_name		{Entity Name}		{The name of the entity being granted the privilege}}
     {priv_list		{Priv List}		{In the case where the privilege refers to a group role, this shows which underlying privileges belong to that role.}}
     {username		{Username}		{The username within the database for this entity}}
+} -messages {
+    {adduser		{Add as User}		{Create a user account for the selected entity}}
 }
+

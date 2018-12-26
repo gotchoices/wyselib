@@ -12,7 +12,7 @@ namespace eval base {
     def addr_v_up	[lremove $addr_v_in addr_ent]
     def addr_se		[concat $addr_pk $addr_v_up $glob::stampfn]
     def addr_local	{}
-    def addr_types	{bill ship}
+    def addr_types	{phys mail bill ship}
 }
 
 # Contains an entry for each address for an entity

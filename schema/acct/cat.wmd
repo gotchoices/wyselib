@@ -8,4 +8,4 @@ tabdef acct.cat -focus numb -fields [concat {
 } $glob::stampd]
 
 tabdef acct.cat_v -focus numb -fields {
-} -inherits acct.cat
+}

@@ -14,4 +14,4 @@ tabdef acct.acct -focus numb -fields [concat {
 tabdef acct.acct_v -focus numb -fields {
     {level		ent	4	{1 5}		-opt 1 -state readonly -write 0 -takefocus 0}
     {fpath		ent	30	{2 5 3}		-opt 1 -state readonly -write 0 -takefocus 0}
-} -inherits acct.acct
+}

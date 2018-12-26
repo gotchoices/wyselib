@@ -7,7 +7,7 @@ tabdef acct.meth -focus code -fields [concat {
 } $glob::stampd]
 
 tabdef acct.meth_v -focus code -fields {
-} -inherits acct.meth
+}
 
 tabdef acct.mmap -focus book_acct -fields [concat {
     {meth		ent	10	{0 0}		-hide 1}
@@ -19,4 +19,4 @@ tabdef acct.mmap -focus book_acct -fields [concat {
 tabdef acct.mmap_v -focus book_acct -fields {
     {ba_name		ent	20	{}		-depend book_acct -title {:} -in book_acct}
     {ma_name		ent	20	{}		-depend meth_acct -title {:} -inmeth_acct}
-} -inherits acct.mmap
+}

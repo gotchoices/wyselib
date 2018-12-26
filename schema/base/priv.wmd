@@ -14,4 +14,6 @@ tabdef base.priv_v -fields {
     {std_name		ent	24	{0 2}		-opt 1 -state disabled -write 0}
     {priv_level		ent	24	{1 2}		-opt 1 -state disabled -write 0}
     {priv_list		ent	48	{0 3 2}		-opt 1 -state disabled -write 0}
-} -inherits base.priv
+} -actions {
+    {adduser	}
+}
