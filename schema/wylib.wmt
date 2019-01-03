@@ -56,6 +56,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpLoadAll		{Load All}		{Load all records from this table}}
     {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
     {dbpFilter		{Filter}		{Load records according to filter criteria}}
+    {dbpAutoLoad	{Auto Execute}		{Automatically execute the top row any time the preview is reloaded}}
     {dbpColumn		{Column Menu}		{Menu of commands to control this column display}}
     {dbpVisible		{Visible}		{Specify which columns are visible in the preview}}
     {dbpVisCheck	{Visible}		{Check the box to make this column visible}}
@@ -80,13 +81,14 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbsNull		{Null}			{The value on the left is a null, or not assigned}}
     {dbsTrue		{True}			{The left value is a boolean with a true value}}
     {dbsNop		{<Nop>}			{This operation causes the whole comparison clause to be ignored}}
-    {modOK		{OK}			{Press this button to acknowledge you have seen the posted message}}
-    {modYes		{OK}			{Press this button to acknowledge you wish to proceed with the current operation}}
-    {modCancel		{Cancel}		{Press this button if you want to abandon the operation and not proceed}}
-    {modError		{Error}			{Something went wrong}}
-    {modNotice		{Notice}		{The message is a warning or advice for the user}}
-    {modConfirm		{Confirm}		{The user is asked to confirm before proceeding, or cancel to abandon the operation}}
-    {modQuery		{Query}			{The user is asked for certain input data, and a confirmation before proceeding}}
+    {diaOK		{OK}			{Acknowledge you have seen the posted message}}
+    {diaYes		{OK}			{Proceed with the current operation and close the dialog}}
+    {diaCancel		{Cancel}		{Abandon the operation and not proceed}}
+    {diaApply		{Apply}			{Apply the information in this dialog, but do not close it}}
+    {diaError		{Error}			{Something went wrong}}
+    {diaNotice		{Notice}		{The message is a warning or advice for the user}}
+    {diaConfirm		{Confirm}		{The user is asked to confirm before proceeding, or cancel to abandon the operation}}
+    {diaQuery		{Query}			{The user is asked for certain input data, and a confirmation before proceeding}}
     {mdewMore		{More Fields}		{Click to see more data fields pertaining to this record}}
     {23505		{Key Violation}		{An operation would have resulted in multiple records having duplicated data, which is required to be unique}}
     {subWindow		{Subordinate View}	{Open a preview of records in another table that relate to the currently loaded record from this view}}
