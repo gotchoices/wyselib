@@ -38,6 +38,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeSubords		{Preview}		{Toggle the viewing of views and records which relate to the currently loaded record}}
     {dbeLoadPrompt	{Primary Key}		{Input the primary key values}}
     {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
+    {dbePopupErr	{Popup Error}		{Error trying to open a child window.  Is the browser blocking popup windows?}}
     {dia		{Dialog}		{Query configuration input values}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
     {winSave		{Save State}		{Re-save the layout and operating state of this window to the current named configuration, if there is one}}
