@@ -8,4 +8,6 @@ tabdef base.parm_v -focus module -fields [concat {
     {type		pdm	6	{1 2}		-ini text}
     {value		ent	24	{2 2}		-spf edw -hot 1}
     {cmt		ent	50	{1 3 2}		-spf edw}
-} $glob::stampd]
+} $glob::stampd] -display {
+    module parm type value cmt
+}
