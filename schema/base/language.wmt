@@ -1,0 +1,11 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+require ../common.tcl ../glob.tcl
+
+tabtext base.language	{Languages}		{Contains standard ISO data about international language codes} {
+    {code		{Language Code}		{The ISO 3-letter language code.  Where a native T-code exists, it is the one used here.}}
+    {iso_3b		{Biblio Code}		{The ISO bibliographic 3-letter code for this language}}
+    {iso_2		{Code 2}		{The ISO 2-letter code for this language, if it exists}}
+    {eng_name		{Name in English}	{The common name of the language English}}
+    {fra_name		{Name in French}	{The common name of the language in French}}
+}

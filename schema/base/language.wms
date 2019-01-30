@@ -1,0 +1,16 @@
+# International language data
+#------------------------------------------
+# Copyright WyattERP all rights reserved
+#TODO:
+#- 
+require base.tcl
+
+# Table of languages
+#----------------------------------------------------------------
+table base.language {base} {
+    code	varchar(3)	primary key
+  , iso_3b	varchar		unique
+  , eng_name	varchar		not null
+  , fra_name	varchar		not null
+  , iso_2	varchar(2)	unique
+}

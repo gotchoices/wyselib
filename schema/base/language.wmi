@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+# Function to initialize data in the language table
+# Copyright WyattERP all rights reserved
+# Get data file using: 
+#wget -q https://datahub.io/core/language-codes/r/language-codes-full.csv
+
+require 'csv'
+$stderr = StringIO.new			#To suppress printing of stderr
+
+done = []
+qlist = []
+file = File.join(File.dirname(__FILE__),'language-codes-full.csv')
+n = 1
+
+CSV.parse(File.read(file).scrub) {|row|
+  alpha3b, alpha3t, alpha2, english, french = row
+#p row
+  code = alpha3t || alpha3b
+  next if alpha3b == 'alpha3-b'		#Skip header
+  alpha2 = nil if alpha2 == ''
+  if code.length != 3
+    $stderr.puts 'Skipping bad language code: ' + code + ' line:' + n.to_s; next
+  end
+  if !english || english == ''
+    $stderr.puts 'Skipping blank english at line:' + n; next
+  end
+  if !french || french == ''
+    $stderr.puts 'Skipping blank french at line:' + n; next
+  end
+  if done.any? {|w| w == code} 
+    $stderr.puts 'Skipping duplicate: ' + code + ' line:' + n; next
+  end
+  done << code				#Keep track of what we've done
+#p code, english, french
+  qlist << "insert into base.language (code,iso_3b,iso_2,eng_name,fra_name) values (
+      '#{code.gsub("'","''")}'
+    , '#{alpha3b.gsub("'","''")}'
+    , #{alpha2 ? "'"+alpha2.to_s.gsub("'","''")+"'" : "null"}
+    , '#{english.to_s.gsub("'","''")}'
+    , '#{french.to_s.gsub("'","''")}'
+  )"
+  n += 1
+}
+#p qlist
+
+puts qlist.join(";\n") + ";\n"			#To stdout
