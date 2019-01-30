@@ -67,12 +67,12 @@ function base.parm_v_tf_ins() {base.parm_v} {
             insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_int) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::int);
         when new.type = 'date' then
             insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_date) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::date);
-        when new.type = 'text' then
-            insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_text) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value);
         when new.type = 'float' then
             insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_float) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::float);
         when new.type = 'boolean' then
             insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_boolean) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value::boolean);
+        else		-- when new.type = 'text' then
+            insert into base.parm (eval(fld_list "$base::parm_in $glob::stampfn"),v_text) values (eval(ins_list "$base::parm_in $glob::stampfn" $glob::stampin), new.value);
         end case;
         return new;
     end;
