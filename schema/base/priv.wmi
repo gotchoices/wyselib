@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright WyattERP all rights reserved
 # Initialize permissions
 
 cat <<EOF

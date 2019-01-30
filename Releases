@@ -1,5 +1,8 @@
 Change Log:
 
+1.0.6	2019-Jan
+	- Database of known languages
+
 1.0.2	2018-Dec
 	- Support additional language tags for wylib
 

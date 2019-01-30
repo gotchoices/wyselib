@@ -1,17 +1,9 @@
 #!/usr/bin/env ruby
 # Function to initialize data in the country table
-#include(Copyright)
 #Get data file using: 
 #wget -q http://www.andrewpatton.com/countrylist.csv
 
 require 'csv'
-#require 'wyseman'			#For direct DB writing
-#require 'wyseman/db'
-#db = Wyseman::DB.new();
-if ! "".respond_to? :scrub		#For ruby < 2.1
-  require 'scrub_rb'
-end
-
 $stderr = StringIO.new			#To suppress printing of stderr
 
 done = []

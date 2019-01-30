@@ -39,7 +39,6 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeLoadPrompt	{Primary Key}		{Input the primary key values}}
     {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
     {dbePopupErr	{Popup Error}		{Error trying to open a child window.  Is the browser blocking popup windows?}}
-    {dia		{Dialog}		{Query configuration input values}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
     {winSave		{Save State}		{Re-save the layout and operating state of this window to the current named configuration, if there is one}}
     {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}
@@ -50,6 +49,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {winToTop		{Move To Top}		{Make this window show above others of its peers (can also double click on a window header)}}
     {winToBottom	{Move To Bottom}	{Place this window behind others of its peers}}
     {winMinimize	{Minimize}		{Shrink window down to an icon by which it can be re-opened}}
+    {winPopUp		{Printable Popup}	{Make a copy, if possible, of this window in a separate popup window so it can be printed, separate from the rest of the page}}
+    {winPrint		{Print Document}	{Find the nearest independent document (iframe) within this component, and print it}}
     {dbp		{Preview}		{A window for showing the records of a database table in a grid like a spreadsheet}}
     {dbpMenu		{Preview Menu}		{A menu of functions for operating on the preview list below}}
     {dbpReload		{Reload}		{Reload the records specified in the previous load}}
@@ -82,10 +83,12 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbsNull		{Null}			{The value on the left is a null, or not assigned}}
     {dbsTrue		{True}			{The left value is a boolean with a true value}}
     {dbsNop		{<Nop>}			{This operation causes the whole comparison clause to be ignored}}
+    {diaDialog		{Dialog}		{Query user for specified input values or parameters}}
+    {diaReport		{Report}		{Report window}}
     {diaOK		{OK}			{Acknowledge you have seen the posted message}}
-    {diaYes		{OK}			{Proceed with the current operation and close the dialog}}
-    {diaCancel		{Cancel}		{Abandon the operation and not proceed}}
-    {diaApply		{Apply}			{Apply the information in this dialog, but do not close it}}
+    {diaYes		{OK}			{Proceed with the proposed operation and close the dialog}}
+    {diaCancel		{Cancel}		{Abandon the operation associated with the dialog}}
+    {diaApply		{Perform}		{Perform the action associated with this dialog, but do not close it}}
     {diaError		{Error}			{Something went wrong}}
     {diaNotice		{Notice}		{The message is a warning or advice for the user}}
     {diaConfirm		{Confirm}		{The user is asked to confirm before proceeding, or cancel to abandon the operation}}
@@ -104,8 +107,34 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {lstAndOr		{And/Or}		{Specify whether all conditions must be true (and), or just one or more (or)}}
     {lstAddCond		{Add Condition}		{Add another condition for comparison}}
     {lstRemove		{Remove Grouping}	{Remove this group of conditions}}
+    {sdc		{Structured Document}	{An editor for documents structured in an outline format}}
+    {sdcMenu		{Document Menu}		{A menu of functions for working with structured documents}}
+    {sdcUpdate		{Update}		{Save changes to this document back to the database}}
+    {sdcUndo		{Undo}			{Reverse the effect of a paragraph deletion or move}}
+    {sdcClear		{Clear}			{Delete the contents of the document on the screen.  Does not affect the database.}}
+    {sdcClearAsk	{Clear WorkSpace}	{Are you sure you want to clear the document data?}}
+    {sdcImport		{File Import}		{Load the workspace from an externally saved file}}
+    {sdcImportAsk	{Import File}		{Select a file to Import, or drag it onto the import button}}
+    {sdcExport		{File Export}		{Save the workspace to an external file}}
+    {sdcExportAsk	{Export File}		{Input a filename to use when exporting}}
+    {sdcExportFmt	{Human Readable}	{Export the file with indentation to make it more easily readable by people}}
+    {sdcSpell		{Spell Checking}	{Enable/disable spell checking in on the screen}}
+    {sdcBold		{Bold}			{Mark the highlighted text as bold}}
+    {sdcItalic		{Italic}		{Mark the highlighted text as italic}}
+    {sdcUnder		{Underline}		{Underline highlighted text}}
+    {sdcCross		{Cross Reference}	{Wrap the highlighted text with a cross reference.  The text should be a tag name for another section.  That section number will be substituted for the tag name.}}
+    {sdcTitle		{Title}			{An optional title for this section or paragraph}}
+    {sdcSection		{Section}		{Click to edit text.  Double click at edge for direct editing mode.  Drag at edge to move.}}
+    {sdcTag		{Tag}			{An identifying word that can be used to cross-reference to this section or paragraph}}
+    {sdcText		{Paragraph Text}	{Insert/Edit the raw paragraph text directly here, including entering limited HTML tags, if desired}}
+    {sdcEdit		{Direct Editing}	{This section or paragraph is in direct editing mode.  Double click on the background to return to preview mode.}}
+    {sdcAdd		{Add Subsection}	{Create a new paragraph or section nested below this one}}
+    {sdcDelete		{Delete Section}	{Delete this paragraph or section of the document}}
+    {sdcEditAll		{Edit All}		{Put all paragraphs or sections into direct editing mode.  This can be done one at a time by double clicking on the paragraph.}}
+    {sdcPrevAll		{Preview All}		{Take all paragraphs or sections out of direct editing mode, and into preview mode}}
     {X		{}		{}}
 }
+#    {diaPopup		{Popup Report}		{Open the report in a separate, popup window of the browser}}
 
 tabtext wylib.data_v {GUI Data} {A view of configuration and preferences data accessed by Wylib view widgets} {
     {own_name		{Owner Name}		{The name of the person who saved this configuration data}}
