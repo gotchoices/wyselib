@@ -19,11 +19,11 @@ schema wylib -grant public
 #----------------------------------------------------------------
 table wylib.data {wylib base.ent base.curr_eid()} {
     ruid	serial primary key
-  , component	varchar
-  , name	varchar
-  , descr	varchar
+  , component	text
+  , name	text
+  , descr	text
   , access	varchar(5)	not null default 'read' constraint "!wylib.data.IAT" check (access in ('priv', 'read', 'write'))
-  , owner	int		not null default base.curr_eid() references base.ent on update cascade on delete cascade
+  , owner	text		not null default base.curr_eid() references base.ent on update cascade on delete cascade
   , data	jsonb
     subst($glob::stamps)
 }
@@ -72,7 +72,7 @@ $$;}
 
 # Return a stored JSON setting
 #----------------------------------------------------------------
-function {wylib.get_data(comp text, nam text, own int)} {wylib.data_v base.curr_eid()} {
+function {wylib.get_data(comp text, nam text, own text)} {wylib.data_v base.curr_eid()} {
   returns jsonb language sql stable as $$
       select data from wylib.data_v where owner = coalesce(own,base.curr_eid()) and component = comp and name = nam;
 $$;}

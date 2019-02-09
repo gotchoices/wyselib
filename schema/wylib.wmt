@@ -20,10 +20,28 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {appSaveAs		{Save State As}		{Save the layout and operating state of the application, and all its subordinate windows, using a named configuration}}
     {appRestore		{Load State}		{Restore the application layout and operating state from a previously saved state}}
     {appDefault		{Default State}		{Reload the application to its default state (you will lose any unsaved configuration state)}}
-    {appStatePrompt	{Input Tag}		{Input a tag to identify this saved state}}
+    {appStatePrompt	{Input Tag}		{A tag to identify this saved state}}
     {appStateTag	{State Tag}		{The tag is a brief name you will refer to later when loading the saved state}}
     {appStateDescr	{State Description}	{A full description of the saved state and what you use it for}}
     {appEditState	{Edit States}		{Preview a list of saved states for this application}}
+    {appServer		{Server}		{Toggle menu for connecting to various servers}}
+    {appServerURL	{Server URL}		{The domain and port of the server you are currently connected to}}
+    {appNoConnect	{Not Connected}		{The application is not connected to a backend server}}
+    {conmenu		{Connection Menu}	{Various helper functions to control how you connect to server sites, and manage your connection keys}}
+    {conTitle		{Connection Keys}	{A list of credentials, servers and ports where you normally connect}}
+    {conConnect		{Connect}		{Attempt to connect to the server at this address and port (or Shift-click to disconnect)}}
+    {conDelete		{Delete}		{Remove the selected server connections from the list}}
+    {conLoad		{Load Sites}		{Get site connection key information previously stored in this browser's local storage}}
+    {conZap		{Forget Sites}		{Remove site connection key information so it is no longer stored in this browser}}
+    {conLock		{Lock Sites}		{Encrypt this site information in the browser using a code and password so others can not use it}}
+    {conKey		{Connect Key}		{A key that will grant you access to this site.  Do not share this key or store it on a public device or others will be able to access your login.}}
+    {conImport		{Import Keys}		{Drag/drop key files here, or click to import a connection key, or one-time connection ticket}}
+    {conExport		{Export Keys}		{Save the selected private connection keys out to a file.  Delete these files immediately after moving them to a private backup device.  Never leave them in the download area or on a live file system!}}
+    {conRetry		{Retrying}		{Attempting to automatically reconnect to the server}}
+    {conExpFile		{Key Filename}		{The file name to use for saving the selected private keys}}
+    {conUsername	{Username}		{Input the name you will use to connect to the backend database.  If you don't know.  Ask the person who issued your connection ticket.}}
+    {conNoCrypto	{No Crypto Library}	{Cryptographic functions not found in browser API.  Make sure you are connected by https, or use a more modern browser.}}
+    {conCryptErr	{Generating Key}	{There was an error in the browser attempting to generate a connection key}}
     {dbe		{Edit}			{Insert, change and delete records from the database view}}
     {dbeColMenu		{Column}		{Operations you can perform on this column of the preview}}
     {dbeMenu		{Editing}		{A menu of functions for editing a database record}}
@@ -44,6 +62,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}
     {winRestore		{Load State}		{Restore the the window's layout and operating state from a previously saved state}}
     {winDefault		{Default State}		{Erase locally stored configuration data for this window}}
+    {winModified	{Modified Content}	{Changes may be lost if you close the window}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
     {winToTop		{Move To Top}		{Make this window show above others of its peers (can also double click on a window header)}}
@@ -51,6 +70,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {winMinimize	{Minimize}		{Shrink window down to an icon by which it can be re-opened}}
     {winPopUp		{Printable Popup}	{Make a copy, if possible, of this window in a separate popup window so it can be printed, separate from the rest of the page}}
     {winPrint		{Print Document}	{Find the nearest independent document (iframe) within this component, and print it}}
+    {winUnknown		{Unknown Message}	{An error or query was generated that could not be understood by the program}}
+    {winUnCode		{Unknown Error Code}	{An error message was returned with an unrecognized code or status}}
     {dbp		{Preview}		{A window for showing the records of a database table in a grid like a spreadsheet}}
     {dbpMenu		{Preview Menu}		{A menu of functions for operating on the preview list below}}
     {dbpReload		{Reload}		{Reload the records specified in the previous load}}
@@ -92,7 +113,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {diaError		{Error}			{Something went wrong}}
     {diaNotice		{Notice}		{The message is a warning or advice for the user}}
     {diaConfirm		{Confirm}		{The user is asked to confirm before proceeding, or cancel to abandon the operation}}
-    {diaQuery		{Query}			{The user is asked for certain input data, and a confirmation before proceeding}}
+    {diaQuery		{Input}			{The user is asked for certain input data, and a confirmation before proceeding}}
     {mdewMore		{More Fields}		{Click to see more data fields pertaining to this record}}
     {23505		{Key Violation}		{An operation would have resulted in multiple records having duplicated data, which is required to be unique}}
     {subWindow		{Subordinate View}	{Open a preview of records in another table that relate to the currently loaded record from this view}}
