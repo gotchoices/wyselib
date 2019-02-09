@@ -12,18 +12,18 @@ schema empl -grant public
 # Data about a person's employment with a particular company
 #----------------------------------------------------------------
 table empl.empl {base.ent base.ent_link} {
-    emplr	int
-  , emple	int
+    emplr	text
+  , emple	text
   , primary key (emplr, emple)
   , foreign key (emplr, emple) references base.ent_link on update cascade on delete cascade
   , empl_type	varchar(8)	not null default 'regular' constraint "!empl.empl.CET" check (empl_type in ('regular','part','temp','season','train','contract','other','intern'))
-  , empl_cmt	varchar
+  , empl_cmt	text
   , stand	varchar(10)	not null default 'good'
   , superv	int		constraint "!empl.empl.CES" check (superv != emple)
   , foreign key (emplr, superv) references base.ent_link on update cascade
   , hire_date	date		not null default current_date
   , term_date	date
-  , pay_type	varchar		not null constraint "!empl.empl.CPT" check (pay_type in ('annual', 'monthly', 'weekly', 'hourly', 'commis', 'piece', 'other'))
+  , pay_type	text		not null constraint "!empl.empl.CPT" check (pay_type in ('annual', 'monthly', 'weekly', 'hourly', 'commis', 'piece', 'other'))
   , pay_rate	numeric(14,2)	not null
   , allow	int
   , ins_code	varchar(18)
@@ -35,7 +35,7 @@ index {} empl.empl superv
 
 # Base view of employees linked to entity fields
 #----------------------------------------------------------------
-view empl.empl_v {empl.empl base.ent_v base.priv_has(varchar,varchar)} {select 
+view empl.empl_v {empl.empl base.ent_v base.priv_has(text,text)} {select 
     eval(fld_list $empl::ent_se		ee)
   , eval(fld_list $empl::empl_se	em)
   , eval(fld_list $empl::empl_local_up 	em)
@@ -271,7 +271,7 @@ view empl.comm_v {base.comm empl.empl_v} {
 #Usage: empl_name(empl_id)
 #----------------------------------------------------------------
 function empl.empl_name(int4) empl.empl_v_pub {
-  returns varchar as $$
+  returns text as $$
       select cas_name from empl.empl_v_pub where emple = $1;
         $$ language sql stable;
 }

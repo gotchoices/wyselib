@@ -24,12 +24,12 @@ other acct_types {} {
 # Contains a record for each account
 #----------------------------------------------------------------
 table acct.acct {acct_types base.curr_eid()} {
-    code	varchar		primary key
+    code	text		primary key
   , numb	int		unique
   , type	acct_types	not null default 'asset'
   , name	varchar(32)	not null constraint "!acct.cat.IAN" check (name ~ '[A-Za-z][A-Za-z0-9_ ]*')
-  , descr	varchar
-  , par		varchar		references acct.acct on update cascade
+  , descr	text
+  , par		text		references acct.acct on update cascade
   , container	boolean		not null default false
   , constraint "!acct.acct.PNP" check ((par is not null and (type != 'subst($acct::acct_top_tp)' or  code != 'subst($acct::acct_top_cd)')) or 
                                        (par is     null and  type  = 'subst($acct::acct_top_tp)' and code  = 'subst($acct::acct_top_cd)'))
@@ -42,9 +42,9 @@ index {} acct.acct type
 # Keeps cached index and statistical information about the account hierarchy
 #----------------------------------------------------------------
 table acct.acct_st_c {acct.acct} {
-    code_r	varchar	primary key references acct.acct on update cascade on delete cascade
+    code_r	text	primary key references acct.acct on update cascade on delete cascade
   , level	int
-  , ppath	varchar[]	-- materialized path of parents
+  , ppath	text[]		-- materialized path of parents
   , idx		int		-- account index for nested sets
   , mxc		int		-- maximum progeny index
 }

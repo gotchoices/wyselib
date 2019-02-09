@@ -18,16 +18,16 @@ namespace eval base {
 # Contains an entry for each address for an entity
 #----------------------------------------------------------------
 table base.addr {base.ent} {
-    addr_ent	int		references base.ent on update cascade on delete cascade
+    addr_ent	text		references base.ent on update cascade on delete cascade
   , addr_seq	int	      , primary key (addr_ent, addr_seq)
-  , addr_spec	varchar		not null
-  , addr_type	varchar		not null check(addr_type in ('eval(join $base::addr_types {','})'))
+  , addr_spec	text		not null
+  , addr_type	text		not null check(addr_type in ('eval(join $base::addr_types {','})'))
   , addr_prim	boolean		not null default false constraint "!base.addr.CPA" check(case when addr_inact is true then addr_prim is false end)
-  , addr_cmt	varchar
+  , addr_cmt	text
   , addr_inact	boolean		not null default false
-  , city	varchar
-  , state	varchar
-  , pcode	varchar
+  , city	text
+  , state	text
+  , pcode	text
   , country	varchar(3)	constraint "!base.addr.CCO" not null default 'US' references base.country on update cascade
   , unique (addr_ent, addr_seq, addr_type)		-- Needed for addr_prim FK to work
     subst($base::addr_local)	-- locally defined columns
@@ -38,9 +38,9 @@ index {} base.addr addr_type
 # Stores a pointer indicating which addr record is primary for any given type
 #----------------------------------------------------------------
 table base.addr_prim {base.addr} {
-    prim_ent	int
+    prim_ent	text
   , prim_seq	int
-  , prim_type	varchar
+  , prim_type	text
   , primary key (prim_ent, prim_seq, prim_type)
   , foreign key (prim_ent, prim_seq, prim_type) references base.addr (addr_ent, addr_seq, addr_type)
     on update cascade on delete cascade deferrable
@@ -48,7 +48,7 @@ table base.addr_prim {base.addr} {
 
 # Make the specified address primary
 # -----------------------------------------------------------------
-function {base.addr_make_prim(ent int, seq int, typ text)} {base.addr base.addr_prim} {
+function {base.addr_make_prim(ent text, seq int, typ text)} {base.addr base.addr_prim} {
   returns void language plpgsql security definer as $$
     begin
 --raise notice 'Prim it: % % %', ent, seq, typ;
@@ -61,7 +61,7 @@ $$;}
     
 # Un-make the specified address primary
 # -----------------------------------------------------------------
-function {base.addr_remove_prim(ent int, seq int, typ text)} {base.addr base.addr_prim} {
+function {base.addr_remove_prim(ent text, seq int, typ text)} {base.addr base.addr_prim} {
   returns void language plpgsql security definer as $$
     declare
         prim_rec	record;

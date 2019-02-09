@@ -16,11 +16,11 @@ namespace eval base {
 # System parameters
 #----------------------------------------------------------------
 table base.parm {base.ent} {
-    module	varchar
-  , parm	varchar
+    module	text
+  , parm	text
   , primary key (module, parm)
-  , type	varchar		check (type in ('int','date','text','float','boolean'))
-  , cmt		varchar
+  , type	text		check (type in ('int','date','text','float','boolean'))
+  , cmt		text
   , v_int	int		check (type = 'int' and v_int is not null or type != 'int' and v_int is null)
   , v_date	date		check (type = 'date' and v_date is not null or type != 'date' and v_date is null)
   , v_text	text		check (type = 'text' and v_text is not null or type != 'text' and v_text is null)
@@ -113,7 +113,7 @@ trigger base_parm_v_tr_del {} {instead of delete on base.parm_v for each row exe
 
 # Set the value of a parameter, with a polymorphic value
 #----------------------------------------------------------------
-function {base.parmset(m varchar, p varchar, v anyelement, t varchar default null)} {base.parm} {
+function {base.parmset(m text, p text, v anyelement, t text default null)} {base.parm} {
   returns anyelement language plpgsql as $$
     begin
       if exists (select type from base.parm where module = m and parm = p) then
@@ -127,8 +127,8 @@ $$;}
 
 # Set the value of a parameter with a text value
 #----------------------------------------------------------------
-function {base.parmsett(m varchar, p varchar, v varchar, t varchar default null)} {base.parmset(varchar,varchar,anyelement,varchar)} {
-  returns varchar language plpgsql as $$
+function {base.parmsett(m text, p text, v text, t text default null)} {base.parmset(text,text,anyelement,text)} {
+  returns text language plpgsql as $$
     begin
       return base.parmset(m,p,v,t);
     end;
@@ -136,7 +136,7 @@ $$;}
 
 # Return the specified parameter value or a default value if the parameter is not found
 #----------------------------------------------------------------
-function {base.parm(m varchar, p varchar, d anyelement)} {base.parm} {
+function {base.parm(m text, p text, d anyelement)} {base.parm} {
   returns anyelement language plpgsql stable as $$
     declare
         r	record;
@@ -154,12 +154,12 @@ $$;}
 
 # Return the specified parameter cast as text
 #----------------------------------------------------------------
-function {base.parm(m varchar, p varchar)} {base.parm_v} {
+function {base.parm(m text, p text)} {base.parm_v} {
   returns text language sql stable as $$ select value from base.parm_v where module = m and parm = p; $$;}
 
 # Return the specified parameter value in its native type
 #----------------------------------------------------------------
-function {base.parm_int(m varchar, p varchar)} {base.parm} {
+function {base.parm_int(m text, p text)} {base.parm} {
   returns int language plpgsql stable as $$
     declare
         r	record;
@@ -172,7 +172,7 @@ $$;}
 
 # Return the specified parameter value in its native type
 #----------------------------------------------------------------
-function {base.parm_date(m varchar, p varchar)} {base.parm} {
+function {base.parm_date(m text, p text)} {base.parm} {
   returns date language plpgsql stable as $$
     declare
         r	record;
@@ -185,7 +185,7 @@ $$;}
 
 # Return the specified parameter value in its native type
 #----------------------------------------------------------------
-function {base.parm_text(m varchar, p varchar)} {base.parm} {
+function {base.parm_text(m text, p text)} {base.parm} {
   returns int language plpgsql stable as $$
     declare
         r	record;
@@ -198,7 +198,7 @@ $$;}
 
 # Return the specified parameter value in its native type
 #----------------------------------------------------------------
-function {base.parm_float(m varchar, p varchar)} {base.parm} {
+function {base.parm_float(m text, p text)} {base.parm} {
   returns float language plpgsql stable as $$
     declare
         r	record;
@@ -211,7 +211,7 @@ $$;}
 
 # Return the specified parameter value in its native type
 #----------------------------------------------------------------
-function {base.parm_boolean(m varchar, p varchar)} {base.parm} {
+function {base.parm_boolean(m text, p text)} {base.parm} {
   returns boolean language plpgsql stable as $$
     declare
         r	record;

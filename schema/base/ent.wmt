@@ -3,7 +3,8 @@
 require ../common.tcl ../glob.tcl
 
 tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a group} [concat {
-    {id			{Entity ID}		{A unique number assigned to each entity}}
+    {id			{Entity ID}		{A unique code assigned to each entity, consisting of the entity type and number}}
+    {num		{Entity Number}		{A number assigned to each entity, unique within its own group of entities with the same type}}
     {ent_type		{Entity Type}		{The kind of entity this record represents} {
         {p		{Person}		{The entity is an individual}}
         {o		{Organization}		{The entity is an organization (such as a company or partnership) which may employ or include members of individual people or other organizations}}
@@ -28,9 +29,8 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
         {s		{Single}		{The person has never married or is divorced or is the survivor of a deceased spouse}}
     }}
     {username		{Username}		{The login name for this person, if a user on this system}}
-    {database		{Data Access}		{A flag indicating that this entity has access to the ERP database}}
-    {ent_inact		{Inactive}		{A flag indicating that this entity is no longer current, in business, or alive}}
-    {inside		{Inside}		{A flag indicating that this person is somehow associated with this site (user, member, employee, etc.).  Inside people will be given an ID number in a lower range than outside people and companies.}}
+    {conn_pub		{Connection Key}	{The public key this user uses to authorize connection to the database}}
+    {ent_inact		{Inactive}		{A flag indicating that this entity is no longer current, in business, alive, etc}}
     {country		{Country}		{The country of primary citizenship (for people) or legal organization (companies)}}
     {tax_id		{TID/SSN}		{The number by which the country recognizes this person or company for taxation purposes}}
     {bank		{Bank Routing}		{Bank routing information: bank_number<:.;,>account_number}}

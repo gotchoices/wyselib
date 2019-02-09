@@ -1,0 +1,91 @@
+# Temporary credentials for login connection
+# Copyright WyattERP all rights reserved
+#----------------------------------------------------------------
+#TODO:
+#- Allow base.parm parameter to change expiration time on token
+#- 
+require common.tcl glob.tcl ../trigview.tcl
+
+module base
+
+namespace eval base {
+    def token_pk	{token_ent token_seq}
+    def token_v_in	{token_ent allows}
+    def token_se	[concat $token_pk token allows used expires $glob::stampfn]
+}
+
+# Data about token to facilitate their CHIP account
+#----------------------------------------------------------------
+table base.token {base.ent} {
+    token_ent	text		references base.ent on update cascade on delete cascade
+  , token_seq	int	      , primary key (token_ent, token_seq)
+  , token	text		not null unique
+  , allows	varchar(8)	not null
+  , used	timestamp
+  , expires	timestamp(0)	default current_timestamp + '30 minutes'
+    eval(s $glob::stamps)
+}
+
+# Generate unique sequence for new entry
+#----------------------------------------------------------------
+function base.token_tf_seq() {base.token} {
+  returns trigger security definer language plpgsql as $$
+    begin
+      if new.token_seq is null then
+        select into new.token_seq coalesce(max(token_seq),0)+1 from base.token where token_ent = new.token_ent;
+      end if;
+      if new.token is null then				-- If no token specified
+        loop
+          select into new.token md5(random()::text);	-- Make a random one
+          if not exists (select token from base.token where token = new.token) then
+            exit;					-- Make sure it is unique
+          end if;
+        end loop;
+      end if;
+      return new;
+    end;
+$$;}
+trigger base_token_tr_seq {} {
+    before insert on base.token for each row execute procedure base.token_tf_seq();
+}
+
+#Basic view
+#----------------------------------------------------------------
+view base.token_v {base.token base.ent_v} {
+    select eval(fld_list $base::token_se t)
+      , t.expires <= current_timestamp as "expired"
+      , t.expires > current_timestamp and used is null as "valid"
+      , e.username
+      , e.std_name
+
+    from	base.token	t
+    join	base.ent_v	e	on e.id = t.token_ent
+
+    eval(trigview::insert base.token_v base.token $base::token_v_in $base::token_pk $glob::stampin);
+}
+
+# Create a new connection token for the specified user
+#----------------------------------------------------------------
+function {base.token_login(uid text)} {base.token} {
+  returns base.token language sql as $$
+    insert into base.token (token_ent, allows) values (uid, 'login') returning *;
+$$;}
+
+# Create all users who should have database access
+# Force grant all applicable permissions to all enabled users
+# This is necessary for new database instances
+#----------------------------------------------------------------
+function {base.validate_token(uname text, tok text, pub text)} {base.token_v} {
+  returns boolean language plpgsql as $$
+    declare
+      trec	record;
+    begin
+      select into trec * from base.token_v where username = uname order by token_seq desc limit 1;	-- Get last token for this user
+      if found and trec.valid and tok = trec.token and trec.allows = 'login' then
+        update base.token set used = current_timestamp where token_ent = trec.token_ent and token_seq = trec.token_seq;
+        update base.ent set conn_pub = pub where id = trec.token_ent;		-- Remember his new public key
+        return true;
+      end if;
+      return false;
+    end;
+$$;}

@@ -17,7 +17,7 @@ table acct.cat {acct.acct base.ent} {
     code	varchar(8)	primary key
   , numb	int		unique
   , name	varchar(32)	not null unique constraint "!acct.cat.ICN" check (name ~ '[A-Za-z][A-Za-z0-9_ ]*')
-  , descr	varchar
+  , descr	text
     subst($glob::stamps)
 }
 

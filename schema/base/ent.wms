@@ -1,7 +1,8 @@
 # Entities
-#------------------------------------------
+#----------------------------------------------------------------
 # Copyright WyattERP all rights reserved
 #TODO:
+#- Get rid of proxy field?  (Use groups or roles instead)
 #- 
 
 require base.tcl
@@ -9,30 +10,30 @@ require base.tcl
 # An entity can be a person, company, group, etc
 #----------------------------------------------------------------
 table base.ent {base.country} {
-    id		int		check (id > 0) primary key
+    id		text		primary key
+  , ent_num	int		not null check(ent_num > 0)
   , ent_type	varchar(1)	not null default 'p' check(ent_type in ('p','o','g','r'))
-  , ent_name	varchar		not null
-  , fir_name	varchar		constraint "!base.ent.CFN" check(case when ent_type != 'p' then fir_name is null end)
-  , mid_name	varchar		constraint "!base.ent.CMN" check(case when fir_name is null then mid_name is null end)
-  , pref_name	varchar		constraint "!base.ent.CPN" check(case when fir_name is null then pref_name is null end)
-  , title	varchar		constraint "!base.ent.CTI" check(case when fir_name is null then title is null end)
+  , ent_name	text		not null
+  , fir_name	text		constraint "!base.ent.CFN" check(case when ent_type != 'p' then fir_name is null end)
+  , mid_name	text		constraint "!base.ent.CMN" check(case when fir_name is null then mid_name is null end)
+  , pref_name	text		constraint "!base.ent.CPN" check(case when fir_name is null then pref_name is null end)
+  , title	text		constraint "!base.ent.CTI" check(case when fir_name is null then title is null end)
   , gender	varchar(1)	constraint "!base.ent.CGN" check(case when ent_type != 'p' then gender is null end)
   , marital	varchar(1)	constraint "!base.ent.CMS" check(case when ent_type != 'p' then marital is null end)
-  , ent_cmt	varchar
-  , born_date	date		constraint "!base.ent.CBD" check(case when ent_type = 'p' and inside then born_date is not null end)
-  , username	varchar		unique
-  , database	boolean		not null default false
+  , ent_cmt	text
+  , born_date	date
+  , username	text		unique
+  , conn_pub	text
   , ent_inact	boolean		not null default false
-  , inside	boolean		not null default true
   , country	varchar(3)	not null default 'US' references base.country on update cascade
-  , tax_id	varchar       , unique(country, tax_id)
-  , bank	varchar
-  , proxy	int		constraint "!ent.ent.OPR" check (proxy != id)
+  , tax_id	text          , unique(country, tax_id)
+  , bank	text
+  , proxy	text		constraint "!ent.ent.OPR" check (proxy != id)
 
     subst($base::ent_local)	-- locally defined columns
     subst($glob::stamps)
 }
-index {} base.ent ent_type
+index {} base.ent {ent_type ent_num}
 index {} base.ent username
 index {} base.ent proxy
 audit::audit base.ent $base::ent_audit glman
@@ -40,11 +41,11 @@ audit::audit base.ent $base::ent_audit glman
 # Links entities to other entities as members, employees, etc.
 #----------------------------------------------------------------
 table base.ent_link {base.ent} {
-    org		int4		references base.ent on update cascade
-  , mem		int4		references base.ent on update cascade on delete cascade
+    org		text		references base.ent on update cascade
+  , mem		text		references base.ent on update cascade on delete cascade
   , primary key (org, mem)
-  , role	varchar
-  , supr_path	int[]		-- other modules (like empl) are responsible to maintain this cached field
+  , role	text
+  , supr_path	text[]		-- other modules (like empl) are responsible to maintain this cached field
     subst($glob::stamps)
 }
 
@@ -52,24 +53,18 @@ table base.ent_link {base.ent} {
 #----------------------------------------------------------------
 function base.ent_tf_id() {base.ent} {
   returns trigger language plpgsql as $$
+    declare
+      min_num	int;
     begin
-        if TG_OP = 'UPDATE' then
-            if new.inside != old.inside then 	-- if changing inside/outside (shouldn't happen except by someone who knows what he is doing)
-                new.id := null;		-- we will change the ID to the correct range
-            end if;
-        end if;
-        if new.id is null then
-            if new.ent_type = 'p' then		-- use separate range for people, companies, groups, roles
-                select into new.id coalesce(max(id)+1,subst($base::ent_permin)) from base.ent where id >= subst($base::ent_permin);
-            elseif new.ent_type = 'g' then
-                select into new.id coalesce(max(id)+1,subst($base::ent_grpmin)) from base.ent where id >= subst($base::ent_grpmin) and id < subst($base::ent_permin);
-            elseif new.ent_type = 'o' then
-                select into new.id coalesce(max(id)+1,subst($base::ent_orgmin)) from base.ent where id >= subst($base::ent_orgmin) and id < subst($base::ent_grpmin);
-            else
-                select into new.id coalesce(max(id)+1,subst($base::ent_rolmin)) from base.ent where id >= subst($base::ent_rolmin) and id < subst($base::ent_orgmin);
-            end if;
-        end if;
-        return new;
+      if new.ent_num is null then
+        min_num = case when new.ent_type = 'p' then subst($base::ent_permin)
+                       when new.ent_type = 'g' then subst($base::ent_grpmin)
+                       when new.ent_type = 'o' then subst($base::ent_orgmin)
+                       else subst($base::ent_rolmin) end;
+        select into new.ent_num coalesce(max(ent_num)+1,min_num) from base.ent where ent_type = new.ent_type and ent_num >= min_num;
+      end if;
+      new.id = new.ent_type || new.ent_num::text;  
+      return new;
     end;
 $$;}
 trigger base_ent_tr_id {} {
@@ -81,8 +76,8 @@ trigger base_ent_tr_id {} {
 function base.ent_link_tf_check() {base.ent_link} {
   returns trigger language plpgsql security definer as $$
     declare
-        erec	record;
-        mrec	record;
+        erec	record;			-- Group or org being joined
+        mrec	record;			-- New member
     begin
         select into erec * from base.ent where id = new.org;
         
@@ -147,38 +142,38 @@ view base.ent_link_v {base.ent_link base.ent_v} {
 #----------------------------------------------------------------
 view base.ent_v_pub {base.ent_v} {select eval(fld_list $base::ent_v_pub_se) from base.ent_v;} -grant public
     
-# Return the entity ID number of the current user
+# Return the entity ID of the current user
 #----------------------------------------------------------------
 function base.curr_eid() {base.ent} {
-  returns int language sql security definer stable as $$
+  returns text language sql security definer stable as $$
     select id from base.ent where username = session_user;
 $$;}
 
-# Return a user ID number from his system (and database) username
+# Return a user ID number from his database username
 #----------------------------------------------------------------
-function base.user_id(varchar) {base.ent} {
-  returns int language sql security definer stable as $$
+function base.user_id(text) {base.ent} {
+  returns text language sql security definer stable as $$
     select id from base.ent where username = $1;
 $$;}
 
 # Return a username from a user ID number
 #----------------------------------------------------------------
-function base.username(int) base.ent {
-  returns varchar language sql security definer stable as $$
+function base.username(text) base.ent {
+  returns text language sql security definer stable as $$
     select username from base.ent where id = $1;
 $$;}
 
-# Return a standardized entity name from an entity ID number
+# Return a standardized entity name from an entity ID
 #----------------------------------------------------------------
-function base.std_name(int) {base.ent_v} {
-  returns varchar language sql security definer stable as $$
+function base.std_name(text) {base.ent_v} {
+  returns text language sql security definer stable as $$
     select std_name from base.ent_v where id = $1;
 $$;}
 
 # Return a standardized entity name from an entity username
 #----------------------------------------------------------------
 function base.std_name(name) {base.ent_v} {
-  returns varchar language sql security definer stable as $$
+  returns text language sql security definer stable as $$
     select std_name from base.ent_v where username = $1;
 $$;}
 

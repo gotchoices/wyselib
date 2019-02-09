@@ -33,7 +33,7 @@ namespace eval acct {
 table acct.meth {acct.acct base.curr_eid()} {
     code	varchar(8)	primary key constraint "!acct.meth.IVC" check (code ~ '[A-Za-z][A-Za-z0-9_]*')
   , name	varchar(40)
-  , descr	varchar
+  , descr	text
     subst($glob::stamps)
 }
 
@@ -52,11 +52,11 @@ view acct.meth_v {acct.meth} {
 # Contains a record for each account mapping for each method
 #----------------------------------------------------------------
 table acct.mmap {acct.meth} {
-    meth	varchar		references acct.meth on update cascade on delete cascade
+    meth	text		references acct.meth on update cascade on delete cascade
   , book_acct	int		references acct.acct (numb) on update cascade on delete cascade
   , meth_acct	int		not null references acct.acct (numb) on update cascade on delete cascade
   , primary key (meth, book_acct)
-  , cmt		varchar
+  , cmt		text
     subst($glob::stamps)
 }
 audit::audit acct.mmap $acct::mmap_audit

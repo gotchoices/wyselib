@@ -6,7 +6,7 @@
 # Return the number of fields in a string delimited by a given character
 # Usage: field_count(string,delimiter)
 #-------------------------------------------
-#function field_count(varchar,varchar) {} {
+#function field_count(text,text) {} {
 #  returns int4 language pltcl as $$
 #    return [llength [split $1 $2]]
 #$$;}

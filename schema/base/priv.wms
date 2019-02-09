@@ -42,7 +42,6 @@ view base.priv_v {base.priv base.ent_v wm.role_members} {
   select eval(fld_list $base::priv_se p)
   , e.std_name
   , e.username
-  , e.database
   , g.priv_list
 
     from	base.priv	p
@@ -68,7 +67,7 @@ function base.priv_grants() {base.priv} {
         trec	record;
         cnt	int default 0;
     begin
-        for erec in select * from base.ent where database and username is not null loop
+        for erec in select * from base.ent where username is not null loop
             if not exists (select usename from pg_shadow where usename = erec.username) then
                 execute 'create user ' || erec.username;
             end if;
@@ -88,8 +87,8 @@ function base.ent_tf_iuacc() {base.ent} {
     declare
       trec	record;
     begin
-      if new.username is null then		-- Can't have database access without a username
-        new.database := false;
+      if new.username is null then		-- Can't have connection access without a username
+        new.conn_pub = false;
       end if;
       if TG_OP = 'UPDATE' then
         if new.username != old.username then	-- if trying to change an existing username
@@ -98,13 +97,13 @@ function base.ent_tf_iuacc() {base.ent} {
         end if;
       end if;
 
-      if new.database and not exists (select usename from pg_shadow where usename = new.username) then
+      if new.username is not null and not exists (select usename from pg_shadow where usename = new.username) then
 -- raise notice 'Create: %', new.username;
         execute 'create user ' || '"' || new.username || '"';
         for trec in select * from base.priv where grantee = new.username loop
           execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
         end loop;
-      elseif not new.database and exists (select usename from pg_shadow where usename = new.username) then
+      elseif new.username is null and exists (select usename from pg_shadow where usename = new.username) then
 -- raise notice 'Drop: %', new.username;
         execute 'drop user ' || '"' || new.username || '"';
       end if;

@@ -18,7 +18,7 @@ namespace eval acct {
 
 # Base view with limited access
 #----------------------------------------------------------------
-view acct.close_v {base.parm base.priv_has(varchar,varchar)} {
+view acct.close_v {base.parm base.priv_has(text,text)} {
     select eval(fld_list $acct::close_v_se)
     from	base.parm
     where parm = 'close' and type = 'date';
@@ -51,7 +51,7 @@ trigger acct_close_tr_tabchk {} {
 
 # Return the close date for a specified module
 #----------------------------------------------------------------
-function {acct.close(p varchar)} {acct.close_v} {
+function {acct.close(p text)} {acct.close_v} {
   returns date language plpgsql stable as $$
     declare
         mdate	date;

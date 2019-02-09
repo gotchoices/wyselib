@@ -10,10 +10,10 @@ schema base -grant public
 #----------------------------------------------------------------
 table base.country {base} {
     code	varchar(2)	primary key
-  , com_name	varchar		not null unique
-  , capital	varchar
+  , com_name	text		not null unique
+  , capital	text
   , cur_code	varchar(4)	not null
-  , cur_name	varchar		not null 
+  , cur_name	text		not null 
   , dial_code	varchar(20)
   , iso_3	varchar(4)	not null unique
   , iana	varchar(6)
