@@ -4,7 +4,7 @@ require ../common.tcl ../glob.tcl
 
 tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a group} [concat {
     {id			{Entity ID}		{A unique code assigned to each entity, consisting of the entity type and number}}
-    {num		{Entity Number}		{A number assigned to each entity, unique within its own group of entities with the same type}}
+    {ent_num		{Entity Number}		{A number assigned to each entity, unique within its own group of entities with the same type}}
     {ent_type		{Entity Type}		{The kind of entity this record represents} {
         {p		{Person}		{The entity is an individual}}
         {o		{Organization}		{The entity is an organization (such as a company or partnership) which may employ or include members of individual people or other organizations}}
