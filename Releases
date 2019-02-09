@@ -1,5 +1,9 @@
 Change Log:
 
+1.0.6	2019-Feb
+	- Change entity PK to concatenated type,number field
+	- Support authenticated logins
+
 1.0.6	2019-Jan
 	- Database of known languages
 
