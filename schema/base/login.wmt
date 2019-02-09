@@ -1,0 +1,19 @@
+# Copyright WyattERP all rights reserved
+#------------------------------------------
+require ../common.tcl ../glob.tcl
+
+tabtext base.token	{Access Tokens}		{Stores access codes which allow users to connect for the first time} [concat {
+    {token_ent		{Token Entity}		{The id of the user this token is generated for}}
+    {token_seq		{Entity ID}		{A sequential number assigned to each new token, unique to the user the tokens are for}}
+    {token		{Token}			{An automatically generated code the user will present to get access}}
+    {allows		{Allowed Access}	{The type of access this token authorizes.  The value "login" grants the user permission to log in.}}
+    {used		{Used}			{A time stamp showing when the token was presented back to the system}}
+    {expires		{Expires}		{A time stamp showing when the token will no longer be valid because it has been too long since it was issued}}
+} $glob::stampt]
+
+tabtext base.token_v	{Tokens}		{A view of the access codes, which allow users to connect for the first time} {
+    {expired		{Expired}		{Indicates that this token is no longer valid because too much time has gone by since it was issued}}
+    {valid		{Valid}			{This token can still be used if it has not yet expired and has never yet been used to connect}}
+    {username		{Username}		{The login name of the user this token belongs to}}
+    {std_name		{Name}			{The standard format for the entity's name or, for a person, a standard format: Last, Preferred}}
+}
