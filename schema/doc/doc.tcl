@@ -1,3 +1,6 @@
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
+
 namespace eval doc {
     def cksum		{/bin/cksum}
     def doc_root	{/usr/local/share/wyatt-docs}		;#store all docs under here

@@ -1,6 +1,6 @@
 # Maps to render books under various methods of accounting
-#------------------------------------------
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 # 
 # Ledgers will be kept according to a standard method we will refer to as "book"
 # For each method defined method below, we will provide a series of mappings 

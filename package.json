@@ -2,7 +2,7 @@
   "name": "wyselib",
   "version": "1.0.7",
   "description": "WyattERP Schema Library",
-  "main": "dist/wyselib.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "cd test; ./test",
     "tclpkg": "wmmkpkg wyselib 0.20 tcltk",
@@ -19,11 +19,6 @@
   "author": "Kyle Bateman",
   "license": "MIT",
   "homepage": "https://github.com/gotchoices/wyselib",
-  "babel": {
-    "presets": [
-      "env"
-    ]
-  },
   "dependencies": {},
   "devDependencies": {}
 }

@@ -1,5 +1,6 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
+
 tabtext prod.unit	{Units of Measure}	{Native table containing defined unit of measure.  These entries must exist in order to be referenced by the columns in both the base table and the parameter table.} {
     {abbr		{Abbreviation}		{The standard abbreviation for this unit of measure (i.e. ft, cuft, lb, rpm, pc, etc.)}}
     {descr		{Description}		{A brief name for the unit of measure (Inches, Kilograms, Volts, etc)}}

@@ -1,5 +1,5 @@
-# Copyright Action Targer Inc. all rights reserved
-#------------------------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabdef prod.oper -focus oper -fields {
     {oper		ent	18	{0 0}		}

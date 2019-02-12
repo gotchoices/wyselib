@@ -1,5 +1,5 @@
-# Copyright Action Target Inc. all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabdef acct.proj_type -focus code -fields {
     {code		ent	5	{1 1}		}
     {name		ent	30	{2 1}		}

@@ -1,6 +1,6 @@
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
-#----------------------------------------------------
 tabtext prod.oper	{Operations}		{Table containing an entry for each type of manufacturing operation defined for the site.  Examples might include welding, machining, painting, etc.} [concat {
     {oper		{Operation}		{A brief code to represent the operation}}
     {descr		{Description}		{A more complete description of this operation}}

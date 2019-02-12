@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabtext asset.asset	{Assets}		{Owned items which might be capitalized and might change value over time} [concat {
     {asset_id		{Asset ID}		{A unique number assigned to each asset}}
     {asset_type		{Asset Type}		{The kind of asset this record represents} {

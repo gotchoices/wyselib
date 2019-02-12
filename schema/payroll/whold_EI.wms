@@ -1,6 +1,7 @@
 # Support for US Earned Income Tax Credit
-#include(Copyright)
 # Valid for 2008
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #- 
 

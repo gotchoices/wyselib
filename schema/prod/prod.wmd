@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabdef prod.unit -focus abbr -fields {
     {abbr	ent	10	{0 0}		}

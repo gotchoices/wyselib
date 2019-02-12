@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabdef acct.cat -focus numb -fields [concat {
     {numb		ent	4	{1 1}		-just r}
     {code		ent	6	{2 1}		}

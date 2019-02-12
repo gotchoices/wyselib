@@ -1,4 +1,6 @@
 # Store and retrieve documents
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #X- Make unique on path, name
 #X- Implement update trigger, replace large object if necessary

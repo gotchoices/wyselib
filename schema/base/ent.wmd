@@ -1,4 +1,4 @@
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
 require ../common.tcl ../glob.tcl
 

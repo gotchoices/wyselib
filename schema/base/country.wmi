@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 # Function to initialize data in the country table
+#Copyright WyattERP.org; See license in root of this package
+#------------------------------------------
 #Get data file using: 
 #wget -q http://www.andrewpatton.com/countrylist.csv
 

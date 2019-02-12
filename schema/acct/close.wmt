@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext acct.close_v	{Closing Dates}		{A view of the system parameter table which shows just date values with parameter key of 'close'.  These are used to accounting periods for various modules.} {
     {parm		{Name}			{The name of the parameter setting}}

@@ -1,7 +1,8 @@
 # Support for Minnesota withholding
 # Formula as found on www.revenue.state.mn.us
-# include(Copyright)
 # Valid for 2013
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #- 
 

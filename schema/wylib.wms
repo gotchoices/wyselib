@@ -1,6 +1,6 @@
 # Schema to support wylib components
-#------------------------------------------
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #- Implement writing of permissions, per user
 #- Get rid of serial key and use (owner, component)?
@@ -48,10 +48,10 @@ view::triggers wylib.data_v wylib.data $wylib::data_pk \
 
 # Insert, update or delete (if null data) a stored setting
 #----------------------------------------------------------------
-function {wylib.set_data(comp text, nam text, des text, own int, dat jsonb)} {wylib.data_v base.curr_eid()} {
+function {wylib.set_data(comp text, nam text, des text, own text, dat jsonb)} {wylib.data_v base.curr_eid()} {
   returns int language plpgsql as $$
     declare
-      userid	int = coalesce(own, base.curr_eid());
+      userid	text = coalesce(own, base.curr_eid());
       id	int;
       trec	record;
     begin

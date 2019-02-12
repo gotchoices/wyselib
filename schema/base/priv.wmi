@@ -1,6 +1,7 @@
 #!/bin/sh
-# Copyright WyattERP all rights reserved
 # Initialize permissions
+#Copyright WyattERP.org; See license in root of this package
+#------------------------------------------
 
 cat <<EOF
 select base.priv_grants();

@@ -1,5 +1,6 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
+
 tabtext prod.doc_type	{Prod Doc Types}	{Table defining the set of defined document types and their characteristics} {
     {type		{Doc Type}		{A brief tag name for the document type}}
     {descr		{Description}		{A complete description of what this document type is for}}

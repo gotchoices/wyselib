@@ -1,6 +1,6 @@
 # Audit tables
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
-#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
 #TODO:
 #- make template for table and triggers
 #- implement as a macro

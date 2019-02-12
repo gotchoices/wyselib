@@ -1,5 +1,5 @@
-# Copyright WyattERP
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabdef whold_mod -focus module -fields {
     {module		ent	10	{1 1}		}
     {descr		ent	30	{2 1}		}

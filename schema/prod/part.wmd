@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 #tabdef prod.part -focus pnum -fields 
 #    {pnum       ent     6       {0 1}           -state readonly}

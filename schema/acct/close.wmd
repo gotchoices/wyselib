@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabdef acct.close_v -focus v_date -fields [concat {
     {parm		ent	16	{0 1}		-state readonly -write 0 -hide 1}
     {module		ent	16	{1 1}		-state readonly -write 0 -takefocus 0}

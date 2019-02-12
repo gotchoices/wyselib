@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext acct.meth	{Methods}		{Native table containing one entry for each alternate (as opposed to "book") accounting method defined in the system.} [concat {
     {code		{Method Code}		{A short (8 or fewer characters) alphanumeric code to represent this method}}

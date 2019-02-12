@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext doc.doc		{Documents}		{Table contains information about external documents logged to the database.  The documents themselves are stored as large objects in the database as well as being archived outside the database.} [concat {
     {id			{Document ID}		{A sequential number assigned by the database to uniquely represent this document}}

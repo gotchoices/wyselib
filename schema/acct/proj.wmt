@@ -1,5 +1,5 @@
-# Copyright Action Target Inc. all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabtext acct.proj_type	{Project Types}		{Table containing one entry for each defined project type.  These types should not typically be edited or changed as they require back-end coding modules to support their functionality.} [concat {
     {code		{Type Code}		{A single, lower case alpha character to identify this project type}}
     {name		{Type Name}		{A brief name for the project type}}

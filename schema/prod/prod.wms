@@ -1,4 +1,6 @@
 # Manufacturing production module
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #X- put in a schema
 #X- make table to define standard operations

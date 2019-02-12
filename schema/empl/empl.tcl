@@ -1,5 +1,6 @@
 # Variables for empl module
-#---------------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 namespace eval empl {
     def empl_local	{}

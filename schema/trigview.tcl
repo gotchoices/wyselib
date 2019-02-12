@@ -1,5 +1,5 @@
 #Create triggers to allow to insert/update/delete on a view
-#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 
 namespace eval trigview {

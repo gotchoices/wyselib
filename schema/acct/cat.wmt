@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext acct.cat	{Account Categories}	{Native table containing one entry for each defined account category.  Categories are typically associated with expenses, but can also describe transactions which accrue to assets or other account types as well.} [concat {
     {numb		{Cat Number}		{A unique nnumber that represents this account category.  Transactions will typically be ordered by this number where applicable.}}

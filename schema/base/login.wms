@@ -1,5 +1,5 @@
 # Temporary credentials for login connection
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 #TODO:
 #- Allow base.parm parameter to change expiration time on token

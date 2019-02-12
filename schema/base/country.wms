@@ -1,6 +1,6 @@
 # International country data
+#Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
-# Copyright WyattERP all rights reserved
 #TODO:
 #- 
 require base.tcl

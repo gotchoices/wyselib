@@ -1,4 +1,6 @@
 # Structures to model Bill of Materials and Process Sequences
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #- disallow proc/note entry for (and update_to) all product types except: sub, fin
 #- disallow boms entry for (and update_to) product type: raw

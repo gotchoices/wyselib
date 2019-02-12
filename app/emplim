@@ -1,5 +1,6 @@
 #!/usr/bin/wish
 # Employee information manager.
+#Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
 #Copyright WyattERP, all other rights reserved
 package require wyselib

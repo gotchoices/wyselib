@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext prod.part	{Parts}			{Native table containing one entry for each part defined within a product family} [concat {
     {pnum		{Part Number}		{A unique number chosen by the computer to represent each distinct part (a part is a basename with a unique set of parameters).  This number should remain constant throughout the life of the product (even though the basename may change).}}

@@ -1,7 +1,7 @@
 #Create rules to allow to insert/update/delete multiple tables joined together into a single view
 #This uses primarily rules, but suffers from the defect that it can't handle a "returning" clause.
 #It is superceded by multiview.tcl which uses view triggers.
-#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 # Used, for example with empl.empl_v to insert/update records
 # If record exists in:		and:		do:

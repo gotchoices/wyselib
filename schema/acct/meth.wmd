@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabdef acct.meth -focus code -fields [concat {
     {code		ent	10	{1 1}		}
     {name		ent	40	{2 1}		}

@@ -1,4 +1,6 @@
 # Link external documents to the production schema
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #X- Make GUI for production documents
 #X- Make prod.doc_v writable

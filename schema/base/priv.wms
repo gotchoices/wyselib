@@ -1,7 +1,7 @@
 # Manage user privileges
 # Keep a record of all permissions in non-system catalogs so they are preserved with regular backups
+#Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
-# Copyright WyattERP all rights reserved
 #TODO:
 #X- make privedit a sub-window of wysegi
 #- can also call privedit as a sub-window of entim

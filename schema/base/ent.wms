@@ -1,6 +1,6 @@
 # Entities
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
-# Copyright WyattERP all rights reserved
 #TODO:
 #- Get rid of proxy field?  (Use groups or roles instead)
 #- 

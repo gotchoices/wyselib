@@ -1,4 +1,5 @@
 # Build budgeting journal
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 
 #schema budg -grant public

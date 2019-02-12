@@ -1,6 +1,6 @@
 # Database of employees of a company (employer) entity
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
-# Copyright WyattERP all rights reserved
 #TODO:
 #- Review column naming convention
 #- Can supr_path include emple and do away with full_path?

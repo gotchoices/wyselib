@@ -1,5 +1,5 @@
-# Copyright Action Target Inc. all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabdef empl.empl -focus ent_name -fields [concat {
     {emple		ent	5	{11 1}		-hide 1 -just r}
     {emplr		ent	5	{12 1}		-hide 1 -just r}

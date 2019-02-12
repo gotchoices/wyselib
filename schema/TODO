@@ -1,8 +1,15 @@
-X- Implement new menu method in acct
-X- Refine column names
-X- Finish verify section of doc checker
-X- Check that docs get cyclically checked
-X- Test importing docs into prodim
+So far, only the base module has been tested and validated since this library has
+been ported to the http/vue/js toolchain.
+
+Next:
+- Write action handlers for base
+-   Issue login ticket
+-   Later: user directory?
+- Port acct accounting module
+- Finish gnucash import; Try importing books
+- 
+
+Older Items:
 - GUI for linking docs
 -   drag-n-drop?
 - Review TODO's in pdoc.tcl
@@ -13,13 +20,6 @@ X- Test importing docs into prodim
 -   documents
 - 
 - Get rid of current asset model (move to project type)
-X- How does part table get updated when changing parameters for a new base version?
-X- Make split view for prod/vers tables
-X- Make basic prodim GUI
-X-  BOM/Sequence GUI
-X-  Notes GUI
-X-  String parameter GUI
-X- Make backend BOM parser
 - Does the bom cache contain only current basenames or all versions?
 - Make way to determine nested parameter lists for any part/package
 - Function to return BOM for part or parameterized basename
@@ -30,8 +30,6 @@ X- Make backend BOM parser
 - Implement link between projects and entities (business units)
 - 
 - Implement cattle asset/project view
-- 
-- Implement mvc wylib
 - 
 - Implement material transfer register
 - Can now summ inventories?

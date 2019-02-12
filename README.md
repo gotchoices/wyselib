@@ -1,24 +1,32 @@
 ## Wyselib: WyattERP Schema Library
 
-Wyselib is a library of reusable SQL objects and object creating functions 
-that can make it quicker and easier to create a database application.
+Wyselib is a library of reusable SQL objects and object creating functions that 
+can make it quicker and easier to create a database application.
 
-The objects supplies in the library are authored in the format recognized
-by the [Wyseman](http://github.com/gotchoices/wyseman) schema manager.
+The objects supplied in the library are authored in the format recognized by 
+the [Wyseman](http://github.com/gotchoices/wyseman) schema manager.
 
-You can make your own objects and add them on top of the basic design
-provided by Wyselib.  And you only need to use the parts of the library
-you want.
+You can make your own objects and add them on top of the basic design provided 
+by Wyselib.  And you only need to use the parts of the library you want.
 
-Wyselib also includes a number of run-time TCL modules historically a part of
-ERP client applications which themselves (written in Tcl/Tk).  These are not
-needed for new application development in the browser using 
-[Wylib](http://github.com/gotchoices/wylib).  However, this library will likely contain
-analagous javascript modules in the future.
+Wyselib also includes a number of run-time control-layer functions for handling
+pre-defined actions, associated with the database tables and views that are 
+built by this schema.  These are typically used for generating reports or 
+calling stored procedures in the database.  Action handlers for javascript can 
+be accessed by requiring them from this package:
 
-### Status
-Wyselib is being ported from a legacy codebase and so is currently a work in progress.
-The goal is primarily to support the 
-[MyCHIPs project](http://www.gotchoices.org/mychips/index.html).
-But can also be used to build any database schema.
+let { actions } = require('wyselib')
 
+There is also a small parser you can access as:
+
+let { Parser } = require('wyselib')
+
+that is good for digesting your own action handlers you may define for your
+own tables and views.  It is called with an object you will use to store
+your action lookup table, and an array of objects required from your own
+handler files.  See the index.js file in this package for an example of how
+this is done.
+
+Wyselib also includes a number of legacy run-time modules targetd for Tcl/Tk.
+These are not needed for new application development in a browser using 
+[Wylib](http://github.com/gotchoices/wylib).

@@ -1,6 +1,7 @@
 # Support for US Federal withholding
-#include(Copyright)
 # Valid for 2008
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #- 
 

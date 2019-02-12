@@ -1,6 +1,6 @@
 # Period closing dates
-#------------------------------------------
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #X- re-implement close table on top of system parameters
 #X- create user view

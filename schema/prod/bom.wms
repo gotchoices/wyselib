@@ -1,4 +1,6 @@
 # Routines to evaluate a Bill of Materials
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 #TODO:
 #- implement error call from TCL
 #- how to do a bom on a package (where we don't resolve to a part number)

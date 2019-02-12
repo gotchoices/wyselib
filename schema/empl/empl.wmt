@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 tabtext empl.empl	{Employee Data}		{Personal data including payroll information for each employee.  Each record must be linked to a corresponding record in the entity table.} [concat {
     {emple		{Employee ID}		{The employee's entity ID}}
     {emplr		{Employer ID}		{The employer's entity ID}}

@@ -1,5 +1,6 @@
 #!/usr/bin/wish
 #A tool for viewing the General Ledger, the Chart of Accounts and other misc accounting tasks
+#Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
 #Copyright WyattERP, all other rights reserved
 package require wyselib

@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 # Function to initialize data in the language table
-# Copyright WyattERP all rights reserved
+#Copyright WyattERP.org; See license in root of this package
+#------------------------------------------
 # Get data file using: 
 #wget -q https://datahub.io/core/language-codes/r/language-codes-full.csv
 

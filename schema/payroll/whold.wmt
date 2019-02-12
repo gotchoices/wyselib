@@ -1,5 +1,5 @@
-# Copyright WyattERP
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext whold_mod	{Tax Modules}	{Contains an entry defining each tax withholding module (such as for federal and state taxes)} {
     {module		{Module}		{The name of the module.  This must match up with the name as defined in the backend stored procedures.}}

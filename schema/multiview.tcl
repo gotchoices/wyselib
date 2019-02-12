@@ -1,6 +1,6 @@
 #Create triggers to allow to insert/update/delete multiple tables joined together into a single view
 #This is an improvement on multirule, better handling in view triggers
-#Copyright WyattERP: GNU GPL Ver 3; see: License in root of this package
+#Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 # Is this chart still accurate with view trigger implementation?
 # If record exists in:		and:		do:

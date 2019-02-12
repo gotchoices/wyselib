@@ -1,5 +1,5 @@
-# Copyright WyattERP all rights reserved
-#------------------------------------------
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
 
 tabtext acct.acct	{Accounts}		{Native table containing one entry for each account number known by the system.} [concat {
     {numb		{Acct Number}		{The number that represents this account code}}
