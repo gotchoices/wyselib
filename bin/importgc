@@ -1,0 +1,101 @@
+#!/usr/bin/env node
+//Parse a GnuCash file and convert it to WyattERP SQL
+//Copyright WyattERP.org; See license in root of this package
+// ----------------------------------------------------------------------------
+//TODO:
+//- Create SQL queries from each of the record types
+//-   account
+//-   transaction
+//-   price
+//-   commodity
+//- Add data to an existing wyselib database
+//- How to not disrupt other entity books in same database?
+//- 
+
+const Fs = require("fs")
+const Zlib = require("zlib")
+const ParseXml = require("xml2js").parseString
+
+var gnuFile
+if (process.argv.length > 2) gnuFile = process.argv[2]
+
+//console.log("Input file:", gnuFile)
+Fs.readFile(gnuFile, (err, fileData) => {	//Read compressed data
+  if (err) throw err;
+  Zlib.gunzip(fileData, (err, xmlData)=>{	//Uncompress it
+      if (err) throw err
+    ParseXml(xmlData, (err, res)=>{		//Parse the XML to a JSON model
+      if (err) throw err
+      let gnc = res ? res['gnc-v2'] : null
+        , counts = gnc['gnc:count-data']
+        , book = gnc['gnc:book']		//Find the nugget inside
+      if (book && Array.isArray(book)) processBook(book[0])
+    })
+  })
+})
+
+function processBook(book) {		//Grab the various types of objects in the book
+  let id = book['book:id'][0]['_']
+    , counts = book['gnc:count-data']
+    , recTypes = {}
+//console.log("Book ID:", id, "Counts:", counts)
+
+  counts.forEach(el=>{			//See what records we will be parsing for
+    let count = el['_']
+      , recType = el['$']['cd:type']
+    recTypes[recType] = count
+  })
+//console.log("recTypes:", recTypes)
+  let counters = {}
+
+  for (let recType in recTypes) {	//Read our book data by record types
+    let typeIdx = 'gnc:' + recType
+    realLen = book[typeIdx] ? book[typeIdx].length : null
+//console.log("recType:", recType, realLen, recTypes[recType])
+
+//console.log("  book:", book)
+    if (recType == 'price') {		//Prices are kept in a separate structure
+      let priceDB = book['gnc:pricedb']
+        , prices = priceDB ? priceDB[0] : null
+        , priceArr = prices ? prices.price : null
+      realLen = priceArr.length
+//console.log("  prices:", priceArr)
+      if (priceArr) priceArr.forEach(el=>{
+//console.log("  price:", el)
+        if (handlers.price) handlers.price(el)
+      })
+
+    } else {				//Everything else as book properties
+      if (!book[typeIdx]) throw `No records found for type: ${typeIdx}`
+      book[typeIdx].forEach(el=>{
+//console.log("El:", recType, el)
+        if (handlers[recType]) handlers[recType](el)
+      })
+    }
+    if (realLen != recTypes[recType])
+      console.warn `Mismatched ${recType} record counts ${realLen}:${recTypes[recType]}`
+  }
+}
+
+const handlers = {
+  'commodity': processCommodity,
+  'account': processAccount,
+  'transaction': processTransaction,
+  'price': processPrice,
+}
+
+function processCommodity(rec) {
+console.log("Handle commodity:", rec)
+}
+
+function processAccount(rec) {
+console.log("Handle account:", rec)
+}
+
+function processTransaction(rec) {
+console.log("Handle transaction:", rec)
+}
+
+function processPrice(rec) {
+console.log("Handle price:", rec)
+}
