@@ -20,21 +20,21 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {appSaveAs		{Save State As}		{Save the layout and operating state of the application, and all its subordinate windows, using a named configuration}}
     {appRestore		{Load State}		{Restore the application layout and operating state from a previously saved state}}
     {appDefault		{Default State}		{Reload the application to its default state (you will lose any unsaved configuration state)}}
-    {appStatePrompt	{Input Tag}		{A tag to identify this saved state}}
+    {appStatePrompt	{State ID Tag}		{The name or words you will use to identify this saved state when considering it for later recall}}
     {appStateTag	{State Tag}		{The tag is a brief name you will refer to later when loading the saved state}}
     {appStateDescr	{State Description}	{A full description of the saved state and what you use it for}}
     {appEditState	{Edit States}		{Preview a list of saved states for this application}}
     {appServer		{Server}		{Toggle menu for connecting to various servers}}
     {appServerURL	{Server URL}		{The domain and port of the server you are currently connected to}}
     {appNoConnect	{Not Connected}		{The application is not connected to a backend server}}
+    {appLocalAsk	{Store Data in Browser}	{OK means the app can store sensitive information in your browser, including your private connection key.  This could be snooped by others who may have access to this computer!  If they get your key, they can connect to your data, logged in as you!  Cancel to not store application data in the browser.}}
+    {appLocalPrompt	{Login Prompt}		{The app will show you this prompt each time you load the application in order to ask for your pass phrase}}
+    {appLocalP1		{Your Pass Phrase}	{Enter a pass phrase which will be used to unlock your local storage, including connection keys.  If you leave this blank and press OK, your data will be stored unencrypted!}}
+    {appLocalP2		{Pass Phrase Check}	{Enter the pass phrase a second time}}
     {conmenu		{Connection Menu}	{Various helper functions to control how you connect to server sites, and manage your connection keys}}
     {conTitle		{Connection Keys}	{A list of credentials, servers and ports where you normally connect}}
     {conConnect		{Connect}		{Attempt to connect to the server at this address and port (or Shift-click to disconnect)}}
     {conDelete		{Delete}		{Remove the selected server connections from the list}}
-    {conLoad		{Load Sites}		{Get site connection key information previously stored in this browser's local storage}}
-    {conZap		{Forget Sites}		{Remove site connection key information so it is no longer stored in this browser}}
-    {conLock		{Lock Sites}		{Encrypt this site information in the browser using a code and password so others can not use it}}
-    {conKey		{Connect Key}		{A key that will grant you access to this site.  Do not share this key or store it on a public device or others will be able to access your login.}}
     {conImport		{Import Keys}		{Drag/drop key files here, or click to import a connection key, or one-time connection ticket}}
     {conExport		{Export Keys}		{Save the selected private connection keys out to a file.  Delete these files immediately after moving them to a private backup device.  Never leave them in the download area or on a live file system!}}
     {conRetry		{Retrying}		{Attempting to automatically reconnect to the server}}
@@ -54,7 +54,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeActions		{Actions}		{Perform various commands pertaining to this particular view and record}}
     {dbePreview		{Preview Document}	{Preview this record as a document}}
     {dbeSubords		{Preview}		{Toggle the viewing of views and records which relate to the currently loaded record}}
-    {dbeLoadPrompt	{Primary Key}		{Input the primary key values}}
+    {dbeLoadPrompt	{Primary Key Value(s)}	{Input the primary key field values for the record you want to load}}
     {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
     {dbePopupErr	{Popup Error}		{Error trying to open a child window.  Is the browser blocking popup windows?}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
@@ -62,7 +62,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}
     {winRestore		{Load State}		{Restore the the window's layout and operating state from a previously saved state}}
     {winDefault		{Default State}		{Erase locally stored configuration data for this window}}
-    {winModified	{Modified Content}	{Changes may be lost if you close the window}}
+    {winModified	{Close Modified Pane}	{Changes may be lost if you close the window}}
     {winPinned		{Window Pinned}		{Keep this window open until it is explicitly closed}}
     {winClose		{Close Window}		{Close this window}}
     {winToTop		{Move To Top}		{Make this window show above others of its peers (can also double click on a window header)}}
@@ -135,8 +135,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {sdcClear		{Clear}			{Delete the contents of the document on the screen.  Does not affect the database.}}
     {sdcClearAsk	{Clear WorkSpace}	{Are you sure you want to clear the document data?}}
     {sdcImport		{File Import}		{Load the workspace from an externally saved file}}
-    {sdcImportAsk	{Import File}		{Select a file to Import, or drag it onto the import button}}
-    {sdcExport		{File Export}		{Save the workspace to an external file}}
+    {sdcImportAsk	{Import From File}	{Select a file to Import, or drag it onto the import button}}
+    {sdcExport		{Export To File}	{Save the document to an external file}}
     {sdcExportAsk	{Export File}		{Input a filename to use when exporting}}
     {sdcExportFmt	{Human Readable}	{Export the file with indentation to make it more easily readable by people}}
     {sdcSpell		{Spell Checking}	{Enable/disable spell checking in on the screen}}
