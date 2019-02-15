@@ -42,7 +42,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {conUsername	{Username}		{Input the name you will use to connect to the backend database.  If you don't know.  Ask the person who issued your connection ticket.}}
     {conNoCrypto	{No Crypto Library}	{Cryptographic functions not found in browser API.  Make sure you are connected by https, or use a more modern browser.}}
     {conCryptErr	{Generating Key}	{There was an error in the browser attempting to generate a connection key}}
-    {dbe		{Edit}			{Insert, change and delete records from the database view}}
+    {dbe		{Edit Records}		{Insert, change and delete records from the database view}}
     {dbeColMenu		{Column}		{Operations you can perform on this column of the preview}}
     {dbeMenu		{Editing}		{A menu of functions for editing a database record}}
     {dbeInsert		{Add New}		{Insert a new record into the database table}}
@@ -128,6 +128,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {lstAndOr		{And/Or}		{Specify whether all conditions must be true (and), or just one or more (or)}}
     {lstAddCond		{Add Condition}		{Add another condition for comparison}}
     {lstRemove		{Remove Grouping}	{Remove this group of conditions}}
+    {lchAdd		{Launch Preview}	{Use this button to open as many new database previews as you like}}
+    {lchImport		{Importer}		{Drag/drop files here, or click and browse, to import data from a JSON formatted file}}
     {sdc		{Structured Document}	{An editor for documents structured in an outline format}}
     {sdcMenu		{Document Menu}		{A menu of functions for working with structured documents}}
     {sdcUpdate		{Update}		{Save changes to this document back to the database}}
