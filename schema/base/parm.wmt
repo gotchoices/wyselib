@@ -22,6 +22,15 @@ tabtext base.parm	{System Parameters}	{Contains parameter settings of several ty
 
 tabtext base.parm_v	{Parameters}		{System parameters are stored in different tables depending on their data type (date, integer, etc.).  This view is a union of all the different type tables so all parameters can be viewed and updated in one place.  The value specified will have to be entered in a way that is compatible with the specified type so it can be stored natively in its correct data type.} {
     {value		{Value}			{The value for the parameter setting, expressed as a string}}
+} -messages {
+    {launch.title	{Settings}		{Site Operating Parameters}}
+    {launch.instruct	{Basic Instructions}	{
+      <p>These settings control all kinds of different options on your system.
+      <p>Each setting is interpreted within the context of the module it is intended for.
+         System settings have descriptions initialized in the table.  Although you may be
+         able to change these, you probably shouldn't as they are installed there by the
+         schema author to help you understand what the setting controls.
+    }}
 }
 
 tabtext base.parm_audit	{Parameters Auditing}	{Table tracking changes to the parameters table} [concat {
