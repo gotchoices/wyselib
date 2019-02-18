@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#Build or rebuild a wyselib database schema
+#Copyright WyattERP.org; See license in root of this package
+# ----------------------------------------------------------------------------
+modules="base"
+
+mydir="$(dirname $0)"
+schemadir="${mydir}/../schema"
+#echo "mydir:$mydir schemadir:$schemadir"
+
+dbname="$USER"
+dbuser="$USER"
+if [ ! -z "$WYATTDB" ]; then
+  dbname="$WYATTDB"
+fi
+
+makes=""
+while [ ! -z "$1" ]; do
+  if [ "X$1" = "X-n" ]; then
+    dbname="$2"
+    shift
+  elif  [ "X$1" = "X-u" ]; then
+    dbuser="$2"
+    shift
+  elif  [ "X$1" = "X-m" ]; then
+    modules="$2"
+    shift
+  elif  [ "$1" = "all" ]; then
+    makes="objects defs text init sql"
+    shift
+  else
+    makes="$makes $1"
+  fi
+    shift
+done
+if [ -z "$makes" ]; then
+  makes="wms"
+fi
+#echo "dbname:$dbname dbuser:$dbuser makes:$makes"
+
+function findfiles {
+  filelist=""
+  for mod in . $modules; do
+    filelist="$filelist $(find ${schemadir}/$mod -maxdepth 1 -name "*.$1")"
+#    filelist="$filelist ${schemadir}/$mod/*.$1"
+  done
+}
+
+for make in $makes; do
+  echo "make:$make"
+  if [ "$make" = "objects" -o "$make" = "wms" ]; then
+    findfiles wms
+    wyseman --dbname=$dbname --user=$dbuser $filelist
+  elif [ "$make" = "defs" -o "$make" = "wmd" ]; then
+    findfiles wmd
+    wyseman --dbname=$dbname --user=$dbuser $filelist
+  elif [ "$make" = "text" -o "$make" = "wmt" ]; then
+    findfiles wmt
+    wyseman --dbname=$dbname --user=$dbuser $filelist
+  elif [ "$make" = "init" -o "$make" = "wmi" ]; then
+    findfiles wmi
+    wyseman --dbname=$dbname --user=$dbuser $filelist
+  elif [ "$make" = "sql" ]; then
+    findfiles wmi
+    wyseman -s --dbname=$dbname --user=$dbuser $filelist >${schemadir}/dist/schema.sql
+  else
+    echo >&2 "Unknown build target: $make"
+    exit 1
+  fi
+#echo "filelist:$filelist"
+done
