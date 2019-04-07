@@ -32,7 +32,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {appLocalP1		{Your Pass Phrase}	{Enter a pass phrase which will be used to unlock your local storage, including connection keys.  If you leave this blank and press OK, your data will be stored unencrypted!}}
     {appLocalP2		{Pass Phrase Check}	{Enter the pass phrase a second time}}
     {conmenu		{Connection Menu}	{Various helper functions to control how you connect to server sites, and manage your connection keys}}
-    {conTitle		{Connection Keys}	{A list of credentials, servers and ports where you normally connect}}
+    {conTitle		{Connection Keys}	{A list of credentials, servers and ports where you normally connect.  Get a ticket from the site administrator where you want to connect.}}
     {conConnect		{Connect}		{Attempt to connect to the server at this address and port (or Shift-click to disconnect)}}
     {conDelete		{Delete}		{Remove the selected server connections from the list}}
     {conImport		{Import Keys}		{Drag/drop key files here, or click to import a connection key, or one-time connection ticket}}

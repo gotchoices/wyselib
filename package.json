@@ -8,6 +8,10 @@
     "tclpkg": "wmmkpkg wyselib 0.20 tcltk",
     "preversion": "git add -A"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gotchoices/wyselib.git"
+  },
   "keywords": [
     "ERP",
     "sql",
