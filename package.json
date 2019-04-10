@@ -8,6 +8,9 @@
     "tclpkg": "wmmkpkg wyselib 0.20 tcltk",
     "preversion": "git add -A"
   },
+  "bin": {
+    "wyselib-info": "bin/info.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gotchoices/wyselib.git"
