@@ -98,7 +98,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbsLessEq		{<=}			{The left value is less than or equal to the value on the right}}
     {dbsMore		{>}			{The left value is greater than the value on the right}}
     {dbsMoreEq		{>=}			{The left value is greater than or equal to the value on the right}}
-    {dbsRexExp		{~}			{The left value matches a regular expression given on the value on the right}}
+    {dbsRexExp		{~}			{The left value matches a regular expression given by the value on the right}}
     {dbsDiff		{Diff}			{The left side is different from the right, in a comparison where two nulls (unassigned values) can be thought of as being the same}}
     {dbsIn		{In}			{The left value exists in a comma separated list you specify, or an array in another database field}}
     {dbsNull		{Null}			{The value on the left is a null, or not assigned}}
