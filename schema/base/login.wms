@@ -71,9 +71,7 @@ function {base.token_login(uid text)} {base.token} {
     insert into base.token (token_ent, allows) values (uid, 'login') returning *;
 $$;}
 
-# Create all users who should have database access
-# Force grant all applicable permissions to all enabled users
-# This is necessary for new database instances
+# Determine if a token presented is valid for a specified user
 #----------------------------------------------------------------
 function {base.validate_token(uname text, tok text, pub text)} {base.token_v} {
   returns boolean language plpgsql as $$

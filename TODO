@@ -1,0 +1,8 @@
+TODO:
+
+- Script to convert gnucash file to database format
+- Concatenated key for project type, number
+- Try porting books into database format
+- Can test project, account structures
+- Scripts to auto-port all gnucash files into database
+-
