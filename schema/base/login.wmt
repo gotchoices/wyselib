@@ -17,3 +17,8 @@ tabtext base.token_v	{Tokens}		{A view of the access codes, which allow users to
     {username		{Username}		{The login name of the user this token belongs to}}
     {std_name		{Name}			{The standard format for the entity's name or, for a person, a standard format: Last, Preferred}}
 }
+
+tabtext base.token_v_ticket {Login Tickets}	{A view of the access codes, which allow users to connect for the first time} {
+    {host		{Host}			{The host name of a computer for the user to connect to using this new ticket}}
+    {port		{Port}			{The port number the user will to connect to using this new ticket}}
+}
