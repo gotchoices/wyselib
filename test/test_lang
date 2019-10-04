@@ -10,8 +10,8 @@ require 'wyseman/db'
 schemaList = "'" + %w[wylib base].join("','") + "'"
 
 DatabaseName	= File.read(File.join(File.dirname(__FILE__), 'DBNAME')).strip
-
-db = Wyseman::DB.new({dbname: DatabaseName})
+AdminName	= File.read(File.join(File.dirname(__FILE__), 'DBUSER')).strip
+db = Wyseman::DB.new({dbname: DatabaseName, user: AdminName})
 
 res = db.exec("select sch,tab from wm.table_lang where language = 'en' and help is null and sch in (#{schemaList}) order by 1,2")
 printf("Undocumented tables:%s\n", res.ntuples)

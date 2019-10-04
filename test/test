@@ -6,17 +6,18 @@
 
 schemadir="../schema"
 dbname=$(cat ./DBNAME)
+dbuser=$(cat ./DBUSER)
 logfname="/var/tmp/wyselib-test.log"
 rm -f ${logfname}; touch $logfname
 echo "Testing with Database: $dbname, Logging to: ${logfname}"
 
-dropdb $dbname 2>/dev/null
-createdb $dbname >>$logfname
+dropdb -U $dbuser $dbname 2>/dev/null
+createdb -U $dbuser $dbname >>$logfname
 
-wyseman --dbname=$dbname ${schemadir}/*.wms ${schemadir}/base/*.wms >>$logfname
-wyseman --dbname=$dbname ${schemadir}/*.wmt ${schemadir}/base/*.wmt >>$logfname
-wyseman --dbname=$dbname ${schemadir}/base/*.wmd >>$logfname
-wyseman --dbname=$dbname ${schemadir}/base/*.wmi >>$logfname
+wyseman --dbname=$dbname --user=${dbuser} ${schemadir}/*.wms ${schemadir}/base/*.wms >>$logfname
+wyseman --dbname=$dbname --user=${dbuser} ${schemadir}/*.wmt ${schemadir}/base/*.wmt >>$logfname
+wyseman --dbname=$dbname --user=${dbuser} ${schemadir}/base/*.wmd >>$logfname
+wyseman --dbname=$dbname --user=${dbuser} ${schemadir}/base/*.wmi >>$logfname
 
 ./test_addr
 ./test_comm
@@ -24,5 +25,5 @@ wyseman --dbname=$dbname ${schemadir}/base/*.wmi >>$logfname
 
 echo -n "Ready to drop database: $dbname? "; read ans
 if [ $ans == "y" -o $ans == "Y" ]; then
-  dropdb $dbname
+  dropdb -U $dbuser $dbname
 fi

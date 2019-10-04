@@ -3,7 +3,8 @@ require 'wyseman'
 require 'wyseman/db'
 
 DatabaseName	= File.read(File.join(File.dirname(__FILE__), 'DBNAME')).strip
-db = Wyseman::DB.new({dbname: DatabaseName})
+AdminName	= File.read(File.join(File.dirname(__FILE__), 'DBUSER')).strip
+db = Wyseman::DB.new({dbname: DatabaseName, user: AdminName})
 
 #Delete any test users other than admin
 res = db.doDelete('base.ent', Hash['id','o100'])
