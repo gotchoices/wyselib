@@ -1,0 +1,9 @@
+#!/bin/sh
+# Initialize entities
+#Copyright WyattERP.org; See license in root of this package
+#------------------------------------------
+
+cat <<EOF
+insert into base.parm (module, parm, type, v_text) values ('wylib', 'host', 'text', 'localhost');
+insert into base.parm (module, parm, type, v_int) values ('wylib', 'port', 'int', 54320);
+EOF

@@ -8,7 +8,7 @@ require base.tcl
 namespace eval base {
     def parm_pk		{module parm}
     def parm_in		{module parm type cmt}	;#value specified explicitly in triggers
-    def parm_up		{cmt}
+    def parm_up		{parm cmt}
     def parm_audit	{cmt v_int v_date v_text v_float v_boolean}
     def parm_se		[concat $parm_in $glob::stampfn]
 }
@@ -165,7 +165,8 @@ function {base.parm_int(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'int';
-        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+        if not found then return null; end if;
         return r.v_int;
     end;
 $$;}
@@ -178,7 +179,8 @@ function {base.parm_date(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'date';
-        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+        if not found then return null; end if;
         return r.v_date;
     end;
 $$;}
@@ -186,12 +188,13 @@ $$;}
 # Return the specified parameter value in its native type
 #----------------------------------------------------------------
 function {base.parm_text(m text, p text)} {base.parm} {
-  returns int language plpgsql stable as $$
+  returns text language plpgsql stable as $$
     declare
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'text';
-        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+        if not found then return null; end if;
         return r.v_text;
     end;
 $$;}
@@ -204,7 +207,8 @@ function {base.parm_float(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'float';
-        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+        if not found then return null; end if;
         return r.v_float;
     end;
 $$;}
@@ -217,7 +221,8 @@ function {base.parm_boolean(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'boolean';
-        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+        if not found then return null; end if;
         return r.v_boolean;
     end;
 $$;}

@@ -26,7 +26,7 @@ table base.token {base.ent} {
     eval(s $glob::stamps)
 }
 
-# Generate unique sequence for new entry
+# Generate unique sequence and token for new entry
 #----------------------------------------------------------------
 function base.token_tf_seq() {base.token} {
   returns trigger security definer language plpgsql as $$
@@ -64,13 +64,6 @@ view base.token_v {base.token base.ent_v} {
     eval(trigview::insert base.token_v base.token $base::token_v_in $base::token_pk $glob::stampin);
 }
 
-# Create a new connection token for the specified user
-#----------------------------------------------------------------
-function {base.token_login(uid text)} {base.token} {
-  returns base.token language sql as $$
-    insert into base.token (token_ent, allows) values (uid, 'login') returning *;
-$$;}
-
 # Determine if a token presented is valid for a specified user
 #----------------------------------------------------------------
 function {base.validate_token(uname text, tok text, pub text)} {base.token_v} {
@@ -78,7 +71,7 @@ function {base.validate_token(uname text, tok text, pub text)} {base.token_v} {
     declare
       trec	record;
     begin
-      select into trec * from base.token_v where username = uname order by token_seq desc limit 1;	-- Get last token for this user
+      select into trec valid,token,allows,token_ent,token_seq from base.token_v where username = uname order by token_seq desc limit 1;	-- Get last token for this user
       if found and trec.valid and tok = trec.token and trec.allows = 'login' then
         update base.token set used = current_timestamp where token_ent = trec.token_ent and token_seq = trec.token_seq;
         update base.ent set conn_pub = pub where id = trec.token_ent;		-- Remember his new public key
@@ -86,4 +79,20 @@ function {base.validate_token(uname text, tok text, pub text)} {base.token_v} {
       end if;
       return false;
     end;
+$$;}
+
+#View for issuing connection tickets
+#----------------------------------------------------------------
+view base.token_v_ticket {base.token base.parm_int(text,text) base.parm_text(text,text)} {
+    select token_ent, allows, token, expires
+      , base.parm_text('wylib','host') as host
+      , base.parm_int('wylib','port') as port
+    from	base.token	t
+}
+
+# Create a new login connection token for the specified user
+#----------------------------------------------------------------
+function {base.ticket_login(uid text)} {base.token_v_ticket} {
+  returns base.token_v_ticket language sql as $$
+    insert into base.token_v_ticket (token_ent, allows) values (uid, 'login') returning *;
 $$;}

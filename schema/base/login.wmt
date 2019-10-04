@@ -3,7 +3,7 @@
 require ../common.tcl ../glob.tcl
 
 tabtext base.token	{Access Tokens}		{Stores access codes which allow users to connect for the first time} [concat {
-    {token_ent		{Token Entity}		{The id of the user this token is generated for}}
+    {token_ent		{Token Entity}		{The id of the user or entity this token is generated for}}
     {token_seq		{Entity ID}		{A sequential number assigned to each new token, unique to the user the tokens are for}}
     {token		{Token}			{An automatically generated code the user will present to get access}}
     {allows		{Allowed Access}	{The type of access this token authorizes.  The value "login" grants the user permission to log in.}}
