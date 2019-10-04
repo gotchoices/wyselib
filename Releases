@@ -1,6 +1,10 @@
 Change Log:
 
-1.0.6	2019-Feb
+1.0.9	2019-Oct
+	- Support for action handlers
+	- Working user connection tickets
+
+1.0.7	2019-Feb
 	- Change entity PK to concatenated type,number field
 	- Support authenticated logins
 
