@@ -19,7 +19,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {appSave		{Save State}		{Re-save the layout and operating state of the application to the current named configuration, if there is one}}
     {appSaveAs		{Save State As}		{Save the layout and operating state of the application, and all its subordinate windows, using a named configuration}}
     {appRestore		{Load State}		{Restore the application layout and operating state from a previously saved state}}
-    {appDefault		{Default State}		{Reload the application to its default state (you will lose any unsaved configuration state)}}
+    {appDefault		{Default State}		{Reload the application to its default state (you will lose any unsaved configuration state, including connection keys)!}}
     {appStatePrompt	{State ID Tag}		{The name or words you will use to identify this saved state when considering it for later recall}}
     {appStateTag	{State Tag}		{The tag is a brief name you will refer to later when loading the saved state}}
     {appStateDescr	{State Description}	{A full description of the saved state and what you use it for}}
@@ -75,7 +75,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbp		{Preview}		{A window for showing the records of a database table in a grid like a spreadsheet}}
     {dbpMenu		{Preview Menu}		{A menu of functions for operating on the preview list below}}
     {dbpReload		{Reload}		{Reload the records specified in the previous load}}
-    {dbpLoad		{Load Default}		{Load the records shown in this view, by default}}
+    {dbpLoad		{Load Default}		{Load the records normally displayed in this view}}
     {dbpLoadAll		{Load All}		{Load all records from this table}}
     {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
     {dbpFilter		{Filter}		{Load records according to filter criteria}}
