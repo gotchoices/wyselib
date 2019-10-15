@@ -77,6 +77,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpReload		{Reload}		{Reload the records specified in the previous load}}
     {dbpLoad		{Load Default}		{Load the records normally displayed in this view}}
     {dbpLoadAll		{Load All}		{Load all records from this table}}
+    {dbpClear		{Clear Preview}		{Remove contents of the preview window, with no records loaded}}
     {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
     {dbpFilter		{Filter}		{Load records according to filter criteria}}
     {dbpAutoLoad	{Auto Execute}		{Automatically execute the top row any time the preview is reloaded}}
@@ -91,6 +92,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {X.dbpFooter		{Footer}		{Check the box to turn on column summaries, at the bottom}}
     {dbs		{Filter Search}		{Load records according to filter criteria}}
     {dbsSearch		{Query Search}		{Run the configured selection query, returning matching records}}
+    {dbsClear		{Clear Query}		{Clear all logic terms}}
+    {dbsDefault		{Default Load}		{Load the query indicating how records are normally loaded (by default) from this table}}
     {dbsSave		{Save Query}		{Save the current query for future use}}
     {dbsRecall		{Recall Query}		{Recall a named query which has been previously saved}}
     {dbsEqual		{=}			{The left and right side of the comparison are equal}}
