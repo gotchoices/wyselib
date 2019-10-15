@@ -19,11 +19,15 @@ namespace eval base {
     def priv_roles	{}
 }
 
-# Levels describe how much of a given permission a user has
+# Levels describe how much of a given permission a user has (now changed to an integer)
 #----------------------------------------------------------------
 #other base_priv_level {} {
 #    create type base_priv_level as enum ('role','limit','user','super');
 #} {drop type if exists base_priv_level}
+
+# Base group all regular wyselib users belong to (do we need this?)
+#----------------------------------------------------------------
+#other base_priv_users {base.ent} {create role wusers} {drop role if exists wusers}
 
 # Track which privs/levels and roles are granted to each user
 #----------------------------------------------------------------
@@ -68,6 +72,7 @@ function base.priv_grants() {base.priv} {
         cnt	int default 0;
     begin
         for erec in select * from base.ent where username is not null loop
+--raise notice 'Username check: %', erec.username;
             if not exists (select usename from pg_shadow where usename = erec.username) then
                 execute 'create user ' || erec.username;
             end if;
@@ -90,10 +95,10 @@ function base.ent_tf_iuacc() {base.ent} {
       if new.username is null then		-- Can't have connection access without a username
         new.conn_pub = false;
       end if;
-      if TG_OP = 'UPDATE' then
-        if new.username != old.username then	-- if trying to change an existing username
+      if TG_OP = 'UPDATE' then			-- if trying to modify an existing username
+        if new.username is distinct from old.username and old.username is not null then
 -- raise notice 'Change drop: %', old.username;
-          execute 'drop user ' || '"' || old.username || '"';	-- drop the old account
+          execute 'drop user if exists ' || '"' || old.username || '"';	-- drop the old account
         end if;
       end if;
 
@@ -103,9 +108,6 @@ function base.ent_tf_iuacc() {base.ent} {
         for trec in select * from base.priv where grantee = new.username loop
           execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
         end loop;
-      elseif new.username is null and exists (select usename from pg_shadow where usename = new.username) then
--- raise notice 'Drop: %', new.username;
-        execute 'drop user ' || '"' || new.username || '"';
       end if;
       return new;
     end;
@@ -120,7 +122,7 @@ function base.ent_tf_dacc() {base.ent} {
   returns trigger language plpgsql as $$
     begin
         if old.username is not null then
-            execute 'drop user ' || old.username;	-- drop the old name
+            execute 'drop user if exists ' || old.username;	-- drop the old name
         end if;
         return old;
     end;
