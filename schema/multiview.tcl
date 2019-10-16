@@ -130,7 +130,7 @@ proc multiview::insert {view tabrecs {postfunc {}}} {
     }
     lassign $tab0 table fields keyfield ffields		;#come back to first table record
     set postcheck {}; if {$postfunc != {}} {
-      set postcheck "nrec = new; new = ${postfunc}(nrec);"
+      set postcheck "nrec = new; new = ${postfunc}(nrec, null, TG_OP);"
     }
     set func [subst $multiview::insfunc]		;#evaluate function template in that context
 #puts "\nfunction ${view}_insfunc() $view $func"
@@ -146,7 +146,7 @@ set multiview::updfunc {
   returns trigger language plpgsql security definer as \$\$
   declare
     trec record;		-- temporary record for single table
-    nrec ${view};					-- record in native type of view
+    nrec ${view}; orec ${view};	-- records in native type of view
     str  varchar;		-- temporary string
   begin
     $uquery;			-- Do unconditional update on the primary table
@@ -192,7 +192,7 @@ proc multiview::update {view tabrecs {postfunc {}}} {
     }
 
     set postcheck {}; if {$postfunc != {}} {
-      set postcheck "nrec = new; new = ${postfunc}(nrec);"
+      set postcheck "nrec = new; orec = old; new = ${postfunc}(nrec, orec, TG_OP);"
     }
     set func [subst $multiview::updfunc]		;#evaluate function template
 #puts "\nfunction ${view}_updfunc() $view $func"
