@@ -5,15 +5,15 @@ require ../common.tcl ../glob.tcl
 tabdef base.priv -focus priv -fields {
     {grantee		ent	12	{0 0}		-state readonly}
     {priv		ent	12	{1 0}		-spf exs}
-    {level		pdm	6	{2 0}		-ini user}
-    {cmt		ent	50	{0 1 3}		}
+    {level		ent	4	{2 0}		-ini 2 -just r}
+    {priv_level		ent	10	{0 1}		-state readonly -write 0}
+    {cmt		ent	30	{1 1 2}		}
 }
 
 #A view with some additional helpful fields
 tabdef base.priv_v -fields {
     {std_name		ent	24	{0 2}		-opt 1 -state disabled -write 0}
-    {priv_level		ent	24	{1 2}		-opt 1 -state disabled -write 0}
-    {priv_list		ent	48	{0 3 2}		-opt 1 -state disabled -write 0}
+    {priv_list		ent	48	{1 2 2}		-opt 1 -state disabled -write 0}
 } -actions {
-    {adduser	}
+    {suspend	}
 }

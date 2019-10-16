@@ -19,12 +19,6 @@ namespace eval base {
     def priv_roles	{}
 }
 
-# Levels describe how much of a given permission a user has (now changed to an integer)
-#----------------------------------------------------------------
-#other base_priv_level {} {
-#    create type base_priv_level as enum ('role','limit','user','super');
-#} {drop type if exists base_priv_level}
-
 # Base group all regular wyselib users belong to (do we need this?)
 #----------------------------------------------------------------
 #other base_priv_users {base.ent} {create role wusers} {drop role if exists wusers}
@@ -32,12 +26,11 @@ namespace eval base {
 # Track which privs/levels and roles are granted to each user
 #----------------------------------------------------------------
 table base.priv {base.ent} {
-    grantee	varchar		references base.ent (username) on update cascade on delete cascade
-  , priv	varchar		
-  , level	int		not null
-  , priv_level	varchar		not null
-  , cmt		varchar
-  , primary key (grantee, priv)
+    grantee	text		references base.ent (username) on update cascade on delete cascade
+  , priv	text	      , primary key (grantee, priv)
+  , level	int		constraint "!base.priv.CLV" check(level > 0 and level < 10)
+  , priv_level	text		not null
+  , cmt		text
 }
 
 # Base view of user grants which includes expanded version of the username
@@ -50,40 +43,15 @@ view base.priv_v {base.priv base.ent_v wm.role_members} {
 
     from	base.priv	p
     join	base.ent_v	e on e.username = p.grantee
-    left join	(select member,array_agg(role) as priv_list from wm.role_members group by 1) g on g.member = p.priv_level;
+    left join	(select member,array_agg(role) as priv_list from wm.role_members group by 1) g on g.member = p.grantee;
 
-    eval(rule_insert base.priv_v base.priv $base::priv_v_in);
-    eval(rule_update base.priv_v base.priv $base::priv_v_up $base::priv_pk);
+    eval(trigview::insert base.priv_v base.priv $base::priv_v_in $base::priv_pk);
+    eval(trigview::update base.priv_v base.priv $base::priv_v_up $base::priv_pk);
     eval(rule_delete base.priv_v base.priv $base::priv_pk);
 } -grant {
     public
     {privedit	s {i u d}}
 }
-
-# Create all users who should have database access
-# Force grant all applicable permissions to all enabled users
-# This is necessary for new database instances
-#----------------------------------------------------------------
-function base.priv_grants() {base.priv} {
-  returns int language plpgsql as $$
-    declare
-        erec	record;
-        trec	record;
-        cnt	int default 0;
-    begin
-        for erec in select * from base.ent where username is not null loop
---raise notice 'Username check: %', erec.username;
-            if not exists (select usename from pg_shadow where usename = erec.username) then
-                execute 'create user ' || erec.username;
-            end if;
-            for trec in select * from base.priv where grantee = erec.username loop
-                execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
-                cnt := cnt + 1;
-            end loop;
-        end loop;
-        return cnt;
-    end;
-$$;}
 
 # When inserting/updating an entity, manage DB access correctly
 #----------------------------------------------------------------
@@ -93,7 +61,7 @@ function base.ent_tf_iuacc() {base.ent} {
       trec	record;
     begin
       if new.username is null then		-- Can't have connection access without a username
-        new.conn_pub = false;
+        new.conn_pub = null;
       end if;
       if TG_OP = 'UPDATE' then			-- if trying to modify an existing username
         if new.username is distinct from old.username and old.username is not null then
@@ -136,10 +104,14 @@ trigger base_ent_tr_dacc {} {			-- do after individual grants are deleted
 function base.priv_tf_iugrp() {base.priv} {
   returns trigger security definer language plpgsql as $$
     begin
-        new.priv_level := new.priv || '_' || new.level;		-- cache concatenated version of priv name
+        if new.level is null then		-- cache concatenated version of priv name
+          new.priv_level = new.priv;
+        else
+          new.priv_level = new.priv || '_' || new.level;
+        end if;
         
         if TG_OP = 'UPDATE' then
-            if new.grantee != old.grantee or new.priv != old.priv or new.level != old.level then
+            if new.grantee != old.grantee or new.priv != old.priv or new.level is distinct from old.level then
                 execute 'revoke "' || old.priv_level || '" from ' || old.grantee;
             end if;
         end if;
@@ -161,31 +133,28 @@ function base.priv_tf_dgrp() {base.priv} {
         return old;
     end;
 $$;}
-trigger base_priv_tr_ad {} {
+trigger base_priv_tr_dgrp {} {
     before delete on base.priv for each row execute procedure base.priv_tf_dgrp();
 }
 
 # See if this role (starting with a username) has the specified privilege and level
 # If not, recurse into any role groups he belongs to to see if we can find the priv there
-# Usage: base.priv_role(rolename,priv,level)
 #----------------------------------------------------------------
-function {base.priv_role(name,varchar,int)} {base wm.role_members} {
+function {base.priv_role(uname name, priv text, lev int)} {base wm.role_members} {
   returns boolean security definer language plpgsql stable as $$
     declare
       trec	record;
     begin
-      if $1 = current_database() then		-- Always true for DBA
+      if uname = current_database() then		-- Often true for DB owner
         return true;
       end if;
       for trec in 
-        select * from (select role, member, (regexp_split_to_array(role,'_'))[1] as rpriv,
-                                            (regexp_split_to_array(role,'_'))[2] as rlevel
-            from wm.role_members where member = $1) sq where sq.rpriv = $2 or sq.rlevel = '0' order by sq.rlevel desc loop
--- raise notice 'Checking % % % % %', $1, trec.role, trec.rpriv, trec.rlevel, trec.member;
-          if trec.rpriv = $2 and trec.rlevel >= $3 then
+        select role, member, priv, level from wm.role_members rm where member = uname and rm.priv = priv or rm.level is null order by rm.level desc loop
+raise notice 'Checking % % % % %', uname, trec.role, trec.priv, trec.level, trec.member;
+          if trec.rpriv = priv and trec.level >= lev then
               return true;
-          elsif trec.rlevel = 0 then
-              if base.priv_role(trec.role,$2,$3) then return true; end if;
+          elsif trec.level is null then
+              if base.priv_role(trec.role, priv, lev) then return true; end if;
           end if;
         end loop;
         return false;
@@ -195,29 +164,54 @@ $$;}
 # Determine if the current user has a certain privilege level
 # Usage: priv_has(priv,level)
 #----------------------------------------------------------------
-function {base.priv_has(varchar,int)} {base.priv_role(name,varchar,int)} {
+function {base.priv_has(priv text, lev int)} {base.priv_role(name,text,int)} {
   returns boolean language sql stable as $$
-      select base.priv_role(session_user,$1,$2);
+      select base.priv_role(session_user, priv, lev);
 $$}
+
+# Create all users who should have database access
+# Force grant all applicable permissions to all enabled users
+# This is used in new database instances
+#----------------------------------------------------------------
+function base.priv_grants() {base.priv} {
+  returns int language plpgsql as $$
+    declare
+        erec	record;
+        trec	record;
+        cnt	int default 0;
+    begin
+        for erec in select * from base.ent where username is not null loop
+--raise notice 'Username check: %', erec.username;
+            if not exists (select usename from pg_shadow where usename = erec.username) then
+                execute 'create user ' || erec.username;
+            end if;
+            for trec in select * from base.priv where grantee = erec.username loop
+                execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
+                cnt := cnt + 1;
+            end loop;
+        end loop;
+        return cnt;
+    end;
+$$;}
 
 # Populate a new role with members according to records already in the base.priv table
 # Usage: base.pop_role(rolename)
 #----------------------------------------------------------------
-function {base.pop_role(rname varchar)} {base.priv_v} {
+function {base.pop_role(rname text)} {base.priv_v} {
   returns void security definer language plpgsql as $$
     declare
         trec	record;
     begin
-        for trec in select username from base.priv_v where priv = rname and level = 0 and username is not null loop
-            execute 'grant "' || rname || '_0" to ' || trec.username;
+        for trec in select grantee from base.priv_v where priv = rname and level is null loop
+            execute 'grant "' || rname || '_0" to ' || trec.grantee;
         end loop;
     end;
 $$;}
 
-# Create groups of permissions as roles (priv_role_basic...)
+# Create groups of permissions as roles (Do we use this anymore?)
 #----------------------------------------------------------------
 foreach {role groups} $base::priv_roles {
-    set deps {base.priv base.pop_role(varchar)}
+    set deps {base.priv base.pop_role(text)}
     foreach sr $groups {			;# if a role contains another role, note the dependency
         lassign [split $sr _] n r
         if {$r == {role}} {lappend deps base_role_$n}
