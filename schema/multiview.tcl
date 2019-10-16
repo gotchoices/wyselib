@@ -1,6 +1,9 @@
 #Create triggers to allow to insert/update/delete multiple tables joined together into a single view
 #This is an improvement on multirule, better handling in view triggers
 #Copyright WyattERP.org; See license in root of this package
+#TODO:
+#- Test postfunc on update function
+#- 
 #----------------------------------------------------------------
 # Is this chart still accurate with view trigger implementation?
 # If record exists in:		and:		do:
@@ -75,6 +78,7 @@ set multiview::insfunc {
   returns trigger language plpgsql security definer as \$\$
   declare
     trec record;					-- temporary record for single table
+    nrec ${view};					-- record in native type of view
     str  varchar;					-- temporary string
   begin
     if exists (select [join $keyfield ,] from $table where [fld_list_eq $keyfield new { and }]) then	-- if primary table record already exists
@@ -88,6 +92,7 @@ set multiview::insfunc {
     
     [join $ilist "\n    "]    	-- insert queries for subordinate tables
     select into new * from $view where [fld_list_eq $keyfield new { and }];	-- Fill new with any auto-populated values
+    $postcheck
     return new;
   end;
 \$\$}
@@ -99,8 +104,9 @@ set multiview::insfunc {
 #    fields:	columns to insert, if necessary in the specified table
 #  keyfield:	columns that form primary key in specified table
 #   ffields:	fields to force to a specified value
+# Postfunc: A function to call before declaring success; returns boolean
 #----------------------------------------------------------------
-proc multiview::insert {view tabrecs} {
+proc multiview::insert {view tabrecs {postfunc {}}} {
     set rcnt 0						;#iterates through each table record
     set lrec [expr [llength $tabrecs] - 1]		;#last record of the list
     set ilist {}					;#subordinate table insert accumulator
@@ -123,6 +129,9 @@ proc multiview::insert {view tabrecs} {
         incr rcnt
     }
     lassign $tab0 table fields keyfield ffields		;#come back to first table record
+    set postcheck {}; if {$postfunc != {}} {
+      set postcheck "nrec = new; new = ${postfunc}(nrec);"
+    }
     set func [subst $multiview::insfunc]		;#evaluate function template in that context
 #puts "\nfunction ${view}_insfunc() $view $func"
     function "${view}_insfunc()" $view $func
@@ -137,12 +146,14 @@ set multiview::updfunc {
   returns trigger language plpgsql security definer as \$\$
   declare
     trec record;		-- temporary record for single table
+    nrec ${view};					-- record in native type of view
     str  varchar;		-- temporary string
   begin
     $uquery;			-- Do unconditional update on the primary table
     
     [join $qlist "\n    "]    	-- insert queries for subordinate tables
     select into new * from $view where [fld_list_eq $keyfield0 new { and }];	-- Fill new with any auto-populated values
+    $postcheck
     return new;
   end;
 \$\$}
@@ -165,7 +176,7 @@ set multiview::updblock {
 #  keyfield:	columns that form primary key in specified table
 #   ffields:	fields to receive a forced value on each update
 #----------------------------------------------------------------
-proc multiview::update {view tabrecs} {
+proc multiview::update {view tabrecs {postfunc {}}} {
     set rcnt 0
     set qlist {}
     foreach tabrec $tabrecs {
@@ -180,6 +191,9 @@ proc multiview::update {view tabrecs} {
         incr rcnt
     }
 
+    set postcheck {}; if {$postfunc != {}} {
+      set postcheck "nrec = new; new = ${postfunc}(nrec);"
+    }
     set func [subst $multiview::updfunc]		;#evaluate function template
 #puts "\nfunction ${view}_updfunc() $view $func"
     function "${view}_updfunc()" $view $func
