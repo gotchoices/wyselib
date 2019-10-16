@@ -177,7 +177,7 @@ view base.addr_v {base.addr base.ent_v base.addr_prim} {
     eval(trigview::update base.addr_v base.addr $base::addr_v_up $base::addr_pk $glob::stampup);
     eval(rule_delete base.addr_v base.addr $base::addr_pk);
 } -grant {
-    {entim	s {i u} d}
+    {ent	s {i u} d}
 }
 
 # Base address view to join with ent to make a flat view

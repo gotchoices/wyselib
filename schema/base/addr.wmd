@@ -19,7 +19,7 @@ tabdef base.addr -focus addr_spec -fields [concat {
 
 tabdef base.addr_v -fields {
     {std_name		ent	14	{2 6 2}		-opt 1 -depend addr_ent -title {:} -in addr_ent}
-    {addr_prim		chk	2	{3 3}		-ini false}
+    {addr_prim		chk	2	{3 3}		-ini false -state readonly -write 0}
 } -display {
     addr_type addr_spec state city pcode country addr_cmt addr_seq
 } -sort {addr_type addr_seq}

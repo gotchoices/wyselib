@@ -13,7 +13,7 @@ tabdef base.comm -focus comm_spec -fields [concat {
 
 tabdef base.comm_v -fields {
     {std_name		ent	14	{2 5 2}		-opt 1 -depend comm_ent -title {:} -in comm_ent}
-    {comm_prim		chk	2	{3 2}		-ini false -onvalue t -offvalue f}
+    {comm_prim		chk	2	{3 2}		-ini false -onvalue t -offvalue f -state readonly -write 0}
 } -display {
     comm_type comm_spec comm_cmt comm_seq
 } -sort {comm_type comm_seq}

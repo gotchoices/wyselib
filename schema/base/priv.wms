@@ -64,9 +64,13 @@ function base.ent_tf_iuacc() {base.ent} {
         new.conn_pub = null;
       end if;
       if TG_OP = 'UPDATE' then			-- if trying to modify an existing username
-        if new.username is distinct from old.username and old.username is not null then
--- raise notice 'Change drop: %', old.username;
-          execute 'drop user if exists ' || '"' || old.username || '"';	-- drop the old account
+        if new.username is distinct from old.username then
+          if new.username is null then		-- Don't leave relational privs stranded
+            delete from base.priv where grantee = old.username;
+          end if;
+          if old.username is not null then
+            execute 'drop user if exists ' || '"' || old.username || '"';	-- drop the old account
+          end if;
         end if;
       end if;
 
@@ -115,8 +119,8 @@ function base.priv_tf_iugrp() {base.priv} {
                 execute 'revoke "' || old.priv_level || '" from ' || old.grantee;
             end if;
         end if;
+raise notice 'Iugrp: % % %', TG_OP, new.priv_level, new.grantee;
         execute 'grant "' || new.priv_level || '" to ' || new.grantee;
--- raise notice 'Iugrp: %', new.priv_level;
         return new;
     end;
 $$;}
@@ -203,7 +207,7 @@ function {base.pop_role(rname text)} {base.priv_v} {
         trec	record;
     begin
         for trec in select grantee from base.priv_v where priv = rname and level is null loop
-            execute 'grant "' || rname || '_0" to ' || trec.grantee;
+            execute 'grant ' || rname || ' to ' || trec.grantee;
         end loop;
     end;
 $$;}
@@ -212,12 +216,12 @@ $$;}
 #----------------------------------------------------------------
 foreach {role groups} $base::priv_roles {
     set deps {base.priv base.pop_role(text)}
-    foreach sr $groups {			;# if a role contains another role, note the dependency
+    foreach sr $groups {		;# if a role contains another role, note the dependency
         lassign [split $sr _] n r
-        if {$r == {role}} {lappend deps base_role_$n}
+        if {$r == {}} {lappend deps base_role_$n}
     }
 #puts "base_role_$role deps:$deps"
     other base_role_$role $deps \
-        "create role ${role}_role with in role [join $groups {,}]; select base.pop_role('$role');" \
-        "drop role if exists ${role}_role;"
+        "create role $role with in role [join $groups {,}]; select base.pop_role('$role');" \
+        "drop role if exists $role;"
 }

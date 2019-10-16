@@ -173,7 +173,7 @@ view base.comm_v {base.comm base.ent_v base.comm_prim} {
     eval(trigview::update base.comm_v base.comm $base::comm_v_up $base::comm_pk $glob::stampup);
     eval(rule_delete base.comm_v base.comm $base::comm_pk);
 } -grant {
-    {entim	s {i u} d}
+    {ent	s {i u} d}
 }
 
 # Base communication view to join with ent to make a flat view

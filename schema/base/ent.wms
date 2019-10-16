@@ -118,7 +118,7 @@ view base.ent_v {base.ent} {
     eval(trigview::update base.ent_v base.ent $base::ent_v_up $base::ent_pk $glob::stampup);
     eval(rule_delete base.ent_v base.ent $base::ent_pk);
 } -grant {
-    {entim	s {i u} d}
+    {ent	s {i u} d}
 }
 
 # Base link view
@@ -135,7 +135,7 @@ view base.ent_link_v {base.ent_link base.ent_v} {
     eval(rule_update base.ent_link_v base.ent_link $base::ent_link_v_up $base::ent_link_pk {} $glob::stampup);
     eval(rule_delete base.ent_link_v base.ent_link $base::ent_link_pk);
 } -grant {
-    {entim	s {i u d}}
+    {ent	s {i u d}}
 }
 
 # A view that everyone can have read access to just for non-sensitive fields
