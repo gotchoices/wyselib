@@ -33,11 +33,11 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {appLocalP2		{Pass Phrase Check}	{Enter the pass phrase a second time}}
     {conmenu		{Connection Menu}	{Various helper functions to control how you connect to server sites, and manage your connection keys}}
     {conTitle		{Connection Keys}	{A list of credentials, servers and ports where you normally connect.  Get a ticket from the site administrator where you want to connect.}}
-    {conConnect		{Connect}		{Attempt to connect to the server at this address and port (or Shift-click to disconnect)}}
+    {conConnect		{Connect}		{Attempt to connect to, or disconnect from the selected server}}
     {conDelete		{Delete}		{Remove the selected server connections from the list}}
     {conImport		{Import Keys}		{Drag/drop key files here, or click to import a connection key, or one-time connection ticket}}
     {conExport		{Export Keys}		{Save the selected private connection keys out to a file.  Delete these files immediately after moving them to a private backup device.  Never leave them in the download area or on a live file system!}}
-    {conRetry		{Retrying}		{Attempting to automatically reconnect to the server}}
+    {conRetry		{Retrying in}		{Will attempt to automatically reconnect to the server}}
     {conExpFile		{Key Filename}		{The file name to use for saving the selected private keys}}
     {conUsername	{Username}		{Input the name you will use to connect to the backend database.  If you don't know.  Ask the person who issued your connection ticket.}}
     {conNoCrypto	{No Crypto Library}	{Cryptographic functions not found in browser API.  Make sure you are connected by https, or use a more modern browser.}}
@@ -88,6 +88,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpColHide		{Hide Column}		{Remove this column from the display}}
     {dbpNext		{Next Record}		{Move the selection down one line and execute (normally edit) that new line}}
     {dbpPrev		{Prior Record}		{Move the selection up one line and execute (normally edit) that new line}}
+    {dbpNoPkey		{No Primary key}	{The system could not determine the primary key fields for this table or view}}
     {X.dbpColSel		{Visible Columns}	{Show or hide individual columns}}
     {X.dbpFooter		{Footer}		{Check the box to turn on column summaries, at the bottom}}
     {dbs		{Filter Search}		{Load records according to filter criteria}}

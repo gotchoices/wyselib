@@ -39,7 +39,7 @@ view wylib.data_v {wylib.data base.ent_v} {
     join	base.ent_v	oe	on oe.id = wd.owner
     where	access = 'read' or owner = base.curr_eid()
 } -grant {
-    {pub	s {i u} d}
+    {public	s {i u} d}
 }
 view::triggers wylib.data_v wylib.data $wylib::data_pk \
 	-ins [list -c $wylib::data_v_in -f "$glob::stampin"] \
