@@ -119,7 +119,7 @@ function base.priv_tf_iugrp() {base.priv} {
                 execute 'revoke "' || old.priv_level || '" from ' || old.grantee;
             end if;
         end if;
-raise notice 'Iugrp: % % %', TG_OP, new.priv_level, new.grantee;
+-- raise notice 'Iugrp: % % %', TG_OP, new.priv_level, new.grantee;
         execute 'grant "' || new.priv_level || '" to ' || new.grantee;
         return new;
     end;
@@ -216,12 +216,16 @@ $$;}
 #----------------------------------------------------------------
 foreach {role groups} $base::priv_roles {
     set deps {base.priv base.pop_role(text)}
+    set grlist {}; if {$groups != {}} {
+      set grlist "\"[join $groups {","}]\""
+    }
     foreach sr $groups {		;# if a role contains another role, note the dependency
         lassign [split $sr _] n r
         if {$r == {}} {lappend deps base_role_$n}
     }
-#puts "base_role_$role deps:$deps"
+puts "base_role_$role deps:$deps grlist:$grlist"
     other base_role_$role $deps \
-        "create role $role with in role [join $groups {,}]; select base.pop_role('$role');" \
+        "select wm.create_role('$role', '{$grlist}'); select base.pop_role('$role');" \
         "drop role if exists $role;"
 }
+#        "create role $role with in role [join $groups {,}]; select base.pop_role('$role');" \
