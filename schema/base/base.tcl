@@ -19,4 +19,21 @@ namespace eval base {
     def ent_link_v_in   [concat $ent_link_pk role]
     def ent_link_v_up   {role}
     def ent_link_se     [concat $ent_link_v_in supr_path $glob::stampfn]
+    
+    proc group_roles {defs deps} {
+        foreach {role groups} $defs {
+            set deps [concat {base.priv base.pop_role(text)} $deps]
+            set grlist {}; if {$groups != {}} {
+              set grlist "\"[join $groups {","}]\""
+            }
+            foreach sr $groups {		;# if a role contains another role, note the dependency
+                lassign [split $sr _] n r
+                if {$r == {}} {lappend deps base_role_$n}
+            }
+        #puts "base_role_$role deps:$deps grlist:$grlist"
+            other base_role_$role $deps \
+                "select wm.create_role('$role', '{$grlist}'); select base.pop_role('$role');" \
+                "drop role if exists $role;"
+        }
+    }
 }
