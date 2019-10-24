@@ -81,6 +81,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
     {dbpFilter		{Filter}		{Load records according to filter criteria}}
     {dbpAutoLoad	{Auto Execute}		{Automatically execute the top row any time the preview is reloaded}}
+    {dbpLoaded		{Loaded Records}	{How many records are currently loaded in the preview}}
+    {dbpShowSum		{Show Summaries}	{Show a summary row at the bottom of the preview.  Use context menu in column to determine which summary function for each column.}}
     {dbpColumn		{Column Menu}		{Menu of commands to control this column display}}
     {dbpVisible		{Visible}		{Specify which columns are visible in the preview}}
     {dbpVisCheck	{Visible}		{Check the box to make this column visible}}
