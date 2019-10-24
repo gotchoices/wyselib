@@ -41,9 +41,10 @@ CSV.parse(File.read(file).scrub) {|row|
   end
   done << iso_2			#Keep track of what we've done
 #p iso_2, com_name  
-  qlist << "insert into base.country (code,com_name,capital,cur_code,cur_name,dial_code,iso_3,iana) values ('#{iso_2.gsub("'","''")}','#{com_name.gsub("'","''")}','#{capital.to_s.gsub("'","''")}','#{cur_code.to_s.gsub("'","''")}','#{cur_name.to_s.gsub("'","''")}','#{dial_code.to_s.gsub(",","''")}','#{iso_3.to_s.gsub("'","''")}','#{iana.to_s.gsub("'","''")}')"
+  qlist << " ('#{iso_2.gsub("'","''")}','#{com_name.gsub("'","''")}','#{capital.to_s.gsub("'","''")}','#{cur_code.to_s.gsub("'","''")}','#{cur_name.to_s.gsub("'","''")}','#{dial_code.to_s.gsub(",","''")}','#{iso_3.to_s.gsub("'","''")}','#{iana.to_s.gsub("'","''")}')"
 }
 #p qlist
 
-#db.x qlist.join(";\n"); db.close		#Write direct to db
-puts qlist.join(";\n") + ";\n"			#To stdout
+puts "insert into base.country (code,com_name,capital,cur_code,cur_name,dial_code,iso_3,iana) values\n"
+puts qlist.join(",\n") + "\n"
+puts "on conflict do nothing;"

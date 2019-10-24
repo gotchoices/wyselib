@@ -33,15 +33,15 @@ CSV.parse(File.read(file).scrub) {|row|
   end
   done << code				#Keep track of what we've done
 #p code, english, french
-  qlist << "insert into base.language (code,iso_3b,iso_2,eng_name,fra_name) values (
-      '#{code.gsub("'","''")}'
-    , '#{alpha3b.gsub("'","''")}'
-    , #{alpha2 ? "'"+alpha2.to_s.gsub("'","''")+"'" : "null"}
-    , '#{english.to_s.gsub("'","''")}'
-    , '#{french.to_s.gsub("'","''")}'
-  )"
+  qlist << " ('#{code.gsub("'","''")}' \
+ , '#{alpha3b.gsub("'","''")}' \
+ , #{alpha2 ? "'"+alpha2.to_s.gsub("'","''")+"'" : "null"} \
+ , '#{english.to_s.gsub("'","''")}' \
+ , '#{french.to_s.gsub("'","''")}')"
   n += 1
 }
 #p qlist
 
-puts qlist.join(";\n") + ";\n"			#To stdout
+puts "insert into base.language (code,iso_3b,iso_2,eng_name,fra_name) values\n"
+puts qlist.join(",\n") + "\n"
+puts "on conflict do nothing;"
