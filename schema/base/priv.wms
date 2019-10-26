@@ -212,7 +212,7 @@ function {base.pop_role(rname text)} {base.priv_v} {
     end;
 $$;}
 
-# Create groups of permissions as roles (Do we use this anymore?)
+# Create groups of permissions as roles (Do we use this anymore?  See proc in base.tcl)
 #----------------------------------------------------------------
 foreach {role groups} $base::priv_roles {
     set deps {base.priv base.pop_role(text)}
@@ -223,9 +223,8 @@ foreach {role groups} $base::priv_roles {
         lassign [split $sr _] n r
         if {$r == {}} {lappend deps base_role_$n}
     }
-puts "base_role_$role deps:$deps grlist:$grlist"
+#puts "base_role_$role deps:$deps grlist:$grlist"
     other base_role_$role $deps \
         "select wm.create_role('$role', '{$grlist}'); select base.pop_role('$role');" \
         "drop role if exists $role;"
 }
-#        "create role $role with in role [join $groups {,}]; select base.pop_role('$role');" \

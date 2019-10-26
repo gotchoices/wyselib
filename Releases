@@ -1,6 +1,6 @@
 Change Log:
 
-1.0.10	2019-Oct
+1.0.12	2019-Oct
 	- Improved functionality for access privileges
 	- Support for action handlers
 	- Working user connection tickets
