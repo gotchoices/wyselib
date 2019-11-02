@@ -2,7 +2,7 @@
 #Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 #TODO:
-#- Get rid of proxy field?  (Use groups or roles instead)
+#X- Get rid of proxy field?  (Use groups or roles instead)
 #- 
 
 require base.tcl trigview.tcl
@@ -28,14 +28,13 @@ table base.ent {base.country} {
   , country	varchar(3)	not null default 'US' references base.country on update cascade
   , tax_id	text          , unique(country, tax_id)
   , bank	text
-  , proxy	text		constraint "!ent.ent.OPR" check (proxy != id)
+--  , proxy	text		constraint "!ent.ent.OPR" check (proxy != id)	--Obsolete; use groups or roles instead
 
     subst($base::ent_local)	-- locally defined columns
     subst($glob::stamps)
 }
 index {} base.ent {ent_type ent_num}
 index {} base.ent username
-index {} base.ent proxy
 audit::audit base.ent $base::ent_audit glman
 
 # Links entities to other entities as members, employees, etc.

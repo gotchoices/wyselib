@@ -19,7 +19,6 @@ tabdef base.ent -focus ent_name -fields [concat {
     {conn_key		ent	8	{3 5}		-write 0}
     {tax_id		ent	10	{1 6}		-hint {###-##-####}}
     {country		ent	4	{2 6}		-spf scm -data country}
-    {proxy		ent	6	{3 6}		-spf scm -data ent}
     {ent_cmt		mle	80	{1 7 3}		-spf edw}
 } $glob::stampd] -display {id ent_type ent_name fir_name born_date}
 

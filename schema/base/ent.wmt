@@ -34,7 +34,6 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
     {country		{Country}		{The country of primary citizenship (for people) or legal organization (companies)}}
     {tax_id		{TID/SSN}		{The number by which the country recognizes this person or company for taxation purposes}}
     {bank		{Bank Routing}		{Bank routing information: bank_number<:.;,>account_number}}
-    {proxy		{Proxy}			{ID of another person authorized to act on behalf of this employee where necessary in certain administrative functions of the ERP (like budgetary approvals)}}
 } $glob::stampt] -messages {
     {CFN		{First Name}		{A first name is required for personal entities}}
     {CMN		{Middle Name}		{A middle name is prohibited for non-personal entities}}
