@@ -31,7 +31,7 @@ table base.token {base.ent} {
 function base.token_tf_seq() {base.token} {
   returns trigger security definer language plpgsql as $$
     begin
-      if new.token_seq is null then
+      if new.token_seq is null then	-- not technically safe for concurrency, but we should really only have one token being created at a time anyway
         select into new.token_seq coalesce(max(token_seq),0)+1 from base.token where token_ent = new.token_ent;
       end if;
       if new.token is null then				-- If no token specified

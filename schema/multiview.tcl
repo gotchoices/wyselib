@@ -20,7 +20,7 @@
 # yes	yes	yes		update		ent,link,empl	-
 
 namespace eval multiview {
-    set dquery1 {'select string_agg(val,'','') from wm.column_def where obj = $1;'}	;#query to fetch default field assignments
+    set dquery1 {'select string_agg(val,'','') from wm.column_def where obj = $1 and not col ~ $2;'}	;#query to fetch default field assignments
     set dquery2 {'select ' || str || ';'}		;#query to perform default field assignments
 }
 
@@ -84,7 +84,7 @@ set multiview::insfunc {
     if exists (select [join $keyfield ,] from $table where [fld_list_eq $keyfield new { and }]) then	-- if primary table record already exists
         $uquery;					-- an update query, if any specified
     else
-        execute $multiview::dquery1 into str using '$table';	-- get default field assignments from data dictionary
+        execute $multiview::dquery1 into str using '$table','^_';	-- get default field assignments from data dictionary
 -- raise notice 'ts:%', str;
         execute $multiview::dquery2 into trec using new;	-- force nulls to defaults, where appropriate
         insert into $table [infields $fields $ffields trec] returning [join $keyfield ,] into [fld_list $keyfield new];
@@ -122,7 +122,7 @@ proc multiview::insert {view tabrecs {postfunc {}}} {
             set tab0 [list $table $fields $keyfield $ffields]	;#save first table record for later
             set keyfield0 $keyfield
         } elseif {$rcnt <= $lrec} {			;#do for remaining records
-            lappend ilist "execute $multiview::dquery1 into str using '$table';"
+            lappend ilist "execute $multiview::dquery1 into str using '$table','^_';"
             lappend ilist "execute $multiview::dquery2 into trec using new;"
             lappend ilist "insert into $table [infields $fields $ffields trec $keyfield $keyfield0 new];"
         }
@@ -162,7 +162,7 @@ set multiview::updblock {
     if exists (select [join $keyfield ,] from $table where [fld_list_eq $keyfield old { and }]) then				-- if primary table record already exists
         update $table set [upfields $fields $ffields] where [fld_list_eq $keyfield old { and }];
     else
-        execute $multiview::dquery1 into str using '$table';	-- get default field assignments from data dictionary
+        execute $multiview::dquery1 into str using '$table','^_';	-- get default field assignments from data dictionary
 -- raise notice 'ts:%', str;
         execute $multiview::dquery2 into trec using new;	-- force nulls to defaults, where appropriate
         insert into $table [infields $fields $ffields trec $keyfield $keyfield0];

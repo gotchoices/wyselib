@@ -86,7 +86,11 @@ function base.comm_tf_bi() {base.comm} {
   returns trigger language plpgsql security definer as $$
     begin
         if new.comm_seq is null then			-- Generate unique sequence for new communication entry
-            select into new.comm_seq coalesce(max(comm_seq),0)+1 from base.comm where comm_ent = new.comm_ent;
+            update base.ent set _last_comm = greatest(coalesce(_last_comm,0) + 1,
+              (select coalesce(max(comm_seq),0)+1 from base.comm where comm_ent = new.comm_ent)
+            ) where id = new.comm_ent returning _last_comm into new.comm_seq;
+            if not found then new.comm_seq = 1; end if;
+-- select into new.comm_seq coalesce(max(comm_seq),0)+1 from base.comm where comm_ent = new.comm_ent; -- Not safe for concurrency
         end if;
         if new.comm_inact then				-- Can't be primary if inactive
             new.comm_prim = false;

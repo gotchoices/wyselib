@@ -89,8 +89,12 @@ $$;}
 function base.addr_tf_bi() {base.addr} {
   returns trigger language plpgsql security definer as $$
     begin
-        if new.addr_seq is null then			-- Generate unique sequence for new addrunication entry
-            select into new.addr_seq coalesce(max(addr_seq),0)+1 from base.addr where addr_ent = new.addr_ent;
+        if new.addr_seq is null then			-- Generate unique sequence for new address entry
+            update base.ent set _last_addr = greatest(coalesce(_last_addr,0) + 1,
+              (select coalesce(max(addr_seq),0)+1 from base.addr where addr_ent = new.addr_ent)
+            ) where id = new.addr_ent returning _last_addr into new.addr_seq;
+            if not found then new.addr_seq = 1; end if;
+-- select into new.addr_seq coalesce(max(addr_seq),0)+1 from base.addr where addr_ent = new.addr_ent; -- Not safe for concurrency
         end if;
         if new.addr_inact then				-- Can't be primary if inactive
             new.addr_prim = false;
