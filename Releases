@@ -1,5 +1,9 @@
 Change Log:
 
+1.0.14	2019-Nov
+	- Better session concurrency
+	- Can run wyseman init multiply now
+
 1.0.12	2019-Oct
 	- Improved functionality for access privileges
 	- Support for action handlers
