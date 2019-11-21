@@ -28,8 +28,8 @@ table base.ent {base.country} {
   , country	varchar(3)	not null default 'US' references base.country on update cascade
   , tax_id	text          , unique(country, tax_id)
   , bank	text
-  , _last_addr	int		not null		-- leading _ makes these invisible to multiview triggers
-  , _last_comm	int		not null
+  , _last_addr	int		not null default 0	-- leading '_' makes these invisible to multiview triggers
+  , _last_comm	int		not null default 0
 --  , proxy	text		constraint "!ent.ent.OPR" check (proxy != id)	--Obsolete; use groups or roles instead
 
     subst($base::ent_local)	-- locally defined columns
@@ -66,8 +66,9 @@ function base.ent_tf_id() {base.ent} {
         select into new.ent_num coalesce(max(ent_num)+1,min_num) from base.ent where ent_type = new.ent_type and ent_num >= min_num;
       end if;
       new.id = new.ent_type || new.ent_num::text;  
-      if new._last_addr is null then new._last_addr = 0; end if;	-- use instead of default for fields not a part of normal views
-      if new._last_comm is null then new._last_comm = 0; end if;
+--Needed anymore?
+--      if new._last_addr is null then new._last_addr = 0; end if;	-- use instead of default for fields not a part of normal views
+--      if new._last_comm is null then new._last_comm = 0; end if;
       return new;
     end;
 $$;}
