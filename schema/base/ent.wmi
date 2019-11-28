@@ -4,6 +4,6 @@
 #------------------------------------------
 
 cat <<EOF
-insert into base.ent (ent_name,ent_type,username,country) values ('Admin','r',session_user,'US')
+insert into base.ent (ent_name,ent_type,username,country) values ('Admin','r','admin','US')
 on conflict do nothing;
 EOF

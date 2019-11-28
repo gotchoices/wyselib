@@ -172,7 +172,7 @@ tabtext wylib.data_v {GUI Data} {A view of configuration and preferences data ac
 }
 
 #The following Finnish sections are purely for testing purposes:
-tabtext wylib.data -lang fi {GUI Data} {Wylib-näkymäkomponenttien käyttämät konfigurointi- ja asetustiedot} {
+tabtext wylib.data -lang fin {GUI Data} {Wylib-näkymäkomponenttien käyttämät konfigurointi- ja asetustiedot} {
     {ruid		{Tunnistaa}		{Kullekin datatietueelle tuotettu yksilöllinen ID-numero}}
     {component		{Komponentti}		{GUI:n osa joka käyttää tämä data}}
     {access		{Pääsy}		{Kuka saa käyttää näitä tietoja ja miten} {

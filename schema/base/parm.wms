@@ -113,7 +113,7 @@ trigger base_parm_v_tr_del {} {instead of delete on base.parm_v for each row exe
 
 # Set the value of a parameter, with a polymorphic value
 #----------------------------------------------------------------
-function {base.parmset(m text, p text, v anyelement, t text default null)} {base.parm} {
+function {base.parmset(m text, p text, v anyelement, t text default null)} {base.parm_v} {
   returns anyelement language plpgsql as $$
     begin
       if exists (select type from base.parm where module = m and parm = p) then
