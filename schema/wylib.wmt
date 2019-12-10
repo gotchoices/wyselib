@@ -58,6 +58,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbeLoadPrompt	{Primary Key Value(s)}	{Input the primary key field values for the record you want to load}}
     {dbeRecordID	{Record ID}		{Load a record by specifying its primary key values directly}}
     {dbePopupErr	{Popup Error}		{Error trying to open a child window.  Is the browser blocking popup windows?}}
+    {dbeOption		{Optional Fields}	{Show additional information about this record}}
+    {dbeNoPkey		{No Primary key}	{The report update could not determine the primary key fields for the record.  Any changes may be lost.}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
     {winSave		{Save State}		{Re-save the layout and operating state of this window to the current named configuration, if there is one}}
     {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}
@@ -159,6 +161,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {sdcTag		{Tag}			{An identifying word that can be used to cross-reference to this section or paragraph}}
     {sdcText		{Paragraph Text}	{Insert/Edit the raw paragraph text directly here, including entering limited HTML tags, if desired}}
     {sdcEdit		{Direct Editing}	{This section or paragraph is in direct editing mode.  Double click on the background to return to preview mode.}}
+    {sdcPreview		{Preview Mode}		{This section or paragraph is in preview mode.  Double click on the background to go to editing mode.}}
     {sdcAdd		{Add Subsection}	{Create a new paragraph or section nested below this one}}
     {sdcDelete		{Delete Section}	{Delete this paragraph or section of the document}}
     {sdcEditAll		{Edit All}		{Put all paragraphs or sections into direct editing mode.  This can be done one at a time by double clicking on the paragraph.}}
