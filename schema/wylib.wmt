@@ -160,10 +160,13 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {sdcSection		{Section}		{Click to edit text.  Double click at edge for direct editing mode.  Drag at edge to move.}}
     {sdcTag		{Tag}			{An identifying word that can be used to cross-reference to this section or paragraph}}
     {sdcText		{Paragraph Text}	{Insert/Edit the raw paragraph text directly here, including entering limited HTML tags, if desired}}
+    {sdcSource		{Source}		{The URL of another document which will be incorporated into this document by reference}}
+    {sdcReference	{Reference}		{The following external document is incorporated by reference, becoming a part of this document}}
+    {sdcTogSource	{Add Reference}		{Use this section to refer to some external document by its URL}}
     {sdcEdit		{Direct Editing}	{This section or paragraph is in direct editing mode.  Double click on the background to return to preview mode.}}
     {sdcPreview		{Preview Mode}		{This section or paragraph is in preview mode.  Double click on the background to go to editing mode.}}
     {sdcAdd		{Add Subsection}	{Create a new paragraph or section nested below this one}}
-    {sdcDelete		{Delete Section}	{Delete this paragraph or section of the document}}
+    {sdcDelete		{Delete Section}	{Delete this section of the document, and all its subsections}}
     {sdcEditAll		{Edit All}		{Put all paragraphs or sections into direct editing mode.  This can be done one at a time by double clicking on the paragraph.}}
     {sdcPrevAll		{Preview All}		{Take all paragraphs or sections out of direct editing mode, and into preview mode}}
     {X		{}		{}}
