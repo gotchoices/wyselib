@@ -4,6 +4,7 @@
 #- Write tests for more than just base
 #- 
 
+export RUBYOPT="-I $(pwd)/../../wyseman/lib"	#Needed for ruby scripts below
 schemadir="../schema"
 dbname=$(cat ./DBNAME)
 dbuser=$(cat ./DBUSER)
