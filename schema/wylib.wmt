@@ -95,6 +95,9 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpNext		{Next Record}		{Move the selection down one line and execute (normally edit) that new line}}
     {dbpPrev		{Prior Record}		{Move the selection up one line and execute (normally edit) that new line}}
     {dbpNoPkey		{No Primary key}	{The system could not determine the primary key fields for this table or view}}
+    {dbpExport		{Export Records}	{Save the selected records to a local file}}
+    {dbpExportAsk	{Export File}		{Supply a filename to use when exporting}}
+    {dbpExportFmt	{Pretty}		{Export the file with indentation to make it more easily readable by people}}
     {X.dbpColSel		{Visible Columns}	{Show or hide individual columns}}
     {X.dbpFooter		{Footer}		{Check the box to turn on column summaries, at the bottom}}
     {dbs		{Filter Search}		{Load records according to filter criteria}}
@@ -150,7 +153,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {sdcImportAsk	{Import From File}	{Select a file to Import, or drag it onto the import button}}
     {sdcExport		{Export To File}	{Save the document to an external file}}
     {sdcExportAsk	{Export File}		{Input a filename to use when exporting}}
-    {sdcExportFmt	{Human Readable}	{Export the file with indentation to make it more easily readable by people}}
+    {sdcExportFmt	{Pretty}		{Export the file with indentation to make it more easily readable by people}}
     {sdcSpell		{Spell Checking}	{Enable/disable spell checking in on the screen}}
     {sdcBold		{Bold}			{Mark the highlighted text as bold}}
     {sdcItalic		{Italic}		{Mark the highlighted text as italic}}
