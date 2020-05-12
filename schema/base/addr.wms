@@ -42,7 +42,7 @@ table base.addr_prim {base.addr} {
   , prim_seq	int
   , prim_type	text
   , primary key (prim_ent, prim_seq, prim_type)
-  , foreign key (prim_ent, prim_seq, prim_type) references base.addr (addr_ent, addr_seq, addr_type)
+  , constraint addr_prim_prim_ent_fk foreign key (prim_ent, prim_seq, prim_type) references base.addr (addr_ent, addr_seq, addr_type)
     on update cascade on delete cascade deferrable
 }
 
@@ -102,7 +102,7 @@ function base.addr_tf_bi() {base.addr} {
             new.addr_prim = true;			-- First record of its type becomes primary
         end if;
         if new.addr_prim then				-- If this is primary, all others are now not
-            set constraints base.addr_prim_prim_ent_fkey deferred;
+            set constraints base.addr_prim_prim_ent_fk deferred;
             perform base.addr_make_prim(new.addr_ent, new.addr_seq, new.addr_type);
         end if;
         new.addr_prim = false;				-- We don't actually store the status in this field

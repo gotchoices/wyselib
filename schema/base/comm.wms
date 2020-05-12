@@ -38,7 +38,7 @@ table base.comm_prim {base.comm} {
   , prim_seq	int
   , prim_type	text
   , primary key (prim_ent, prim_seq, prim_type)
-  , foreign key (prim_ent, prim_seq, prim_type) references base.comm (comm_ent, comm_seq, comm_type)
+  , constraint comm_prim_prim_ent_fk foreign key (prim_ent, prim_seq, prim_type) references base.comm (comm_ent, comm_seq, comm_type)
     on update cascade on delete cascade deferrable
 }
 
@@ -98,7 +98,7 @@ function base.comm_tf_bi() {base.comm} {
             new.comm_prim = true;			-- First record of its type becomes primary
         end if;
         if new.comm_prim then				-- If this is primary, all others are now not
-            set constraints base.comm_prim_prim_ent_fkey deferred;
+            set constraints base.comm_prim_prim_ent_fk deferred;
             perform base.comm_make_prim(new.comm_ent, new.comm_seq, new.comm_type);
         end if;
         new.comm_prim = false;				-- We don't actually store the status in this field
