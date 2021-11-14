@@ -40,6 +40,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {conExport		{Export Keys}		{Save the selected private connection keys out to a file.  Delete these files immediately after moving them to a private backup device.  Never leave them in the download area or on a live file system!}}
     {conRetry		{Retrying in}		{Will attempt to automatically reconnect to the server}}
     {conExpFile		{Key Filename}		{The file name to use for saving the selected private keys}}
+    {conExpPass		{Key Passphrase}	{A secret passphrase to encrypt/decrypt private keys stored in an external format.  Leave blank (foolishly) for no encryption.}}
+    {conExpPass2	{Re-enter Passphrase}	{Enter passphrase again}}
     {conUsername	{Username}		{Input the name you will use to connect to the backend database.  If you don't know.  Ask the person who issued your connection ticket.}}
     {conNoCrypto	{No Crypto Library}	{Cryptographic functions not found in browser API.  Make sure you are connected by https, or use a more modern browser.}}
     {conCryptErr	{Generating Key}	{There was an error in the browser attempting to generate a connection key}}
