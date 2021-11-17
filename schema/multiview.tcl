@@ -81,6 +81,7 @@ set multiview::insfunc {
     nrec ${view};					-- record in native type of view
     str  varchar;					-- temporary string
   begin
+    $precheck
     if exists (select [join $keyfield ,] from $table where [fld_list_eq $keyfield new { and }]) then	-- if primary table record already exists
         $uquery;					-- an update query, if any specified
     else
@@ -106,7 +107,7 @@ set multiview::insfunc {
 #   ffields:	fields to force to a specified value
 # Postfunc: A function to call before declaring success; returns boolean
 #----------------------------------------------------------------
-proc multiview::insert {view tabrecs {postfunc {}}} {
+proc multiview::insert {view tabrecs {postfunc {}} {prefunc {}}} {
     set rcnt 0						;#iterates through each table record
     set lrec [expr [llength $tabrecs] - 1]		;#last record of the list
     set ilist {}					;#subordinate table insert accumulator
@@ -129,6 +130,9 @@ proc multiview::insert {view tabrecs {postfunc {}}} {
         incr rcnt
     }
     lassign $tab0 table fields keyfield ffields		;#come back to first table record
+    set precheck {}; if {$prefunc != {}} {
+      set precheck "nrec = new; new = ${prefunc}(nrec, null, TG_OP); if new is null then return null; end if;"
+    }
     set postcheck {}; if {$postfunc != {}} {
       set postcheck "nrec = new; new = ${postfunc}(nrec, null, TG_OP);"
     }
