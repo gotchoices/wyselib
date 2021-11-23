@@ -112,7 +112,7 @@ proc multiview::insert {view tabrecs {postfunc {}} {prefunc {}}} {
     set lrec [expr [llength $tabrecs] - 1]		;#last record of the list
     set ilist {}					;#subordinate table insert accumulator
     foreach tabrec $tabrecs {				;#for each table
-        lassign $tabrec table fields keyfield ffields
+        lassign $tabrec table fields keyfield ffields forkey
 #puts "Table:$table fields:$fields\nKeyfield:$keyfield ffields:$ffields"
         if {$rcnt == 0} {				;#on the first table record
             if {$ffields != {}} {
@@ -123,9 +123,11 @@ proc multiview::insert {view tabrecs {postfunc {}} {prefunc {}}} {
             set tab0 [list $table $fields $keyfield $ffields]	;#save first table record for later
             set keyfield0 $keyfield
         } elseif {$rcnt <= $lrec} {			;#do for remaining records
+#puts "keyfield0:$keyfield0 forkey:$forkey"
+            set kf $keyfield0; if {$forkey != {}} {set kf $forkey}		;#Did the user specify a special foreign key field?
             lappend ilist "execute $multiview::dquery1 into str using '$table','^_';"
             lappend ilist "execute $multiview::dquery2 into trec using new;"
-            lappend ilist "insert into $table [infields $fields $ffields trec $keyfield $keyfield0 new];"
+            lappend ilist "insert into $table [infields $fields $ffields trec $keyfield $kf new];"
         }
         incr rcnt
     }
@@ -153,6 +155,7 @@ set multiview::updfunc {
     nrec ${view}; orec ${view};	-- records in native type of view
     str  varchar;		-- temporary string
   begin
+    $precheck
     $uquery;			-- Do unconditional update on the primary table
     
     [join $qlist "\n    "]    	-- insert queries for subordinate tables
@@ -180,7 +183,7 @@ set multiview::updblock {
 #  keyfield:	columns that form primary key in specified table
 #   ffields:	fields to receive a forced value on each update
 #----------------------------------------------------------------
-proc multiview::update {view tabrecs {postfunc {}}} {
+proc multiview::update {view tabrecs {postfunc {}} {prefunc {}}} {
     set rcnt 0
     set qlist {}
     foreach tabrec $tabrecs {
@@ -190,11 +193,16 @@ proc multiview::update {view tabrecs {postfunc {}}} {
             set keyfield0 $keyfield
             set uquery "update $table set [upfields $fields $ffields] where [fld_list_eq $keyfield old { and }] returning [join $keyfield ,] into [fld_list $keyfield new]"
         } else {
+            if {![lcontain $fields $keyfield]} {lappend fields $keyfield}
+#puts "Table:$table fields:$fields keyfield:$keyfield keyfield0:$keyfield0"
             lappend qlist [subst $multiview::updblock]
         }
         incr rcnt
     }
 
+    set precheck {}; if {$prefunc != {}} {
+      set precheck "nrec = new; orec = old; new = ${prefunc}(nrec, orec, TG_OP); if new is null then return null; end if;"
+    }
     set postcheck {}; if {$postfunc != {}} {
       set postcheck "nrec = new; orec = old; new = ${postfunc}(nrec, orec, TG_OP);"
     }
