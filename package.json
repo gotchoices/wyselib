@@ -1,6 +1,6 @@
 {
   "name": "wyselib",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "WyattERP Schema Library",
   "main": "lib/index.js",
   "scripts": {
