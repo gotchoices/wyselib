@@ -69,14 +69,14 @@ function base.ent_tf_iuacc() {base.ent} {
             delete from base.priv where grantee = old.username;
           end if;
           if old.username is not null then
-            execute 'drop user if exists ' || '"' || old.username || '"';	-- drop the old account
+            execute 'drop role if exists ' || '"' || old.username || '"';	-- drop the old account
           end if;
         end if;
       end if;
 
-      if new.username is not null and not exists (select usename from pg_shadow where usename = new.username) then
--- raise notice 'Create: %', new.username;
-        execute 'create user ' || '"' || new.username || '"';
+      if new.username is not null and not exists (select rolname from pg_roles where rolname = new.username) then
+--raise notice 'Create: %', new.username;
+        execute 'create role ' || '"' || new.username || '"' login;
         for trec in select * from base.priv where grantee = new.username loop
           execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
         end loop;
@@ -94,7 +94,7 @@ function base.ent_tf_dacc() {base.ent} {
   returns trigger language plpgsql as $$
     begin
         if old.username is not null then
-            execute 'drop user if exists ' || old.username;	-- drop the old name
+            execute 'drop role if exists ' || old.username;	-- drop the old name
         end if;
         return old;
     end;
