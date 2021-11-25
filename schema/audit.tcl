@@ -2,8 +2,7 @@
 #Copyright WyattERP.org; See license in root of this package
 #----------------------------------------------------------------
 #TODO:
-#- make template for table and triggers
-#- implement as a macro
+#- Could write functions to revert a record (i.e. undo a change
 #- 
 #----------------------------------------------------------------
 # The objective of this module is to retain a history of all prior values of
@@ -21,7 +20,7 @@
 # audit table, sequentially numbered as changes are made to the record.
 # 
 # The audit table columns that share the primary key with the base table would
-# typically consist of a foriegn key reference to the base table.  But this
+# arguably consist of a foriegn key reference to the base table.  But this
 # would prevent the audit records from remaining after the record in the base
 # table has been deleted.  So we will not include an explicit FK reference
 # even though it is implied for records where the base record still exists.
@@ -29,22 +28,14 @@
 # Implementation
 # #----------------------------------------------------------------
 # The audit table will capture data that is about to be overwritten or deleted
-# in the base table.  This is done one column at a time.  So if multiple columns
-# in the base table are being changed, the audit table will record a separate
-# row for each column changed.
-# 
-# All values from the base table will be casted into a string and stored in a
-# single column in the audit table.  This implies that the data will lose its
-# explicit typing and may not be available for automated comparisons with the
-# base table (at least without recasting it back to its original type).
-# 
-# Since the intended purpose is human inspection, this should not typically be
-# a problem.
+# in the base table.  This is saved as a JSON record so not all type 
+# information is guaranteed to be preserved.  Since the primary purpose is 
+# human inspection, this should not typically be a problem.
 # 
 # Name clashes
 #----------------------------------------------------------------
 # Since we do not know the names that may be chosen for the primary key we will
-# prefix all column names in the audit table with "a_" in order to reduce the
+# prefix all column names in the audit table with "a_" in order to _reduce_ the
 # chance of a name collision.
 # 
 # Audit table columns
@@ -54,8 +45,7 @@
 # a_who		ID of the user who made the change
 # a_stamp	When the base row was modified
 # a_action	Update or Delete
-# a_column	Name of the column recorded
-# a_value	Prior value (contents) of the column
+# a_values	Prior value of the columns kept as a JSON object
 
 package require csv
 #----------------------------------------------------------------
@@ -68,12 +58,9 @@ namespace eval audit {
           , a_date	timestamptz	not null default current_timestamp
           , a_by	name		not null default session_user references %E (username) on update cascade
           , a_action	audit_type	not null default 'update'
-          , a_column	varchar		not null
-          , a_value	varchar
-     	  , a_reason	text
+          , a_values	jsonb
           , primary key (%K,a_seq)
         } -grant {{%V	{} {} {s}}}
-        index {} %T_audit a_column
 
         function %T_audit_tf_bi() {%T_audit} {		--Call when a new audit record is generated
           returns trigger language plpgsql security definer as $$
@@ -88,6 +75,9 @@ namespace eval audit {
 
         function %T_tf_audit_u() {%T %T_audit} {		--Call when a record is updated in the audited table
           returns trigger language plpgsql security definer as $$
+            declare
+                doit	boolean = false;
+                jobj	jsonb = '{}';
             begin
                 %U;						--A set of conditional insert statements (if the field changed)
                 return new;
@@ -106,7 +96,7 @@ namespace eval audit {
     }
 }
 
-# Basic account types
+# Basic audit types
 #----------------------------------------------------------------
 other audit_type {} {
     create type audit_type as enum ('update','delete');
@@ -166,17 +156,31 @@ proc audit::audit {table cols {priv {}} {users base.ent}} {
     }
 #puts "      pk:$pk pksql:$pksql"
 
-    lassign {} ulist dlist
+#Old way (one record per column)
+#    lassign {} ulist dlist
+#    foreach c $cols {
+#        set i1 "insert into ${table}_audit ([join $pk ,],a_date,a_by,a_action,a_column,a_value) values ([fld_list $pk old],transaction_timestamp(),session_user"
+#        set i2 "'$c',old.${c}::varchar)"
+#        lappend dlist "$i1,'delete',$i2"
+#        lappend ulist "if new.$c is distinct from old.$c then $i1,'update',$i2; end if"
+#    }
+#    set ucode [join $ulist ";\n\t\t"]
+#    set dcode [join $dlist ";\n\t\t"]
+
+#New way (jsonb)
+    set jlist {}
     foreach c $cols {
-        set i1 "insert into ${table}_audit ([join $pk ,],a_date,a_by,a_action,a_column,a_value) values ([fld_list $pk old],transaction_timestamp(),session_user"
-        set i2 "'$c',old.${c}::varchar)"
-        lappend dlist "$i1,'delete',$i2"
-        lappend ulist "if new.$c is distinct from old.$c then $i1,'update',$i2; end if"
+      lappend jlist "'$c'" "old.$c"
+      lappend ulist "if new.$c is distinct from old.$c then doit=true; jobj = jobj || jsonb_build_object('${c}', old.$c); end if"
     }
+    set ub "jsonb_build_object([join $jlist {,}])"
+    set icode "insert into ${table}_audit ([join $pk ,],a_date,a_by,a_action,a_values) values ([fld_list $pk old],transaction_timestamp(),session_user"
+    set dcode "$icode,'delete',${ub})"
+    set ucode "[join $ulist ";\n\t\t"];\n\t\tif doit then $icode,'update',jobj); end if"
 
     set w [fld_list_eq $pk new { and }]		;#make primary key where clause
     set tpt $audit::db_objects			;#load up the sql object template
-    foreach {s v} [list E $users T $table K [join $pk ,] S [join $pksql ,] W $w U [join $ulist ";\n\t\t"] D [join $dlist ";\n\t\t"] V $priv] {	;#substitute values for our object set
+    foreach {s v} [list E $users T $table K [join $pk ,] S [join $pksql ,] W $w U $ucode D $dcode V $priv] {	;#substitute values for our object set
         regsub -all "%$s" $tpt "$v" tpt
     }
 #puts "tpt:$tpt"
