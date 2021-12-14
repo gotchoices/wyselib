@@ -76,7 +76,7 @@ function base.ent_tf_iuacc() {base.ent} {
 
       if new.username is not null and not exists (select rolname from pg_roles where rolname = new.username) then
 --raise notice 'Create: %', new.username;
-        execute 'create role ' || '"' || new.username || '"' login;
+        execute 'create role ' || '"' || new.username || '" login';
         for trec in select * from base.priv where grantee = new.username loop
           execute 'grant "' || trec.priv_level || '" to ' || trec.grantee;
         end loop;
