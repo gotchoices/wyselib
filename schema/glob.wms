@@ -4,6 +4,8 @@
 #TODO:
 #- 
 
+module wyselib
+
 # Return the number of fields in a string delimited by a given character
 # Usage: field_count(string,delimiter)
 #-------------------------------------------

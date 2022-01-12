@@ -4,9 +4,7 @@
 #TODO:
 #- Allow base.parm parameter to change expiration time on token
 #- 
-require common.tcl glob.tcl ../trigview.tcl
-
-module base
+require base.tcl ../trigview.tcl
 
 namespace eval base {
     def token_pk	{token_ent token_seq}
