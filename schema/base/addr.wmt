@@ -18,11 +18,13 @@ tabtext base.addr	{Addresses}		{Addresses (home, mailing, etc.) pertaining to en
     {state		{State}			{The name of the state or province this address is in}}
     {pcode		{Zip/Postal}		{Zip or other mailing code applicable to this address.}}
     {country		{Country}		{The name of the country this address is in.  Use standard international country code abbreviations.}}
-    {addr_inact		{Inactive}		{If checked this address is no longer a valid address}}
+    {addr_inact		{Inactive}		{This address is no longer a valid address}}
+    {addr_priv		{Private}		{This address should not be shared publicly}}
     {dirty		{Dirty}			{A flag used in the database backend to track whether the primary address needs to be recalculated}}
 } $glob::stampt] -errors {
     {CCO		{Country}		{The country must always be specified (and in standard form)}}
     {CPA		{Primary}		{There must be at least one address checked as primary}}
+    {USP		{Duplicate}		{There should only be one record for each separate type and address}}
 }
 
 tabtext base.addr_v	{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {

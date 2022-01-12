@@ -7,7 +7,7 @@ require base.tcl ../trigview.tcl
 
 namespace eval base {
     def comm_pk		{comm_ent comm_seq}
-    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_inact comm_prim}
+    def comm_v_in	{comm_ent comm_type comm_spec comm_cmt comm_inact comm_priv comm_prim}
     def comm_v_up	[lremove $comm_v_in comm_ent]
     def comm_se		[concat $comm_pk $comm_v_up $glob::stampfn]
     def comm_types	{phone email cell fax text web pager other}
@@ -19,12 +19,14 @@ namespace eval base {
 table base.comm {base.ent} {
     comm_ent	text		references base.ent on update cascade on delete cascade
   , comm_seq	int	      , primary key (comm_ent, comm_seq)
-  , comm_spec	text
+  , comm_spec	text		not null
   , comm_type	text		not null check(comm_type in ('eval(join $base::comm_types {','})'))
   , comm_prim	boolean		not null default false constraint "!base.comm.CPC" check(case when comm_inact is true then comm_prim is false end)
   , comm_cmt	text
   , comm_inact	boolean		not null default false
+  , comm_priv	boolean		not null default false
   , unique (comm_ent, comm_seq, comm_type)		-- Needed for comm_prim FK to work
+  , constraint "!base.comm.USP" unique (comm_ent, comm_type, comm_spec)
     subst($base::comm_local)	-- locally defined columns
     subst($glob::stamps)
 }

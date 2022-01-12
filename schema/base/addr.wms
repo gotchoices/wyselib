@@ -8,7 +8,7 @@ require base.tcl ../trigview.tcl
 
 namespace eval base {
     def addr_pk		{addr_ent addr_seq}
-    def addr_v_in	{addr_ent addr_spec city state pcode country addr_cmt addr_type addr_prim addr_inact}
+    def addr_v_in	{addr_ent addr_spec city state pcode country addr_cmt addr_type addr_prim addr_inact addr_priv}
     def addr_v_up	[lremove $addr_v_in addr_ent]
     def addr_se		[concat $addr_pk $addr_v_up $glob::stampfn]
     def addr_local	{}
@@ -25,11 +25,13 @@ table base.addr {base.ent} {
   , addr_prim	boolean		not null default false constraint "!base.addr.CPA" check(case when addr_inact is true then addr_prim is false end)
   , addr_cmt	text
   , addr_inact	boolean		not null default false
+  , addr_priv	boolean		not null default false
   , city	text
   , state	text
   , pcode	text
   , country	varchar(3)	constraint "!base.addr.CCO" not null default 'US' references base.country on update cascade
   , unique (addr_ent, addr_seq, addr_type)		-- Needed for addr_prim FK to work
+  , constraint "!base.addr.USP" unique (addr_ent, addr_type, addr_spec)
     subst($base::addr_local)	-- locally defined columns
     subst($glob::stamps)
 }
