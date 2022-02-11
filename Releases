@@ -1,5 +1,10 @@
 Change Log:
 
+1.0.20	2022-Feb
+	- Improve multiview functions
+	- Stop using obsolete create user
+	- Updates to support newer JS wyseman
+
 1.0.18	2021-Nov
 	- Support schema features needed in mychips
 
