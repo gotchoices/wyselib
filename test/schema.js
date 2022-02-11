@@ -16,7 +16,7 @@ describe("Schema: Build DB schema files", function() {
   var db
 
   before('Delete sample database if it exists', function(done) {
-    Child.exec(`dropdb -U ${DBAdmin} ${TestDB}`, (err, out) => done())
+    Child.exec(`dropdb --if-exists -U ${DBAdmin} ${TestDB}`, (err, out) => done())
   })
 
   before('Build schema database', function(done) {
