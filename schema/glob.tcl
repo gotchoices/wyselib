@@ -36,7 +36,5 @@ def glob::auditt	{
     {a_date   		{Date/Time}	{Date and time of the change}}
     {a_by   		{Altered By}	{The username of the user who made the change}}
     {a_action  		{Action}	{The operation that produced the change (update, delete)}}
-    {a_column  		{Column}	{The name of the column that was changed}}
-    {a_value   		{Value}		{The old value of the column before the change}}
-    {a_reason  		{Reason}	{The reason for the change}}
+    {a_values   	{Values}	{JSON object containing the old values of the record before the change}}
 }
