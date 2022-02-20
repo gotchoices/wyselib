@@ -1,6 +1,6 @@
 {
   "name": "wyselib",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "WyattERP Schema Library",
   "main": "lib/index.js",
   "scripts": {
@@ -28,5 +28,8 @@
   "homepage": "https://github.com/gotchoices/wyselib",
   "devDependencies": {
     "mocha": "^9.1.3"
+  },
+  "dependencies": {
+    "wyseman": "^1.1.2"
   }
 }
