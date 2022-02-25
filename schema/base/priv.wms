@@ -204,11 +204,14 @@ $$;}
 function {base.pop_role(rname text)} {base.priv_v} {
   returns void security definer language plpgsql as $$
     declare
-        trec	record;
+      trec	record;
     begin
-        for trec in select grantee from base.priv_v where priv = rname and level is null loop
-            execute 'grant ' || rname || ' to ' || trec.grantee;
-        end loop;
+      for trec in select grantee from base.priv_v where priv = rname and level is null loop
+        if not exists (select from pg_catalog.pg_roles where rolname = trec.grantee) then
+          execute 'create role ' || '"' || trec.grantee || '" login';
+        end if;
+        execute 'grant ' || rname || ' to ' || trec.grantee;
+      end loop;
     end;
 $$;}
 
