@@ -174,6 +174,11 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {sdcDelete		{Delete Section}	{Delete this section of the document, and all its subsections}}
     {sdcEditAll		{Edit All}		{Put all paragraphs or sections into direct editing mode.  This can be done one at a time by double clicking on the paragraph.}}
     {sdcPrevAll		{Preview All}		{Take all paragraphs or sections out of direct editing mode, and into preview mode}}
+    {svgCurve		{Connector Curve}	{How far to extend graph edge curve control points}}
+    {svgRefresh		{Refresh}		{Refresh chart from its source data}}
+    {svgReset		{Reset}			{Clear chart and then refresh it from source data}}
+    {svgExtent		{Auto Zoom}		{Zoom chart to show all nodes}}
+    {svgDefaults	{Defaults}		{Restore adjustments to default settings}}
     {X		{}		{}}
 }
 #    {diaPopup		{Popup Report}		{Open the report in a separate, popup window of the browser}}
