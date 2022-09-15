@@ -1,5 +1,8 @@
 Change Log:
 
+1.0.24	2022-Sep
+	- Updates to track with other packages
+
 1.0.20	2022-Feb
 	- Improve multiview functions
 	- Stop using obsolete create user
