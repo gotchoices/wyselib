@@ -5,8 +5,8 @@
 
 cat <<EOF
 insert into base.parm (module, parm, type, v_int, v_text) values 
- ('wylib', 'host', 'text', null, 'localhost'),
- ('wylib', 'port', 'int', 54320, null)
+ ('wyseman', 'host', 'text', null, 'localhost'),
+ ('wyseman', 'port', 'int', 54320, null)
 
 on conflict do nothing;
 EOF

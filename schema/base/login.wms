@@ -85,8 +85,8 @@ $$;}
 #----------------------------------------------------------------
 view base.token_v_ticket {base.token base.parm_int(text,text) base.parm_text(text,text)} {
     select token_ent, allows, token, expires
-      , base.parm_text('wylib','host') as host
-      , base.parm_int('wylib','port') as port
+      , base.parm_text('wyseman','host') as host
+      , base.parm_int('wyseman','port') as port
     from	base.token	t
 }
 
