@@ -4,7 +4,7 @@ require ../common.tcl ../glob.tcl
 
 tabtext base.comm	{Communication}		{Communication points (phone, email, fax, etc.) for entities} [concat {
     {comm_ent		{Entity}		{The ID number of the entity this communication point belongs to}}
-    {comm_seq		{Sequence}		{A unique number assigned to each new address for a given entity}}
+    {comm_seq		{Sequence}		{A unique number assigned to each new communication point for a given entity}}
     {comm_spec		{Num/Addr}		{The number or address to use when communication via this method and communication point}}
     {comm_type		{Medium}		{The method of communication} {
         {phone		{Phone}			{A way to contact the entity via telephone}}

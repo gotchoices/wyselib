@@ -40,10 +40,10 @@ describe("Schema: Build DB schema files", function() {
     })
   })
 
-  it('Should have 13 wyselib tables built', function(done) {
+  it('Should have 15 wyselib tables built', function(done) {
     let sql = "select * from pg_tables where schemaname = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 13)
+      assert.equal(res.rows.length, 15)
       done()
     })
   })
@@ -51,7 +51,7 @@ describe("Schema: Build DB schema files", function() {
   it('Should have expected wyselib column text descriptions', function(done) {
     let sql = "select * from wm.column_text where ct_sch = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 172)
+      assert.equal(res.rows.length, 190)
       done()
     })
   })
@@ -59,7 +59,7 @@ describe("Schema: Build DB schema files", function() {
   it('should have expected wyselib column defaults', function(done) {
     let sql = "select * from wm.column_def where obj ~ '^base.'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 264)
+      assert.equal(res.rows.length, 294)
       done()
     })
   })
@@ -74,9 +74,9 @@ describe("Schema: Build DB schema files", function() {
 
   it('check for undocumented tables', function(done) {
     let sql = `select sch,tab from wm.table_lang where help is null and sch in (${SchemaList}) order by 1,2`
-//log.debug("Sql:", sql)
+log.debug("Sql:", sql)
     db.query(sql, (e, res) => {if (e) done(e)
-//log.debug("res:", res.rows ? JSON.stringify(res.rows) : null)
+log.debug("res:", res.rows ? JSON.stringify(res.rows) : null)
       assert.equal(res.rows.length, 0)
       done()
     })
@@ -84,9 +84,9 @@ describe("Schema: Build DB schema files", function() {
 
   it('check for undocumented columns', function(done) {
     let sql = `select sch,tab,col from wm.column_lang where help is null and sch in (${SchemaList}) order by 1,2`
-//log.debug("Sql:", sql)
+log.debug("Sql:", sql)
     db.query(sql, (e, res) => {if (e) done(e)
-//log.debug("res:", res)
+log.debug("res:", res)
       assert.equal(res.rows.length, 0)
       done()
     })

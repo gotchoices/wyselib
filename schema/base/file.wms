@@ -1,0 +1,182 @@
+# Entity document files
+#Copyright WyattERP.org; See license in root of this package
+#------------------------------------------
+#TODO:
+#- 
+require base.tcl ../trigview.tcl
+
+namespace eval base {
+    def file_pk		{file_ent file_seq}
+    def file_v_in	{file_ent file_type file_data file_fmt file_cmt file_priv file_prim file_cks}
+    def file_v_up	[lremove $file_v_in file_ent]
+    def file_se		[concat $file_pk $file_v_up $glob::stampfn]
+    def file_types	{photo scan spread write other}
+    def file_local	{}
+}
+
+# Contains an entry for each way of contacting an entity
+#----------------------------------------------------------------
+table base.file {base.ent} {
+    file_ent	text		references base.ent on update cascade on delete cascade
+  , file_seq	int	      , primary key (file_ent, file_seq)
+  , file_data	bytea		not null
+  , file_type	text		not null check(file_type in ('eval(join $base::file_types {','})'))
+  , file_prim	boolean		not null default false
+  , file_fmt	text		not null
+  , file_cmt	text
+  , file_priv	boolean		not null default false
+  , file_cks	bytea		not null
+  , unique (file_ent, file_seq, file_type)		-- Needed for file_prim FK to work
+  , constraint "!base.file.USP" unique (file_ent, file_type, file_cks)
+    subst($base::file_local)	-- locally defined columns
+    subst($glob::stamps)
+}
+index {} base.file file_type
+index {} base.file file_cks
+
+# Stores a pointer indicating which file record is primary for any given type
+#----------------------------------------------------------------
+table base.file_prim {base.file} {
+    prim_ent	text
+  , prim_seq	int
+  , prim_type	text
+  , primary key (prim_ent, prim_seq, prim_type)
+  , constraint file_prim_prim_ent_fk foreign key (prim_ent, prim_seq, prim_type) references base.file (file_ent, file_seq, file_type)
+    on update cascade on delete cascade deferrable
+}
+
+# Make the specified file point primary
+# -----------------------------------------------------------------
+function {base.file_make_prim(ent text, seq int, typ text)} {base.file base.file_prim} {
+  returns void language plpgsql security definer as $$
+    begin
+--raise notice 'Prim it: % % %', ent, seq, typ;
+        update base.file_prim set prim_seq = seq where prim_ent = ent and prim_type = typ;
+        if not found then
+            insert into base.file_prim (prim_ent,prim_seq,prim_type) values (ent,seq,typ);
+        end if;
+    end;
+$$;}
+    
+# Un-make the specified file point primary
+# -----------------------------------------------------------------
+function {base.file_remove_prim(ent text, seq int, typ text)} {base.file base.file_prim} {
+  returns void language plpgsql security definer as $$
+    declare
+        prim_rec	record;
+        file_rec	record;
+    begin
+--raise notice 'Unprim it: % % %', ent, seq, typ;
+        select * into prim_rec from base.file_prim where prim_ent = ent and prim_seq = seq and prim_type = typ;
+        if found then			-- If the file we are deleting was a primary, find the next latest record
+            select * into file_rec from base.file where file_ent = prim_rec.prim_ent and file_type = prim_rec.prim_type and file_seq != seq order by file_seq desc limit 1;
+            if found then		-- And make it the new primary
+--raise notice '  new seq:%', file_rec.file_seq;
+                update base.file_prim set prim_seq = file_rec.file_seq where prim_ent = file_rec.file_ent and prim_type = file_rec.file_type;
+            else
+--raise notice '  nuke:% % %', ent, seq, typ;
+                delete from base.file_prim where prim_ent = ent and prim_seq = seq and prim_type = typ;
+            end if;
+        else
+--raise notice 'Z:% % %', ent, seq, typ;
+        end if;
+    end;
+$$;}
+    
+# Triggers on base.file inserts to make sure there is exactly one primary file for each type
+# -----------------------------------------------------------------
+function base.file_tf_bi() {base.file} {
+  returns trigger language plpgsql security definer as $$
+    begin
+        if new.file_seq is null then			-- Generate unique sequence for new entry
+            update base.ent set _last_file = greatest(coalesce(_last_file,0) + 1,
+              (select coalesce(max(file_seq),0)+1 from base.file where file_ent = new.file_ent)
+            ) where id = new.file_ent returning _last_file into new.file_seq;
+            if not found then new.file_seq = 1; end if;
+-- select into new.file_seq coalesce(max(file_seq),0)+1 from base.file where file_ent = new.file_ent; -- Not safe for concurrency
+        end if;
+        if not exists (select file_seq from base.file where file_ent = new.file_ent and file_type = new.file_type) then
+            new.file_prim = true;			-- First record of its type becomes primary
+        end if;
+        if new.file_prim then				-- If this is primary, all others are now not
+            set constraints base.file_prim_prim_ent_fk deferred;
+            perform base.file_make_prim(new.file_ent, new.file_seq, new.file_type);
+        end if;
+        new.file_prim = false;				-- We don't actually store the status in this field
+        return new;
+    end;
+$$;}
+trigger base_file_tr_bi {} {
+    before insert on base.file for each row execute procedure base.file_tf_bi();
+}
+
+# On update
+# -----------------------------------------------------------------
+function base.file_tf_bu() {base.file} {
+  returns trigger language plpgsql security definer as $$
+    declare
+        prim_it		boolean;			-- Make it primary (tri-state)
+    begin
+        if (not new.file_prim and old.file_prim) then
+            prim_it = false;
+        elsif new.file_prim and not old.file_prim then
+            prim_it = true;
+        end if;
+--raise notice 'X:% % %', old.file_prim, new.file_prim, prim_it;
+        if prim_it then
+            perform base.file_make_prim(new.file_ent, new.file_seq, new.file_type);
+        elsif not prim_it then
+            perform base.file_remove_prim(new.file_ent, new.file_seq, new.file_type);
+        end if;
+        new.file_prim = false;				-- We don't actually store the status here
+        return new;
+    end;
+$$;}
+trigger base_file_tr_bu {} {
+    before update on base.file for each row execute procedure base.file_tf_bu();
+}
+
+# On delete
+# -----------------------------------------------------------------
+function base.file_tf_bd() {base.file} {
+  returns trigger language plpgsql security definer as $$
+    begin
+        perform base.file_remove_prim(old.file_ent, old.file_seq, old.file_type);
+        return old;
+    end;
+$$;}
+trigger base_file_tr_bd {} {
+    before delete on base.file for each row execute procedure base.file_tf_bd();
+}
+
+# Make sure at least one active record is left marked as primary, where possible
+# -----------------------------------------------------------------
+function base.file_tf_aiud() {base.file} {
+  returns trigger language plpgsql security definer as $$
+    begin
+        insert into base.file_prim (prim_ent, prim_seq, prim_type) 
+            select file_ent,max(file_seq),file_type from base.file where not exists (select * from base.file_prim cp where cp.prim_ent = file_ent and cp.prim_type = file_type) group by 1,3;
+        return old;
+    end;
+$$;}
+trigger base_file_tr_aiud {} {
+    after insert or update or delete on base.file for each statement execute procedure base.file_tf_aiud();
+}
+
+#Base file view
+#----------------------------------------------------------------
+view base.file_v {base.file base.ent_v base.file_prim} {
+    select eval(fld_list [lremove $base::file_se file_prim] c)
+      , oe.std_name
+      , cp.prim_seq is not null and cp.prim_seq = c.file_seq	as file_prim
+
+    from	base.file	c
+    join	base.ent_v	oe	on oe.id = c.file_ent
+    left join	base.file_prim	cp	on cp.prim_ent = c.file_ent and cp.prim_type = c.file_type;
+
+    eval(trigview::insert base.file_v base.file $base::file_v_in $base::file_pk $glob::stampin);
+    eval(trigview::update base.file_v base.file $base::file_v_up $base::file_pk $glob::stampup);
+    eval(rule_delete base.file_v base.file $base::file_pk);
+} -grant {
+    {ent	s {i u} d}
+}
