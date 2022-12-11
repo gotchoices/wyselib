@@ -22,7 +22,7 @@ table wylib.data {wylib base.ent base.curr_eid()} {
   , component	text
   , name	text
   , descr	text
-  , access	varchar(5)	not null default 'read' constraint "!wylib.data.IAT" check (access in ('priv', 'read', 'write'))
+  , access	varchar(5)	not null default 'read' constraint "!wylib.data:IAT" check (access in ('priv', 'read', 'write'))
   , owner	text		not null default base.curr_eid() references base.ent on update cascade on delete cascade
   , data	jsonb
     subst($glob::stamps)
