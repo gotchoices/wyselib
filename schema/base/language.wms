@@ -14,3 +14,23 @@ table base.language {base} {
   , fra_name	text		not null
   , iso_2	varchar(2)	unique
 }
+
+# View with added information columns
+#----------------------------------------------------------------
+view base.language_v {base.language} {
+  select l.*,
+  tt.count as tables,
+  ct.count as columns,
+  vt.count as values,
+  mt.count as messages
+  
+  from		base.language	l
+  left join	(select language, count(title) from wm.table_text group by 1) tt
+  		on tt.language = l.code
+  left join	(select language, count(title) from wm.column_text group by 1) ct
+  		on ct.language = l.code
+  left join	(select language, count(title) from wm.value_text group by 1) vt
+  		on vt.language = l.code
+  left join	(select language, count(title) from wm.message_text group by 1) mt
+  		on mt.language = l.code
+}

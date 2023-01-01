@@ -2,10 +2,17 @@
 #------------------------------------------
 require ../common.tcl ../glob.tcl
 
-tabtext base.language	{Languages}		{Contains standard ISO data about international language codes} {
+tabtext base.language	{Languages}		{Contains information  about international ISO language codes} {
     {code		{Language Code}		{The ISO 3-letter language code.  Where a native T-code exists, it is the one used here.}}
     {iso_3b		{Biblio Code}		{The ISO bibliographic 3-letter code for this language}}
     {iso_2		{Code 2}		{The ISO 2-letter code for this language, if it exists}}
     {eng_name		{Name in English}	{The common name of the language English}}
     {fra_name		{Name in French}	{The common name of the language in French}}
+}
+
+tabtext base.language_v	{Languages}		{Contains information about about international ISO language codes} {
+    {tables		{Tables}		{How many database tables are documented in this language}}
+    {columns		{Columns}		{How many database columns are documented in this language}}
+    {values		{Values}		{How many database column values are documented in this language}}
+    {messages		{Messages}		{How many UI messages are documented in this language}}
 }
