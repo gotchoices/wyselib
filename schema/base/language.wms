@@ -33,4 +33,6 @@ view base.language_v {base.language} {
   		on vt.language = l.code
   left join	(select language, count(title) from wm.message_text group by 1) mt
   		on mt.language = l.code
+} -grant {
+  public
 }
