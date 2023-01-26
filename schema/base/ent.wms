@@ -23,7 +23,7 @@ table base.ent {base.country} {
   , ent_cmt	text
   , born_date	date
   , username	text		unique
-  , conn_pub	text
+  , conn_pub	jsonb
   , ent_inact	boolean		not null default false
   , country	varchar(3)	not null default 'US' references base.country on update cascade
   , tax_id	text          , unique(country, tax_id)
