@@ -144,7 +144,7 @@ trigger base_priv_tr_dgrp {} {
 # See if this role (starting with a username) has the specified privilege and level
 # If not, recurse into any role groups he belongs to to see if we can find the priv there
 #----------------------------------------------------------------
-function {base.priv_role(uname name, priv text, lev int)} {base wm.role_members} {
+function {base.priv_role(uname name, prv text, lev int)} {base wm.role_members} {
   returns boolean security definer language plpgsql stable as $$
     declare
       trec	record;
@@ -153,12 +153,12 @@ function {base.priv_role(uname name, priv text, lev int)} {base wm.role_members}
         return true;
       end if;
       for trec in 
-        select role, member, priv, level from wm.role_members rm where member = uname and rm.priv = priv or rm.level is null order by rm.level desc loop
-raise notice 'Checking % % % % %', uname, trec.role, trec.priv, trec.level, trec.member;
-          if trec.rpriv = priv and trec.level >= lev then
+        select role, member, priv, level from wm.role_members rm where member = uname and rm.priv = prv or rm.level is null order by rm.level desc loop
+--raise notice 'Checking % % % % %', uname, trec.role, trec.priv, trec.level, trec.member;
+          if trec.priv = prv and trec.level >= lev then
               return true;
           elsif trec.level is null then
-              if base.priv_role(trec.role, priv, lev) then return true; end if;
+              if base.priv_role(trec.role, prv, lev) then return true; end if;
           end if;
         end loop;
         return false;
