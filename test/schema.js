@@ -51,7 +51,7 @@ describe("Schema: Build DB schema files", function() {
   it('Should have expected wyselib column text descriptions', function(done) {
     let sql = "select * from wm.column_text where ct_sch = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 190)
+      assert.equal(res.rows.length, 194)
       done()
     })
   })
@@ -59,7 +59,7 @@ describe("Schema: Build DB schema files", function() {
   it('should have expected wyselib column defaults', function(done) {
     let sql = "select * from wm.column_def where obj ~ '^base.'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 294)
+      assert.equal(res.rows.length, 303)
       done()
     })
   })
@@ -91,7 +91,7 @@ log.debug("res:", res)
       done()
     })
   })
-
+/* */
   after('Disconnect from test database', function(done) {
     db.disconnect()
     done()

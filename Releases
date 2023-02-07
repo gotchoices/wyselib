@@ -1,5 +1,9 @@
 Change Log:
 
+1.0.27	2023-Feb
+	- Allow storing multiple connection keys
+	- Can store general files relational to entities
+
 1.0.24	2022-Sep
 	- Updates to track with other packages
 
