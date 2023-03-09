@@ -6,15 +6,43 @@
 require base.tcl
 schema base -grant public
 
-# Table of countries
+# National currencies
 #----------------------------------------------------------------
-table base.country {base} {
-    code	varchar(2)	primary key
-  , com_name	text		not null unique
+table base.currency {base} {
+    cur_code	varchar(3)	primary key
+  , cur_name	text		not null unique
+  , cur_numb	int
+}
+
+# Currency exchange rates
+#----------------------------------------------------------------
+table base.exchange {base.currency} {
+    curr	text		references base.currency
+  , base	text		references base.currency
+  , rate	numeric(10,4)	not null
+  , sample	date		, primary key (curr, base, sample)
+}
+
+# Countries the world
+#----------------------------------------------------------------
+table base.country {base.currency} {
+    co_code	varchar(2)	primary key
+  , co_name	text		not null unique
   , capital	text
-  , cur_code	varchar(4)	not null
-  , cur_name	text		not null 
+  , cur_code	varchar		not null references base.currency
   , dial_code	varchar(20)
   , iso_3	varchar(4)	not null unique
   , iana	varchar(6)
+}
+
+# View with added information columns
+#----------------------------------------------------------------
+view base.country_v {base.currency base.country} {
+  select co.*,
+  cu.cur_name, cu.cur_numb
+  
+  from		base.country	co
+  join		base.currency	cu on cu.cur_code = co.cur_code
+} -grant {
+  public
 }

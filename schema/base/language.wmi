@@ -1,47 +1,38 @@
-#!/usr/bin/env ruby
-# Function to initialize data in the language table
-#Copyright WyattERP.org; See license in root of this package
-#------------------------------------------
-# Get data file using: 
-#wget -q https://datahub.io/core/language-codes/r/language-codes-full.csv
+#!/usr/bin/env node
+// Function to initialize data in the language table
+//Copyright WyattERP.org; See license in root of this package
+// ------------------------------------------
+// See: https://datahub.io/core/language-codes
+const url = 'https://datahub.io/core/language-codes/r/language-codes-full.csv'
+const Format = require('pg-format')
+global.fetch = require('node-fetch')
+const dbFields = ['code','iso_3b','iso_2','eng_name','fra_name']
+const csvFields = [				//Fields we pull from datahub file
+  'alpha3-b',
+  'alpha3-t',
+  'alpha2',
+  'English',
+  'French',
+]
 
-require 'csv'
-$stderr = StringIO.new			#To suppress printing of stderr
+async function main() {
+  let { csv } = await import('d3-fetch')
+    , outRows = []
+  console.log(`insert into base.language (${dbFields.join(',')}) values`)
+  await csv(url, (row) => {
+    row['alpha3-t'] ||= row['alpha3-b']			//In case no t-code given
 
-done = []
-qlist = []
-file = File.join(File.dirname(__FILE__),'language-codes-full.csv')
-n = 1
+    let rarr = csvFields.map(el => {	//Pull selected fields from csv data
+      if (row[el]) return `${Format.literal(row[el])}`
+      else return 'null'
+    })
 
-CSV.parse(File.read(file).scrub) {|row|
-  alpha3b, alpha3t, alpha2, english, french = row
-#p row
-  code = alpha3t || alpha3b
-  next if alpha3b == 'alpha3-b'		#Skip header
-  alpha2 = nil if alpha2 == ''
-  if code.length != 3
-    $stderr.puts 'Skipping bad language code: ' + code + ' line:' + n.to_s; next
-  end
-  if !english || english == ''
-    $stderr.puts 'Skipping blank english at line:' + n; next
-  end
-  if !french || french == ''
-    $stderr.puts 'Skipping blank french at line:' + n; next
-  end
-  if done.any? {|w| w == code} 
-    $stderr.puts 'Skipping duplicate: ' + code + ' line:' + n; next
-  end
-  done << code				#Keep track of what we've done
-#p code, english, french
-  qlist << " ('#{code.gsub("'","''")}' \
- , '#{alpha3b.gsub("'","''")}' \
- , #{alpha2 ? "'"+alpha2.to_s.gsub("'","''")+"'" : "null"} \
- , '#{english.to_s.gsub("'","''")}' \
- , '#{french.to_s.gsub("'","''")}')"
-  n += 1
+    if (rarr[0] && rarr[0] != "'zxx'" && rarr[0].length == 5)
+      outRows.push(`  (${rarr})`)
+  })
+  
+  console.log(outRows.join(",\n"))
+  console.log("on conflict do nothing;")
 }
-#p qlist
 
-puts "insert into base.language (code,iso_3b,iso_2,eng_name,fra_name) values\n"
-puts qlist.join(",\n") + "\n"
-puts "on conflict do nothing;"
+main()

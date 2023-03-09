@@ -20,7 +20,7 @@ describe("Schema: Build DB schema files", function() {
   })
 
   before('Build schema database', function(done) {
-    this.timeout(4000)				//Build may be a little slow
+    this.timeout(10000)				//Build may be a little slow
     Child.exec("wyseman objects text defs init", {cwd: __dirname}, (e) => {done(e)})
   })
 
@@ -31,7 +31,7 @@ describe("Schema: Build DB schema files", function() {
     })
   })
 
-  it('Should have 9 wyseman tables built', function(done) {
+  it('Should have expected wyseman tables built', function(done) {
     let sql = "select * from pg_tables where schemaname = 'wm'"
     db.query(sql, null, (e, res) => {if (e) done(e)
 //log.debug("Tables:", res.rows)
@@ -40,10 +40,10 @@ describe("Schema: Build DB schema files", function() {
     })
   })
 
-  it('Should have 15 wyselib tables built', function(done) {
+  it('Should have expected wyselib tables built', function(done) {
     let sql = "select * from pg_tables where schemaname = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 15)
+      assert.equal(res.rows.length, 17)
       done()
     })
   })
@@ -51,7 +51,7 @@ describe("Schema: Build DB schema files", function() {
   it('Should have expected wyselib column text descriptions', function(done) {
     let sql = "select * from wm.column_text where ct_sch = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 194)
+      assert.equal(res.rows.length, 200)
       done()
     })
   })
@@ -59,7 +59,7 @@ describe("Schema: Build DB schema files", function() {
   it('should have expected wyselib column defaults', function(done) {
     let sql = "select * from wm.column_def where obj ~ '^base.'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 303)
+      assert.equal(res.rows.length, 318)
       done()
     })
   })
@@ -67,7 +67,7 @@ describe("Schema: Build DB schema files", function() {
   it('should have expected rows in base.countries', function(done) {
     let sql = "select * from base.country"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 242)
+      assert.equal(res.rows.length, 249)
       done()
     })
   })

@@ -2,13 +2,27 @@
 #------------------------------------------
 require ../common.tcl ../glob.tcl
 
+tabtext base.currency	{Currencies}		{Standard ISO data about international currencies} {
+    {cur_code		{Currency Code}		{The standard code for this currency}}
+    {cur_name		{Currency Name}		{The common name in English of this currency}}
+    {cur_numb		{Currency Number}	{The numeric code for this currency}}
+}
+
+tabtext base.exchange	{Exchange Rates}	{Exchange rates between international currencies} {
+    {curr		{Currency}		{The code for the subject currency}}
+    {base		{Comparison}		{The code for another currency being compared to}}
+    {rate		{Rate}			{The amount of the subject currency equal to one unit of the comparison currency}}
+    {sample		{Sample Date}		{The date this exchange rate applies to}}
+}
+
 tabtext base.country	{Countries}		{Contains standard ISO data about international countries} {
-    {code		{Country Code}		{The ISO 2-letter country code.  This is the offical value to use when entering countries in wylib applications.}}
-    {com_name		{Country}		{The common name of the country in English}}
+    {co_code		{Country Code}		{The ISO 2-letter country code.  This is the offical value to use when entering countries in wylib applications.}}
+    {co_name		{Country}		{The common name of the country in English}}
     {capital		{Capital}		{The name of the capital city}}
-    {cur_code		{Currency}		{The standard code for the currency of this country}}
-    {cur_name		{Curr Name}		{The common name in English of the currency of this country}}
+    {cur_code		{Currency Code}		{The standard code for the currency of this country}}
     {dial_code		{Dial Code}		{The numeric code to dial when calling this country on the phone}}
     {iso_3		{Code 3}		{The ISO 3-letter code for this country (not the wylib standard)}}
     {iana		{Root Domain}		{The standard extension for WWW domain names for this country}}
 }
+
+tabtext base.country_v	{Countries}		{View of standard ISO data about international countries and currencies}
