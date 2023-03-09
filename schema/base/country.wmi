@@ -22,11 +22,19 @@ const cuCsvFields = [				//Fields we pull from datahub file
   'curName',
   'curNum'
 ]
+const CurPlug = [
+  "('XDR', 'Special Drawing Rights', '960')",
+  "('XAG', 'Silver, Troy oz', '961')",
+  "('XAU', 'Gold, Troy oz', '959')",
+  "('XPD', 'Palladium, Troy oz', '964')",
+  "('XPT', 'Platinum, Troy oz', '962')",
+  "('XCH', 'CHIP', '999')",
+]
 
 async function main() {
   let { csv } = await import('d3-fetch')
     , outRows = []
-    , curRows = []
+    , curRows = CurPlug.slice()
     , currencies = {}
 
   await csv(url, (row) => {
@@ -55,17 +63,22 @@ async function main() {
         if (row[el]) return `${Format.literal(row[el])}`
         else return 'null'
       })
-      curRows.push(`  (${carr})`)
+      if (!currencies[row.curCode]) {
+        currencies[row.curCode] = true
+        curRows.push(`  (${carr})`)
+      }
     }
   })
 
   console.log(`insert into base.currency (${cuDbFields.join(',')}) values`)
-    console.log(curRows.join(",\n"))
-  console.log("on conflict do nothing;")
+  console.log(curRows.join(",\n"))
+  console.log("on conflict on constraint currency_pkey ")
+  console.log("do update set cur_name = EXCLUDED.cur_name, cur_numb = EXCLUDED.cur_numb;")
 
   console.log(`insert into base.country (${cnDbFields.join(',')}) values`)
   console.log(outRows.join(",\n"))
-  console.log("on conflict do nothing;")
+  console.log("on conflict on constraint country_pkey ")
+  console.log("do update set co_name = EXCLUDED.co_name, capital = EXCLUDED.capital, cur_code = EXCLUDED.cur_code, dial_code = EXCLUDED.dial_code, iso_3 = EXCLUDED.iso_3, iana = EXCLUDED.iana;")
 }
 
 main()
