@@ -19,7 +19,7 @@ table base.currency {base} {
 table base.exchange {base.currency} {
     curr	text		references base.currency
   , base	text		default 'USD' references base.currency
-  , rate	numeric(12,4)	not null
+  , rate	float8		not null
   , sample	date		default current_date
   , primary key (curr, base, sample)
 }

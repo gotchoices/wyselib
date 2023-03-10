@@ -7,6 +7,7 @@ const { TestDB, DBAdmin } = require('./settings')
 require('./schema.js')
 require('./addr.js')
 require('./comm.js')
+require('./currency.js')
 //require('./language.js')
 
 after('Delete sample database', function(done) {

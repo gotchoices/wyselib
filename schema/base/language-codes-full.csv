@@ -56,7 +56,7 @@ bik,,,Bikol,bikol
 bin,,,Bini; Edo,bini; edo
 bis,,bi,Bislama,bichlamar
 bla,,,Siksika,blackfoot
-bnt,,,Bantu (Other),"bantoues, autres langues"
+bnt,,,Bantu languages,"bantou, langues"
 bos,,bs,Bosnian,bosniaque
 bra,,,Braj,braj
 bre,,br,Breton,breton
@@ -325,7 +325,7 @@ nym,,,Nyamwezi,nyamwezi
 nyn,,,Nyankole,nyankolé
 nyo,,,Nyoro,nyoro
 nzi,,,Nzima,nzema
-oci,,oc,Occitan (post 1500); Provençal,occitan (après 1500); provençal
+oci,,oc,Occitan (post 1500),occitan (après 1500)
 oji,,oj,Ojibwa,ojibwa
 ori,,or,Oriya,oriya
 orm,,om,Oromo,galla
@@ -349,7 +349,7 @@ pol,,pl,Polish,polonais
 pon,,,Pohnpeian,pohnpei
 por,,pt,Portuguese,portugais
 pra,,,Prakrit languages,"prâkrit, langues"
-pro,,,"Provençal, Old (to 1500)",provençal ancien (jusqu'à 1500)
+pro,,,"Provençal, Old (to 1500); Occitan, Old (to 1500)",provençal ancien (jusqu'à 1500); occitan ancien (jusqu'à 1500)
 pus,,ps,Pushto; Pashto,pachto
 qaa-qtz,,,Reserved for local use,réservée à l'usage local
 que,,qu,Quechua,quechua
@@ -366,7 +366,7 @@ rus,,ru,Russian,russe
 sad,,,Sandawe,sandawe
 sag,,sg,Sango,sango
 sah,,,Yakut,iakoute
-sai,,,South American Indian (Other),"indiennes d'Amérique du Sud, autres langues"
+sai,,,South American Indian languages,"sud-amérindiennes, langues"
 sal,,,Salishan languages,"salishennes, langues"
 sam,,,Samaritan Aramaic,samaritain
 san,,sa,Sanskrit,sanskrit
@@ -462,7 +462,7 @@ vie,,vi,Vietnamese,vietnamien
 vol,,vo,Volapük,volapük
 vot,,,Votic,vote
 wak,,,Wakashan languages,"wakashanes, langues"
-wal,,,Walamo,walamo
+wal,,,Wolaitta; Wolaytta,wolaitta; wolaytta
 war,,,Waray,waray
 was,,,Washo,washo
 wel,cym,cy,Welsh,gallois

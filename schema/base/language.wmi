@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 // Function to initialize data in the language table
+// Delete the cached data and re-run to re-fetch from the URL shown below
 //Copyright WyattERP.org; See license in root of this package
 // ------------------------------------------
 // See: https://datahub.io/core/language-codes
-const url = 'https://datahub.io/core/language-codes/r/language-codes-full.csv'
+const Fs = require('fs')
+const Path = require('path')
 const Format = require('pg-format')
-global.fetch = require('node-fetch')
+const Fetch = require('node-fetch')
+const { parse } = require('csv-parse')
+const url = 'https://datahub.io/core/language-codes/r/language-codes-full.csv'
+const fileCache = Path.join(__dirname, Path.basename(url))
 const dbFields = ['code','iso_3b','iso_2','eng_name','fra_name']
 const csvFields = [				//Fields we pull from datahub file
   'alpha3-b',
@@ -16,23 +21,32 @@ const csvFields = [				//Fields we pull from datahub file
 ]
 
 async function main() {
-  let { csv } = await import('d3-fetch')
-    , outRows = []
-  console.log(`insert into base.language (${dbFields.join(',')}) values`)
-  await csv(url, (row) => {
-    row['alpha3-t'] ||= row['alpha3-b']			//In case no t-code given
+    let outRows = []
+    , contents
 
-    let rarr = csvFields.map(el => {	//Pull selected fields from csv data
-      if (row[el]) return `${Format.literal(row[el])}`
-      else return 'null'
+  if (Fs.existsSync(fileCache)) {		//If we have the file cached
+    contents = Fs.readFileSync(fileCache)	//Just read it
+  } else {
+    let res = await Fetch(url)			//Otherwise, try to download it
+    contents = await res.text()
+    Fs.writeFile(fileCache, contents, ()=>{})
+  }
+  parse(contents, {columns: true}, (err, rows) => {
+    rows.forEach(row => {
+      row['alpha3-t'] ||= row['alpha3-b']	//In case no t-code given
+
+      let rarr = csvFields.map(el => {		//Pull selected fields from csv data
+        if (row[el]) return `${Format.literal(row[el])}`
+        else return 'null'
+      })
+
+      if (rarr[0] && rarr[0] != "'zxx'" && rarr[0].length == 5)
+        outRows.push(`  (${rarr})`)
     })
-
-    if (rarr[0] && rarr[0] != "'zxx'" && rarr[0].length == 5)
-      outRows.push(`  (${rarr})`)
+    console.log(`insert into base.language (${dbFields.join(',')}) values`)
+    console.log(outRows.join(",\n"))
+    console.log("on conflict do nothing;")
   })
-  
-  console.log(outRows.join(",\n"))
-  console.log("on conflict do nothing;")
 }
 
 main()

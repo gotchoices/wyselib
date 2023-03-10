@@ -3,9 +3,13 @@
 //Copyright WyattERP.org; See license in root of this package
 // ------------------------------------------
 // See: https://datahub.io/core/country-codes
-const url = 'https://datahub.io/core/country-codes/r/country-codes.csv'
+const Fs = require('fs')
+const Path = require('path')
 const Format = require('pg-format')
-global.fetch = require('node-fetch')
+const Fetch = require('node-fetch')
+const { parse } = require('csv-parse')
+const url = 'https://datahub.io/core/country-codes/r/country-codes.csv'
+const fileCache = Path.join(__dirname, Path.basename(url))
 const cnDbFields = ['co_code','co_name','capital','cur_code','dial_code','iso_3','iana']
 const cnCsvFields = [				//Fields we pull from datahub file
   'ISO3166-1-Alpha-2',
@@ -23,62 +27,80 @@ const cuCsvFields = [				//Fields we pull from datahub file
   'curNum'
 ]
 const CurPlug = [
-  "('XDR', 'Special Drawing Rights', '960')",
-  "('XAG', 'Silver, Troy oz', '961')",
-  "('XAU', 'Gold, Troy oz', '959')",
-  "('XPD', 'Palladium, Troy oz', '964')",
-  "('XPT', 'Platinum, Troy oz', '962')",
-  "('XCH', 'CHIP', '999')",
+  "  ('BTN', 'Bhutanese ngultrum', '064')",
+  "  ('FKP', 'Falkland Islands pound', '238')",
+  "  ('FOK', 'Faroese króna', null)",
+  "  ('GGP', 'Guernsey Pounds', null)",
+  "  ('IMP', 'Manx pound', null)",
+  "  ('JEP', 'Jersey pound', null)",
+  "  ('KID', 'Kiribati dollar', null)",
+  "  ('SLE', 'Sierra Leonean Leone', '925')",
+  "  ('TVD', 'Tuvaluan dollar', null)",
+  "  ('XDR', 'Special Drawing Rights', '960')",
+  "  ('XAG', 'Silver, Troy oz', '961')",
+  "  ('XAU', 'Gold, Troy oz', '959')",
+  "  ('XPD', 'Palladium, Troy oz', '964')",
+  "  ('XPT', 'Platinum, Troy oz', '962')",
+  "  ('XCH', 'CHIP', '999')",
 ]
 
 async function main() {
-  let { csv } = await import('d3-fetch')
-    , outRows = []
+  let outRows = []
     , curRows = CurPlug.slice()
     , currencies = {}
+    , contents
 
-  await csv(url, (row) => {
-    row.curCode = row['ISO4217-currency_alphabetic_code'].split(',')[0]	//If multiple currencies
-    row.curName = row['ISO4217-currency_name'].split(',')[0]		//;console.log('c:', row.curCode, row.curName)
-    row.curNum = row['ISO4217-currency_numeric_code'].split(',')[0]
+  if (Fs.existsSync(fileCache)) {		//If we have the file cached
+    contents = Fs.readFileSync(fileCache)	//Just read it
+  } else {
+    let res = await Fetch(url)			//Otherwise, try to download it
+    contents = await res.text()
+    Fs.writeFile(fileCache, contents, ()=>{})
+  }
+  parse(contents, {columns: true}, (err, rows) => {
+    rows.forEach(row => {
+      row.curCode = row['ISO4217-currency_alphabetic_code'].split(',')[0]	//If multiple currencies
+      row.curName = row['ISO4217-currency_name'].split(',')[0]		//;console.log('c:', row.curCode, row.curName)
+      row.curNum = row['ISO4217-currency_numeric_code'].split(',')[0]
 
-    if (row['ISO3166-1-Alpha-2']) {					//Data in this record
-      if (row['CLDR display name'] == 'Taiwan' && !row.curCode) {	//Hack for missing Taiwan data
-        row.curCode = 'TWD'
-        row.curName = 'New Taiwan Dollar'
-        row.curNum = 901
-      } else if (!row.curCode) {			//Hack for Antarctica (and anything else missing)
-        row.curCode = 'USD'
-        row.curName = 'Dollar'
-        row.curNum = 840
-      }
+      if (row['ISO3166-1-Alpha-2']) {					//Data in this record
+        if (row['CLDR display name'] == 'Taiwan' && !row.curCode) {	//Hack for missing Taiwan data
+          row.curCode = 'TWD'
+          row.curName = 'New Taiwan Dollar'
+          row.curNum = 901
+        } else if (!row.curCode) {			//Hack for Antarctica (and anything else missing)
+          row.curCode = 'USD'
+          row.curName = 'Dollar'
+          row.curNum = 840
+        }
 
-      let rarr = cnCsvFields.map(el => {		//Pull selected fields from csv data
-        if (row[el]) return `${Format.literal(row[el])}`
-        else return 'null'
-      })
-      outRows.push(`  (${rarr})`)
+        let rarr = cnCsvFields.map(el => {		//Pull selected fields from csv data
+          if (row[el]) return `${Format.literal(row[el])}`
+          else return 'null'
+        })
+        outRows.push(`  (${rarr})`)
       
-      let carr = cuCsvFields.map(el => {		//Pull selected fields from csv data
-        if (row[el]) return `${Format.literal(row[el])}`
-        else return 'null'
-      })
-      if (!currencies[row.curCode]) {
-        currencies[row.curCode] = true
-        curRows.push(`  (${carr})`)
+        let carr = cuCsvFields.map(el => {		//Pull selected fields from csv data
+          if (row[el]) return `${Format.literal(row[el])}`
+          else return 'null'
+        })
+        if (!currencies[row.curCode]) {
+          currencies[row.curCode] = true
+          curRows.push(`  (${carr})`)
+        }
       }
-    }
+    })
+    
+    console.log(`insert into base.currency (${cuDbFields.join(',')}) values`)
+    console.log(curRows.join(",\n"))
+    console.log("on conflict on constraint currency_pkey ")
+    console.log("do update set cur_name = EXCLUDED.cur_name, cur_numb = EXCLUDED.cur_numb;")
+
+    console.log(`insert into base.country (${cnDbFields.join(',')}) values`)
+    console.log(outRows.join(",\n"))
+    console.log("on conflict on constraint country_pkey ")
+    console.log("do update set co_name = EXCLUDED.co_name, capital = EXCLUDED.capital, cur_code = EXCLUDED.cur_code, dial_code = EXCLUDED.dial_code, iso_3 = EXCLUDED.iso_3, iana = EXCLUDED.iana;")
   })
-
-  console.log(`insert into base.currency (${cuDbFields.join(',')}) values`)
-  console.log(curRows.join(",\n"))
-  console.log("on conflict on constraint currency_pkey ")
-  console.log("do update set cur_name = EXCLUDED.cur_name, cur_numb = EXCLUDED.cur_numb;")
-
-  console.log(`insert into base.country (${cnDbFields.join(',')}) values`)
-  console.log(outRows.join(",\n"))
-  console.log("on conflict on constraint country_pkey ")
-  console.log("do update set co_name = EXCLUDED.co_name, capital = EXCLUDED.capital, cur_code = EXCLUDED.cur_code, dial_code = EXCLUDED.dial_code, iso_3 = EXCLUDED.iso_3, iana = EXCLUDED.iana;")
 }
 
 main()
