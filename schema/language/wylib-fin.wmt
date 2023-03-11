@@ -1,0 +1,22 @@
+# Currently purely for language testing purposes
+
+tabtext wylib.data -lang fin {GUI Data} {Wylib-näkymäkomponenttien käyttämät konfigurointi- ja asetustiedot} {
+    {ruid		{Tunnistaa}		{Kullekin datatietueelle tuotettu yksilöllinen ID-numero}}
+    {component		{Komponentti}		{GUI:n osa joka käyttää tämä data}}
+    {access		{Pääsy}		{Kuka saa käyttää näitä tietoja ja miten} {
+        {priv		{Yksityinen}		{Vain näiden tietojen omistaja voi lukea, kirjoittaa tai poistaa sen}}
+        {read		{Julkinen Lukea}	{Omistaja voi lukea ja kirjoittaa, kaikki muut voivat lukea tai nähdä sen}}
+        {write		{Julkinen Kirjoittaa}	{Jokainen voi lukea, kirjoittaa tai poistaa näitä tietoja}}
+    }}
+} -mess {
+    {IAT		{Virheellinen käyttötyyppi}	{Käytön tyypin on oltava: priv, lukea tai kirjoittaa}}
+    {dbpMenu		{Esikatselu}		{Toimintojen valikko, joka toimii alla olevassa esikatselussa}}
+    {dbpReload		{Ladata}		{Päivitä edellisessä kuormassa määritetyt tietueet}}
+    {dbpLoad		{Ladata Oletus}		{Aseta tässä näkymässä näkyvät kirjaukset oletuksena}}
+    {dbpLoadAll		{Loadata Kaikki}	{Lataa kaikki taulukon tiedot}}
+    {dbpFilter		{Suodattaa}		{Lataa tietueet suodatuskriteerien mukaisesti}}
+    {dbpVisible		{Näkyvyys}		{Sarakkeiden valikko, josta voit päättää, mitkä näkyvät esikatselussa}}
+    {dbpVisCheck	{Ilmoita näkyvyydestä}	{Kirjoita tämä ruutu näkyviin, jotta tämä sarake voidaan näyttää}}
+    {dbpFooter		{Yhteenveto}		{Ota ruutuun käyttöön sarakeyhteenveto}}
+    {dbeActions		{Tehköjä}		{Tehdä muutamia asioita tämän mukaisesti}}
+}
