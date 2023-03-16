@@ -51,7 +51,7 @@ describe("Schema: Build DB schema files", function() {
   it('Should have expected wyselib column text descriptions', function(done) {
     let sql = "select * from wm.column_text where ct_sch = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 200)
+      assert.equal(res.rows.length, 198)
       done()
     })
   })
@@ -91,6 +91,19 @@ log.debug("res:", res)
       done()
     })
   })
+
+  it('find stray text for non-existent columns', function(done) {
+    let sql = `select * from wm.column_text ct where not exists (
+      select * from wm.column_lang cl 
+        where cl.sch = ct.ct_sch and cl.tab = ct.ct_tab and cl.col = ct.ct_col)`
+log.debug("Sql:", sql)
+    db.query(sql, (e, res) => {if (e) done(e)
+log.debug("res:", res)
+      assert.equal(res.rows.length, 0)
+      done()
+    })
+  })
+
 /* */
   after('Disconnect from test database', function(done) {
     db.disconnect()

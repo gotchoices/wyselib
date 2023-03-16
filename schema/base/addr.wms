@@ -2,7 +2,6 @@
 #Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
 #TODO:
-#- Get rid of dirty
 #- 
 require base.tcl ../trigview.tcl
 
@@ -172,7 +171,7 @@ trigger base_addr_tr_aiud {} {
 #----------------------------------------------------------------
 view base.addr_v {base.addr base.ent_v base.addr_prim} {
     select eval(fld_list [lremove $base::addr_se addr_prim] a)
-      , oe.std_name
+      , oe.std_name						as std_name
       , ap.prim_seq is not null and ap.prim_seq = a.addr_seq	as addr_prim
 
     from	base.addr	a
@@ -184,6 +183,8 @@ view base.addr_v {base.addr base.ent_v base.addr_prim} {
     eval(rule_delete base.addr_v base.addr $base::addr_pk);
 } -grant {
     {ent	s {i u} d}
+} -native {
+    {base.addr_v	std_name}
 }
 
 # Base address view to join with ent to make a flat view

@@ -27,13 +27,12 @@ tabtext base.comm	{Communication}		{Communication points (phone, email, fax, etc
 
 tabtext base.comm_v	{Communication}		{View of users' communication points (phone, email, fax, etc.) with additional helpful fields} {
     {std_name		{Entity Name}		{The name of the entity this communication point pertains to}}
-    {comm_prim		{Primary}		{If true this is the primary method of this type for contacting this entity}}
+    {comm_prim		{Primary}               {If true this is the primary method of this type for contacting this entity}}
 }
 
 tabtext base.comm_prim	{Primary Communication}	{Internal table to track which communication point is the main one for each given type} {
     {prim_ent		{Entity}		{The entity ID number of the main communication point}}
     {prim_seq		{Sequence}		{The sequence number of the main communication point}}
-    {prim_spec		{Medium}		{The communication type this record applies to}}
     {prim_type		{type}			{The communication type this record applies to}}
 }
 

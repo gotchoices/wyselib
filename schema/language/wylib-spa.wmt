@@ -1,44 +1,3 @@
-tabtext base.language_v -lang spa {Lenguajes} {Contiene información sobre los códigos de idioma ISO internacionales} {
-}
-
-tabtext base.country -lang spa {Paises} {Contiene datos ISO estándar sobre países internacionales} {
-}
-
-tabtext base.file -lang spa {Archivos de documentos} {Archivos de documentos (fotos, archivos informáticos, etc.) para entidades} {
-} -messages {
-  {USP {Duplicado} {Solo debe haber un archivo para cada tipo y suma de verificación por separado}}
-}
-
-tabtext base.ent_link -lang spa {Enlaces de entidad} {Enlaces para mostrar cómo una entidad (como un empleado) está vinculada a otra (como su empresa)} {
-} -messages {
-  {NBP {Organización de entidad ilegal} {Una entidad personal no puede ser una organización (y tener entidades miembros)}}
-  {PBC {Miembro de entidad ilegal} {Solo las entidades personales pueden pertenecer a entidades societarias}}
-}
-
-tabtext base.ent -lang spa {Entidades} {Entidades, que pueden ser una persona, una empresa o un grupo} {
-} -messages {
-  {CBD {Fecha de nacimiento} {Se requiere una fecha de nacimiento para las personas internas}}
-  {CFN {Primer Nombre} {Se requiere un nombre para entidades personales}}
-  {CGN {Género} {El género no debe especificarse para entidades no personales.}}
-  {CMN {Segundo nombre} {Un segundo nombre está prohibido para entidades no personales.}}
-  {CMS {Marital} {No se debe especificar el estado civil para las entidades no personales}}
-  {CPA {dirección principal} {Una dirección principal debe estar activa}}
-  {CPN {Nombre Preferido} {Un nombre preferido está prohibido para entidades no personales.}}
-  {CTI {Titulo} {Un título preferente está prohibido para entidades no personales}}
-}
-
-tabtext base.language -lang spa {Lenguajes} {Contiene información sobre los códigos de idioma ISO internacionales} {
-}
-
-tabtext base.comm -lang spa {Comunicación} {Puntos de comunicación (teléfono, email, fax, etc.) para entidades} {
-} -messages {
-  {CPC {Primario} {Debe haber al menos un punto de comunicación de cada tipo marcado como principal}}
-  {USP {Duplicado} {Solo debe haber un registro de comunicación para cada tipo y número/dirección por separado}}
-}
-
-tabtext base.ent_audit -lang spa {Auditoría de Entidades} {Tabla de seguimiento de cambios en la tabla de entidades} {
-}
-
 tabtext base.addr -lang spa {Direcciones} {Direcciones (domicilio, postal, etc.) pertenecientes a entidades} {
   {addr_ent {identificación de la entidad} {El número de identificación de la entidad a la que se aplica esta dirección}}
   {addr_seq {Secuencia} {Un número único asignado a cada nueva dirección para una entidad dada}}
@@ -51,6 +10,7 @@ tabtext base.addr -lang spa {Direcciones} {Direcciones (domicilio, postal, etc.)
   }}
   {addr_prim {Primario} {Esta dirección ya no es una dirección válida}}
   {addr_cmt {comentario} {Cualquier otra nota sobre esta dirección}}
+  {addr_inact {Inactivo} {}}
   {addr_priv {Privado} {Esta dirección no debe compartirse públicamente}}
   {city {Ciudad} {El nombre de la ciudad en la que se encuentra esta dirección}}
   {state {Estado} {El nombre del estado o provincia en el que se encuentra esta dirección}}
@@ -66,39 +26,57 @@ tabtext base.addr -lang spa {Direcciones} {Direcciones (domicilio, postal, etc.)
   {USP {Duplicado} {Solo debe haber un registro para cada tipo y dirección por separado}}
 }
 
-tabtext base.parm -lang spa {Parámetros del sistema} {Contiene configuraciones de parámetros de varios tipos para configurar y controlar varios módulos en la base de datos} {
+tabtext base.addr_prim -lang spa {Direccion Primaria} {Tabla interna para rastrear qué dirección es la principal para cada tipo dado} {
 }
 
-tabtext base.token -lang spa {Fichas de acceso} {Almacena códigos de acceso que permiten a los usuarios conectarse por primera vez} {
-}
-
-tabtext base.priv -lang spa {Privilegios} {Permisos asignados a cada usuario del sistema que definen qué tareas pueden realizar y a qué objetos de la base de datos pueden acceder} {
-} -messages {
-  {CLV {Nivel ilegal} {El nivel de privilegio debe ser nulo o un entero positivo entre 1 y 9}}
-}
-
-tabtext base.ent_link_v -lang spa {Enlaces de entidad} {Una vista que muestra vínculos para mostrar cómo una entidad (como un empleado) está vinculada a otra (como su empresa), además de los nombres derivados de las entidades} {
-}
-
-tabtext base.comm_v_flat -lang spa {Entidades Planas} {Una vista aplanada de entidades que muestra sus puntos de contacto estándar primarios} {
+tabtext base.addr_v -lang spa {direcciones} {Una vista de direcciones (domicilio, postal, etc.) pertenecientes a entidades, con campos derivados adicionales} {
+  {std_name {Nombre de la entidad} {El nombre de la entidad a la que pertenece esta dirección}}
+  {addr_prim {Primario} {Si es verdadero, esta es la dirección principal para contactar a esta entidad}}
 }
 
 tabtext base.addr_v_flat -lang spa {Entidades Planas} {Vista plana de entitadades illustrando su direccion estandar primaria } {
 }
 
-tabtext base.parm_audit -lang spa {Auditoría de parámetros} {Tabla de seguimiento de cambios en la tabla de parámetros} {
-}
-
-tabtext base.file_prim -lang spa {Archivos primarios} {Tabla interna para rastrear qué archivo es el principal para cada tipo dado} {
+tabtext base.comm -lang spa {Comunicación} {Puntos de comunicación (teléfono, email, fax, etc.) para entidades} {
+} -messages {
+  {CPC {Primario} {Debe haber al menos un punto de comunicación de cada tipo marcado como principal}}
+  {USP {Duplicado} {Solo debe haber un registro de comunicación para cada tipo y número/dirección por separado}}
 }
 
 tabtext base.comm_prim -lang spa {Comunicación Primaria} {Tabla interna para rastrear qué punto de comunicación es el principal para cada tipo dado} {
 }
 
-tabtext base.addr_prim -lang spa {Direccion Primaria} {Tabla interna para rastrear qué dirección es la principal para cada tipo dado} {
+tabtext base.comm_v -lang spa {Comunicación} {Vista de los puntos de comunicación de los usuarios (teléfono, correo electrónico, fax, etc.) con campos útiles adicionales} {
 }
 
-tabtext base.ent_v_pub -lang spa {Entitades Publicas} {Una vista de Entidades desde las cuales el usuario puede acceder a cierta información pública} {
+tabtext base.comm_v_flat -lang spa {Entidades Planas} {Una vista aplanada de entidades que muestra sus puntos de contacto estándar primarios} {
+}
+
+tabtext base.country -lang spa {Paises} {Contiene datos ISO estándar sobre países internacionales} {
+}
+
+tabtext base.ent -lang spa {Entidades} {Entidades, que pueden ser una persona, una empresa o un grupo} {
+} -messages {
+  {CBD {Fecha de nacimiento} {Se requiere una fecha de nacimiento para las personas internas}}
+  {CFN {Primer Nombre} {Se requiere un nombre para entidades personales}}
+  {CGN {Género} {El género no debe especificarse para entidades no personales.}}
+  {CMN {Segundo nombre} {Un segundo nombre está prohibido para entidades no personales.}}
+  {CMS {Marital} {No se debe especificar el estado civil para las entidades no personales}}
+  {CPA {dirección principal} {Una dirección principal debe estar activa}}
+  {CPN {Nombre Preferido} {Un nombre preferido está prohibido para entidades no personales.}}
+  {CTI {Titulo} {Un título preferente está prohibido para entidades no personales}}
+}
+
+tabtext base.ent_audit -lang spa {Auditoría de Entidades} {Tabla de seguimiento de cambios en la tabla de entidades} {
+}
+
+tabtext base.ent_link -lang spa {Enlaces de entidad} {Enlaces para mostrar cómo una entidad (como un empleado) está vinculada a otra (como su empresa)} {
+} -messages {
+  {NBP {Organización de entidad ilegal} {Una entidad personal no puede ser una organización (y tener entidades miembros)}}
+  {PBC {Miembro de entidad ilegal} {Solo las entidades personales pueden pertenecer a entidades societarias}}
+}
+
+tabtext base.ent_link_v -lang spa {Enlaces de entidad} {Una vista que muestra vínculos para mostrar cómo una entidad (como un empleado) está vinculada a otra (como su empresa), además de los nombres derivados de las entidades} {
 }
 
 tabtext base.ent_v -lang spa {Entitades  } {Una vista de Entidades, que puede ser una persona, una empresa o un grupo, además de campos derivados adicionales} {
@@ -106,15 +84,30 @@ tabtext base.ent_v -lang spa {Entitades  } {Una vista de Entidades, que puede se
   {directory {Directorio} {Informe que muestra los datos básicos de contacto de las entidades seleccionadas}}
 }
 
-tabtext base.token_v_ticket -lang spa {Boletos de inicio de sesión} {Una vista de los códigos de acceso, que permiten a los usuarios conectarse por primera vez} {
+tabtext base.ent_v_pub -lang spa {Entitades Publicas} {Una vista de Entidades desde las cuales el usuario puede acceder a cierta información pública} {
 }
 
-tabtext base.token_v -lang spa {fichas} {Una vista de los códigos de acceso, que permiten a los usuarios conectarse por primera vez} {
-}
-
-tabtext base.priv_v -lang spa {Privilegios} {Privilegios asignados a cada entidad} {
+tabtext base.file -lang spa {Archivos de documentos} {Archivos de documentos (fotos, archivos informáticos, etc.) para entidades} {
 } -messages {
-  {suspend {Suspender usuario} {Deshabilitar permisos para este usuario (aún no implementado)}}
+  {USP {Duplicado} {Solo debe haber un archivo para cada tipo y suma de verificación por separado}}
+}
+
+tabtext base.file_prim -lang spa {Archivos primarios} {Tabla interna para rastrear qué archivo es el principal para cada tipo dado} {
+}
+
+tabtext base.file_v -lang spa {Archivos de documentos} {Vista de los archivos de los usuarios con campos útiles adicionales} {
+}
+
+tabtext base.language -lang spa {Lenguajes} {Contiene información sobre los códigos de idioma ISO internacionales} {
+}
+
+tabtext base.language_v -lang spa {Lenguajes} {Contiene información sobre los códigos de idioma ISO internacionales} {
+}
+
+tabtext base.parm -lang spa {Parámetros del sistema} {Contiene configuraciones de parámetros de varios tipos para configurar y controlar varios módulos en la base de datos} {
+}
+
+tabtext base.parm_audit -lang spa {Auditoría de parámetros} {Tabla de seguimiento de cambios en la tabla de parámetros} {
 }
 
 tabtext base.parm_v -lang spa {Parámetros} {Los parámetros del sistema se almacenan en diferentes tablas según su tipo de datos (fecha, número entero, etc.). Esta vista es una unión de todas las tablas de diferentes tipos, por lo que todos los parámetros se pueden ver y actualizar en un solo lugar. El valor especificado deberá ingresarse de una manera que sea compatible con el tipo especificado para que pueda almacenarse de forma nativa en su tipo de datos correcto.} {
@@ -123,13 +116,22 @@ tabtext base.parm_v -lang spa {Parámetros} {Los parámetros del sistema se alma
   {launch.title {Ajustes} {Parámetros operativos del sitio}}
 }
 
-tabtext base.addr_v -lang spa {direcciones} {Una vista de direcciones (domicilio, postal, etc.) pertenecientes a entidades, con campos derivados adicionales} {
-  {addr_prim {Primario} {Si es verdadero, esta es la dirección principal para contactar a esta entidad}}
+tabtext base.priv -lang spa {Privilegios} {Permisos asignados a cada usuario del sistema que definen qué tareas pueden realizar y a qué objetos de la base de datos pueden acceder} {
+} -messages {
+  {CLV {Nivel ilegal} {El nivel de privilegio debe ser nulo o un entero positivo entre 1 y 9}}
 }
 
-tabtext base.comm_v -lang spa {Comunicación} {Vista de los puntos de comunicación de los usuarios (teléfono, correo electrónico, fax, etc.) con campos útiles adicionales} {
+tabtext base.priv_v -lang spa {Privilegios} {Privilegios asignados a cada entidad} {
+} -messages {
+  {suspend {Suspender usuario} {Deshabilitar permisos para este usuario (aún no implementado)}}
 }
 
-tabtext base.file_v -lang spa {Archivos de documentos} {Vista de los archivos de los usuarios con campos útiles adicionales} {
+tabtext base.token -lang spa {Fichas de acceso} {Almacena códigos de acceso que permiten a los usuarios conectarse por primera vez} {
+}
+
+tabtext base.token_v -lang spa {fichas} {Una vista de los códigos de acceso, que permiten a los usuarios conectarse por primera vez} {
+}
+
+tabtext base.token_v_ticket -lang spa {Boletos de inicio de sesión} {Una vista de los códigos de acceso, que permiten a los usuarios conectarse por primera vez} {
 }
 

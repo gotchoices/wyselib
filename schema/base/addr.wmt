@@ -20,7 +20,6 @@ tabtext base.addr	{Addresses}		{Addresses (home, mailing, etc.) pertaining to en
     {country		{Country}		{The name of the country this address is in.  Use standard international country code abbreviations.}}
     {addr_inact		{Inactive}		{This address is no longer a valid address}}
     {addr_priv		{Private}		{This address should not be shared publicly}}
-    {dirty		{Dirty}			{A flag used in the database backend to track whether the primary address needs to be recalculated}}
 } $glob::stampt] -errors {
     {CCO		{Country}		{The country must always be specified (and in standard form)}}
     {CPA		{Primary}		{There must be at least one address checked as primary}}
@@ -28,8 +27,8 @@ tabtext base.addr	{Addresses}		{Addresses (home, mailing, etc.) pertaining to en
 }
 
 tabtext base.addr_v	{Addresses}		{A view of addresses (home, mailing, etc.) pertaining to entities, with additional derived fields} {
-    {std_name		{Entity Name}		{The name of the entity this address pertains to}}
     {addr_prim		{Primary}		{If true this is the primary address for contacting this entity}}
+    {std_name		{Entity Name}		{The name of the entity this address pertains to}}
 }
 
 tabtext base.addr_prim	{Primary Address}	{Internal table to track which address is the main one for each given type} {
