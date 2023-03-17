@@ -47,4 +47,6 @@ view base.country_v {base.currency base.country} {
   join		base.currency	cu on cu.cur_code = co.cur_code
 } -grant {
   public
+} -native {
+  {base.currency cur_code}
 }
