@@ -1,13 +1,17 @@
 #Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
-require ../common.tcl ../glob.tcl
+---
 
-tabdef base.parm_v -focus module -fields [concat {
-    {module		ent	12	{1 1}		-spf exs}
-    {parm		ent	24	{2 1}		}
-    {type		pdm	6	{1 2}		-ini text}
-    {value		ent	24	{2 2}		-spf edw -hot 1}
-    {cmt		ent	50	{1 3 2}		-spf edw}
-} $glob::stampd] -display {
-    module parm type value cmt
-}
+base.parm_v:
+  focus: module
+  fields:
+  - [module,		ent,	12,	[1,1],		{spf: exs}]
+  - [parm,		ent,	24,	[2,1],		{}]
+  - [type,		pdm,	6,	[1,2],		{ini: text}]
+  - [value,		ent,	24,	[2,2],		{spe: edw, hot: 1}]
+  - [cmt,		ent,	50,	[1,3,2],	{spe: edw}]
+  - [crt_by,		ent,	10,	[1, 98],	{opt: 1, wr: 0, sta: readonly}]
+  - [crt_date,		inf,	18,	[2, 98],	{opt: 1, wr: 0, sta: readonly}]
+  - [mod_by,		ent,	10,	[1, 99],	{opt: 1, wr: 0, sta: readonly}]
+  - [mod_date,		inf,	18,	[2, 99],	{opt: 1, wr: 0, sta: readonly}]
+  display: [module, parm, type, value, cmt]

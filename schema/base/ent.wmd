@@ -1,59 +1,66 @@
 #Copyright WyattERP.org; See license in root of this package
 #------------------------------------------
-require ../common.tcl ../glob.tcl
+---
+base.ent:
+  focus: ent_name
+  fields:
+  - [id,		ent,	7,	[0,1],		{hide: 1, write: 0, just: r}]
+  - [ent_type,		pdm,	2,	[3,1],		{ini: p}]
+  - [title,		ent,	8,	[1,2],		{spe: exs, tem: '^[a-zA-Z\.]*$'}]
+  - [ent_name,		ent,	40,	[1,1,2],	{tem: '^[\w\. ]+$'}]
+  - [fir_name,		ent,	14,	[2,2],		{back: '#e0f0ff', tem: alpha}]
+  - [mid_name,		ent,	12,	[3,2],		{tem: alpha}]
+  - [pref_name,		ent,	12,	[1,3],		{tem: alpha}]
+  - [ent_inact,		chk,	2,	[3,3],		{ini: f, onv: t, offv: f}]
+  - [born_date,		date,	11,	[1,4],		{}]
+  - [gender,		pdm,	2,	[2,4],		{ini: ''}]
+  - [marital,		pdm,	2,	[3,4],		{ini: ''}]
+  - [bank,		ent,	14,	[1,5],		{tem: '^(|\d+:\d+|\d+:\d+:\d+)$', hint: '####:#### or ####:####:s'}]
+  - [username,		ent,	12,	[2,5],		{tem: alnum}]
+  - [conn_key,		ent,	8,	[3,5],		{write: 0}]
+  - [tax_id,		ent,	10,	[1,6],		{hint: '###-##-####'}]
+  - [country,		ent,	4,	[2,6],		{spe: scm, data: country}]
+  - [ent_cmt,		mle,	80,	[1,7,3],	{spe: edw}]
+  - [ent_num,		ent,	6,			{hide: 1}]
+  - [conn_pub,		ent,	6,			{hide: 1}]
+  - [crt_by,		ent,	10,	[1, 98],	{opt: 1, wr: 0, sta: readonly}]
+  - [crt_date,		inf,	18,	[2, 98],	{opt: 1, wr: 0, sta: readonly}]
+  - [mod_by,		ent,	10,	[1, 99],	{opt: 1, wr: 0, sta: readonly}]
+  - [mod_date,		inf,	18,	[2, 99],	{opt: 1, wr: 0, sta: readonly}]
+  display: [id, ent_type, ent_name, fir_name, born_date]
 
-tabdef base.ent -focus ent_name -fields [concat {
-    {id			ent	7	{0 1}		-hide 1 -write 0 -just r}
-    {ent_type		pdm	2	{3 1}		-ini p}
-    {title		ent	8	{1 2}		-spf exs -tem {^[a-zA-Z\.]*$}}
-    {ent_name		ent	40	{1 1 2}		-tem {^[\w\. ]+$}}
-    {fir_name		ent	14	{2 2}		-bg {#e0f0ff} -tem alpha}
-    {mid_name		ent	12	{3 2}		-tem alpha}
-    {pref_name		ent	12	{1 3}		-tem alpha}
-    {ent_inact		chk	2	{3 3}		-ini f -onv t -offv f}
-    {born_date		ent	11	{1 4}		-spf cal -hint date -tem date}
-    {gender		pdm	2	{2 4}		-ini {}}
-    {marital		pdm	2	{3 4}		-ini {}}
-    {bank		ent	14	{1 5}		-tem {^(|\d+:\d+|\d+:\d+:\d+)$} -hint {####:#### or ####:####:s}}
-    {username		ent	12	{2 5}		-tem alnum}
-    {conn_key		ent	8	{3 5}		-write 0}
-    {tax_id		ent	10	{1 6}		-hint {###-##-####}}
-    {country		ent	4	{2 6}		-spf scm -data country}
-    {ent_cmt		mle	80	{1 7 3}		-spf edw}
-} $glob::stampd] -display {id ent_type ent_name fir_name born_date}
+base.ent_v:
+  fields:
+  - [std_name,		ent,	18,	[1,20],		{opt: 1, sta: readonly, wr: 0}]
+  - [frm_name,		ent,	18,	[2,20],		{opt: 1, sta: readonly, wr: 0}]
+  - [age,		ent,	4,	[3,20],		{opt: 1, sta: readonly, wr: 0}]
+  - [cas_name,		ent,	10,	[1,21],		{opt: 1, sta: readonly, wr: 0}]
+  - [giv_name,		ent,	10,	[2,21],		{opt: 1, sta: readonly, wr: 0}]
+  subviews: [base.addr_v, base.comm_v, base.file_v, base.priv_v]
+  actions:
+  - directory
 
-# A view with some additional pseudo fields
-tabdef base.ent_v -fields {
-    {std_name		ent	18	{1 8}		-opt 1 -sta readonly -wr 0}
-    {frm_name		ent	18	{2 8}		-opt 1 -sta readonly -wr 0}
-    {age		ent	4	{3 8}		-opt 1 -sta readonly -wr 0}
-    {cas_name		ent	10	{1 9}		-opt 1 -sta readonly -wr 0}
-    {giv_name		ent	10	{2 9}		-opt 1 -sta readonly -wr 0}
-} -subviews {
-    base.addr_v base.comm_v base.priv_v
-} -actions {
-    {directory		}
-}
+base.ent_v_pub:
+  focus: ent_name
+  fields:
+  - [id,		ent,	6,	[0,1],		{hide: 1, write: 0, just: r}]
+  - [name,		ent,	40,	[1,1,2],	{sta: readonly}]
+  - [type,		ent,	2,	[1,2],		{sta: readonly}]
+  - [username,		ent,	12,	[2,2],		{sta: readonly}]
+  - [activ,		chk,	2,	[1,5],		{sta: readonly, ini: t, onv: t, offv: f}]
+  - [crt_date,		ent,	20,	[1,6],		{opt: 1, sta: readonly, wr: 0}]
+  - [crt_by,		ent,	10,	[2,6],		{opt: 1, sta: readonly, wr: 0}]
+  - [mod_date,		ent,	20,	[3,6],		{opt: 1, sta: readonly, wr: 0}]
+  - [mod_by,		ent,	10,	[4,6],		{opt: 1, sta: readonly, wr: 0}]
 
-tabdef base.ent_v_pub -focus ent_name -fields {
-    {id			ent	6	{0 1}		-hide 1 -write 0 -just r}
-    {name		ent	40	{1 1 2}		-sta readonly }
-    {type		ent	2	{1 2}		-sta readonly }
-    {username		ent	12	{2 2}		-sta readonly }
-    {activ		chk	2	{1 5}		-sta readonly -ini t -onv t -offv f}
-    {crt_date		ent	20	{1 6}		-opt 1 -sta readonly -wr 0}
-    {crt_by		ent	10	{2 6}		-opt 1 -sta readonly -wr 0}
-    {mod_date		ent	20	{3 6}		-opt 1 -sta readonly -wr 0}
-    {mod_by		ent	10	{4 6}		-opt 1 -sta readonly -wr 0}
-}
+base.ent_link:
+  focus: org_id
+  fields:
+  - [org,		ent,	6,	[1,1],		{just: r}]
+  - [mem,		ent,	6,	[1,2],		{just: r}]
+  - [role,		ent,	30,	[1,3],		{spe: exs}]
 
-tabdef base.ent_link -focus org_id -fields {
-    {org		ent	6	{1 1}		-just r}
-    {mem		ent	6	{1 2}		-just r}
-    {role		ent	30	{1 3}		-spf exs}
-}
-
-tabdef base.ent_link_v -fields {
-    {org_name		ent	30	{}		-depend org_id -title {:} -in org_id}
-    {mem_name		ent	30	{}		-depend mem_id -title {:} -in mem_id}
-}
+base.ent_link_v:
+  fields:
+  - [org_name,		ent,	30,		{depend: org_id, title: ':', in: org_id}]
+  - [mem_name,		ent,	30,		{depend: mem_id, title: ':', in: mem_id}]
