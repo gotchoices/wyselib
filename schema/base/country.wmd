@@ -1,0 +1,29 @@
+#Copyright WyattERP.org; See license in root of this package
+#------------------------------------------
+---
+
+base.currency:
+  fields:
+  - [cur_code,		ent,	4]
+  - [cur_name,		ent,	24]
+  - [cur_numb,		ent,	6]
+  display: [cur_code, cur_numb, cur_name]
+
+base.exchange:
+  fields:
+  - [curr,		ent,	4]
+  - [base,		ent,	4]
+  - [rate,		ent,	6]
+  - [sample,		ent,	12]
+  display: [curr, base, rate, sample]
+  
+base.country:
+  fields:
+  - [co_code,		ent,	3]
+  - [co_name,		ent,	24]
+  - [capital,		ent,	16]
+  - [cur_code,		ent,	4]
+  - [dial_code,		ent,	4]
+  - [iso_3,		ent,	4]
+  - [iana,		ent,	6]
+  display: [co_code, iso_3, co_name]

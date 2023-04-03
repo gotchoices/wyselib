@@ -4,7 +4,7 @@
 base.ent:
   focus: ent_name
   fields:
-  - [id,		ent,	7,	[0,1],		{hide: 1, write: 0, just: r}]
+  - [id,		ent,	7,	[0,1],		{hide: 1, write: 0}]
   - [ent_type,		pdm,	2,	[3,1],		{ini: p}]
   - [title,		ent,	8,	[1,2],		{spe: exs, tem: '^[a-zA-Z\.]*$'}]
   - [ent_name,		ent,	40,	[1,1,2],	{tem: '^[\w\. ]+$'}]
