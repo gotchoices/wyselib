@@ -38,15 +38,40 @@ tabtext base.addr_v_flat -lang spa {Entidades Planas} {Vista plana de entitadade
 }
 
 tabtext base.comm -lang spa {Comunicación} {Puntos de comunicación (teléfono, email, fax, etc.) para entidades} {
+  {comm_ent {entidad} {El número de identificación de la entidad a la que pertenece este punto de comunicación}}
+  {comm_seq {sequencia} {Un número único asignado a cada nuevo punto de comunicación para una entidad dada}}
+  {comm_spec {Número/Dirección} {El número o la dirección que se usará cuando se comunique a través de este método y el punto de comunicación}}
+  {comm_type {El método de comunicación} {El método de comunicación} {
+    {cell {Una forma de contactar a la entidad a través del teléfono celular} {Una forma de contactar a la entidad a través del teléfono celular}}
+    {email {Una forma de contactar con la entidad a través de correo electrónico.} {Una forma de contactar con la entidad a través de correo electrónico}}
+    {fax {Una forma de contactar con la entidad vía faxsimilar} {Una forma de contactar con la entidad vía faxsimilar}}
+    {other {Algún otro medio de contacto para la entidad} {Algún otro medio de contacto para la entidad}}
+    {pager {Una forma de contactar con la entidad a través de un localizador móvil} {Una forma de contactar con la entidad a través de un localizador móvil}}
+    {phone {Una forma de contactar con la entidad vía telefónica} {Una forma de contactar con la entidad vía telefónica}}
+    {text {Una forma de contactar con la entidad vía correo electrónico a mensajería de texto} {Una forma de contactar con la entidad vía correo electrónico a mensajería de texto}}
+    {web {Una dirección URL de la World Wide Web para esta entidad} {Una dirección URL de la World Wide Web para esta entidad}}
+  }}
+  {comm_prim {primario} {Este registro ya no está en uso actualmente}}
+  {comm_cmt {comentario} {Cualquier otra nota sobre este punto de comunicación}}
+  {comm_inact {inactivo} {Este registro ya no está en uso actualmente}}
+  {comm_priv {privado} {Este registro no debe compartirse públicamente}}
+  {crt_date {La fecha en que se creó este registro} {La fecha en que se creó este registro}}
+  {mod_date {La fecha de la última modificación de este registro} {La fecha de la última modificación de este registro}}
+  {crt_by {El usuario que ingresó este registro.} {El usuario que ingresó este registro}}
+  {mod_by {El usuario que modificó por última vez este registro} {El usuario que modificó por última vez este registro}}
 } -messages {
   {CPC {Primario} {Debe haber al menos un punto de comunicación de cada tipo marcado como principal}}
   {USP {Duplicado} {Solo debe haber un registro de comunicación para cada tipo y número/dirección por separado}}
 }
 
 tabtext base.comm_prim -lang spa {Comunicación Primaria} {Tabla interna para rastrear qué punto de comunicación es el principal para cada tipo dado} {
+  {prim_ent {El número de identificación de la entidad del punto de comuni} {El número de identificación de la entidad del punto de comunicación principal}}
+  {prim_seq {El número de secuencia del punto de comunicación principal} {El número de secuencia del punto de comunicación principal}}
+  {prim_type {El tipo de comunicación al que se aplica este registro} {El tipo de comunicación al que se aplica este registro}}
 }
 
 tabtext base.comm_v -lang spa {Comunicación} {Vista de los puntos de comunicación de los usuarios (teléfono, correo electrónico, fax, etc.) con campos útiles adicionales} {
+  {comm_prim {Si es verdadero, este es el método principal de este tipo para} {Si es verdadero, este es el método principal de este tipo para contactar a esta entidad}}
 }
 
 tabtext base.comm_v_flat -lang spa {Entidades Planas} {Una vista aplanada de entidades que muestra sus puntos de contacto estándar primarios} {
@@ -56,6 +81,43 @@ tabtext base.country -lang spa {Paises} {Contiene datos ISO estándar sobre paí
 }
 
 tabtext base.ent -lang spa {Entidades} {Entidades, que pueden ser una persona, una empresa o un grupo} {
+  {id {identificación de la entidad} {Un código único asignado a cada entidad, que consiste en el tipo y número de entidad}}
+  {ent_num {Numero de entidad} {Un número asignado a cada entidad, único dentro de su propio grupo de entidades del mismo tipo}}
+  {ent_type {Tipo de entidad} {El tipo de entidad que representa este registro} {
+    {g {Grupo} {La entidad es un grupo de personas, empresas y/u otros grupos}}
+    {o {Organisacion} {La entidad es una organización (como una empresa o sociedad) que puede emplear o incluir miembros de personas individuales u otras organizaciones}}
+    {p {} {La entidad es un individuo.}}
+    {r {Role} {La entidad es un rol o cargo que puede no corresponder a una persona o empresa en particular}}
+  }}
+  {ent_name {Nombre de entidad} {Nombre de la empresa, apellido personal o nombre del grupo}}
+  {fir_name {Primer Nombre} {Primero dado (Robert, Susan, William, etc.) solo para entidades de persona}}
+  {mid_name {Segundo Nombre} {Uno o más segundos nombres de pila o de soltera, solo para entidades personales}}
+  {pref_name {Preferido} {Nombre preferido (Bob, Sue, Bill, etc.) solo para entidades de persona}}
+  {title {Titulo} {Un título que precede al nombre (Sr., Jefe, Dr., etc.)}}
+  {gender {Genero} {Si la persona es hombre (m) o mujer (f)} {
+    { {N/A} {El género no es aplicable (como para organizaciones o grupos)}}
+    {f {Femenino} {La persona es femenina}}
+    {m {Masculino} {La persona es masculino}}
+  }}
+  {marital {Estado civil} {Si la persona es casada (m) o soltero (s)} {
+    { {N/A} {El estado civil no es aplicable (como para organizaciones o grupos)}}
+    {m {Casado} {El persona está en un matrimonio actual}}
+    {s {Soltero} {La persona nunca se ha casado o está divorciada o es sobreviviente de un cónyuge fallecido}}
+  }}
+  {ent_cmt {Comentario de entidad} {Cualquier otra nota relacionada con esta entidad}}
+  {born_date {Fecha de nacimiento} {Fecha de nacimiento para entidades persona u opcionalmente, una fecha de incorporación para entidades}}
+  {username {Username} {El nombre de inicio de sesión de esta persona, si es un usuario de este sistema}}
+  {conn_pub {Clave de conexión} {La clave pública que utiliza este usuario para autorizar la conexión a la base de datos.}}
+  {ent_inact {Inactivo} {Una bandera que indica que esta entidad ya no está vigente, en el negocio, viva, etc.}}
+  {country {Pais} {El país de ciudadanía principal (para personas) u organización legal (empresas)}}
+  {tax_id {} {El número por el cual el país reconoce a esta persona o empresa para efectos fiscales}}
+  {bank {Ruta bancaria} {Información de ruta bancaria: número_banco<:.;,>número_cuenta}}
+  {_last_addr {Secuencia de dirección} {Un campo utilizado internamente para generar números de registro secuenciales únicos para registros de direcciones}}
+  {_last_comm {Secuencia de comunicación} {Un campo utilizado internamente para generar números de registro secuenciales únicos para registros de comunicación}}
+  {crt_date {Creado   } {La fecha en que se creó este registro}}
+  {mod_date {Modificado  } {La fecha de la última modificación de este registro}}
+  {crt_by {Creado por} {El usuario que ingresó este registro}}
+  {mod_by {Modificado por} {El usuario que modificó por última vez este registro}}
 } -messages {
   {CBD {Fecha de nacimiento} {Se requiere una fecha de nacimiento para las personas internas}}
   {CFN {Primer Nombre} {Se requiere un nombre para entidades personales}}
@@ -88,14 +150,37 @@ tabtext base.ent_v_pub -lang spa {Entitades Publicas} {Una vista de Entidades de
 }
 
 tabtext base.file -lang spa {Archivos de documentos} {Archivos de documentos (fotos, archivos informáticos, etc.) para entidades} {
+  {file_ent {Entidad} {El número de identificación de la entidad a la que pertenece este archivo}}
+  {file_seq {Sequencia} {Un número único asignado a cada documento nuevo para una entidad dada}}
+  {file_data {Data} {Los datos binarios contenidos en este documento}}
+  {file_type {Tipo} {El tipo de documento} {
+    {other {Other} {Algún otro tipo de documento}}
+    {photo {Fotografo} {El documento es una fotografía.}}
+    {scan {Escanear} {El documento es un escaneo de un documento físico.}}
+    {spread {Hoja de cálculo} {El documento es una hoja de cálculo.}}
+    {write {Escrito} {El documento es un artículo escrito, paper, etc.}}
+  }}
+  {file_prim {Primario} {Si está marcado, este es el método principal de este tipo para ponerse en contacto con esta entidad}}
+  {file_fmt {Formato} {Un código de formato para indicar cómo se interpretarán los datos.}}
+  {file_cmt {comentario} {Cualquier otra nota sobre este archivo}}
+  {file_priv {Privado} {Este registro no debe compartirse públicamente.}}
+  {file_cks {Suma de verificación} {Un hash o suma de verificación de los datos en el documento, que se utiliza para garantizar la integridad de los datos}}
+  {crt_date {creado  } {La fecha en que se creó este registro}}
+  {mod_date {Modificado   } {La fecha de la última modificación de este registro}}
+  {crt_by {Creado por} {El usuario que ingresó este registro.}}
+  {mod_by {Modificado por} {El usuario que modificó por última vez este registro}}
 } -messages {
   {USP {Duplicado} {Solo debe haber un archivo para cada tipo y suma de verificación por separado}}
 }
 
 tabtext base.file_prim -lang spa {Archivos primarios} {Tabla interna para rastrear qué archivo es el principal para cada tipo dado} {
+  {prim_ent {Entidad} {El número de identificación de la entidad del archivo principal de este tipo}}
+  {prim_seq {Sequencia} {El número de secuencia del archivo principal de este tipo.}}
+  {prim_type {Tipo} {El tipo de archivo al que se aplica este registro}}
 }
 
 tabtext base.file_v -lang spa {Archivos de documentos} {Vista de los archivos de los usuarios con campos útiles adicionales} {
+  {file_prim {Primario} {Si es verdadero, este es el archivo principal de este tipo}}
 }
 
 tabtext base.language -lang spa {Lenguajes} {Contiene información sobre los códigos de idioma ISO internacionales} {
