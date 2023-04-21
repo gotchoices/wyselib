@@ -8,7 +8,7 @@ require base.tcl
 namespace eval base {
     def parm_pk		{module parm}
     def parm_in		{module parm type cmt}	;#value specified explicitly in triggers
-    def parm_up		{parm cmt}
+    def parm_up		{parm type cmt}
     def parm_audit	{cmt v_int v_date v_text v_float v_boolean}
     def parm_se		[concat $parm_in $glob::stampfn]
 }
@@ -80,20 +80,36 @@ $$;}
 trigger base_parm_v_tr_ins {} {instead of insert on base.parm_v for each row execute procedure base.parm_v_tf_ins();}
 
 # When updating the view:
+define vals {}
 #----------------------------------------------------------------
 function base.parm_v_tf_upd() {base.parm_v} {
   returns trigger language plpgsql as $$
     begin
-        case when old.type = 'int' then
-            update base.parm set eval(upd_list $base::parm_up $glob::stampup), v_int = new.value::int where eval(fld_list_eq $base::parm_pk old { and });
-        when old.type = 'date' then
-            update base.parm set eval(upd_list $base::parm_up $glob::stampup), v_date = new.value::date where eval(fld_list_eq $base::parm_pk old { and });
-        when old.type = 'text' then
-            update base.parm set eval(upd_list $base::parm_up $glob::stampup), v_text = new.value::text where eval(fld_list_eq $base::parm_pk old { and });
-        when old.type = 'float' then
-            update base.parm set eval(upd_list $base::parm_up $glob::stampup), v_float = new.value::float where eval(fld_list_eq $base::parm_pk old { and });
-        when old.type = 'boolean' then
-            update base.parm set eval(upd_list $base::parm_up $glob::stampup), v_boolean = new.value::boolean where eval(fld_list_eq $base::parm_pk old { and });
+        case when new.type = 'int' then
+            update base.parm set eval(upd_list $base::parm_up $glob::stampup),
+              v_int = new.value::int,
+              v_date = null, v_text = null, v_float = null, v_boolean = null
+              where eval(fld_list_eq $base::parm_pk old { and });
+        when new.type = 'date' then
+            update base.parm set eval(upd_list $base::parm_up $glob::stampup),
+              v_date = new.value::date,
+              v_int = null, v_text = null, v_float = null, v_boolean = null
+              where eval(fld_list_eq $base::parm_pk old { and });
+        when new.type = 'text' then
+            update base.parm set eval(upd_list $base::parm_up $glob::stampup),
+              v_text = new.value::text,
+              v_int = null, v_date = null, v_float = null, v_boolean = null
+              where eval(fld_list_eq $base::parm_pk old { and });
+        when new.type = 'float' then
+            update base.parm set eval(upd_list $base::parm_up $glob::stampup),
+              v_float = new.value::float,
+              v_int = null, v_date = null, v_text = null, v_boolean = null
+              where eval(fld_list_eq $base::parm_pk old { and });
+        when new.type = 'boolean' then
+            update base.parm set eval(upd_list $base::parm_up $glob::stampup),
+              v_boolean = new.value::boolean,
+              v_int = null, v_date = null, v_text = null, v_float = null
+              where eval(fld_list_eq $base::parm_pk old { and });
         end case;
         return new;
     end;
