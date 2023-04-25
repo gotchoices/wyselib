@@ -17,7 +17,7 @@ table base.language {base} {
 
 # View with added information columns
 #----------------------------------------------------------------
-view base.language_v {base.language} {
+view base.language_v {base.language wm.table_text wm.column_text wm.value_text wm.message_text} {
   select l.*,
   tt.count as tables,
   ct.count as columns,
