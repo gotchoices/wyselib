@@ -12,7 +12,7 @@ table base.currency {base} {
     cur_code	varchar(3)	primary key
   , cur_name	text		not null unique
   , cur_numb	int
-}
+} -grant public
 
 # Currency exchange rates
 #----------------------------------------------------------------
@@ -22,7 +22,7 @@ table base.exchange {base.currency} {
   , rate	float8		not null
   , sample	date		default current_date
   , primary key (curr, base, sample)
-}
+} -grant public
 index {} base.exchange sample
 
 # Countries the world
