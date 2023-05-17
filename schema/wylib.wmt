@@ -62,6 +62,8 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbePopupErr	{Popup Failed}		{Error trying to open a pop-up window.  Is the browser blocking pop-ups?}}
     {dbeOption		{Optional Fields}	{Show additional information about this record}}
     {dbeNoPkey		{No Primary key}	{The report update could not determine the primary key fields for the record.  Any changes may be lost.}}
+    {fileImport		{Import File}		{Drag/drop files here, or click to import a file from your device}}
+    {fileExport		{Export File}		{Save this data to a local file on your device}}
     {winMenu		{Window Functions}	{A menu of functions for the display and operation of this window}}
     {winSave		{Save State}		{Re-save the layout and operating state of this window to the current named configuration, if there is one}}
     {winSaveAs		{Save State As}		{Save the layout and operating state of this window, and all its subordinate windows, to a named configuration}}

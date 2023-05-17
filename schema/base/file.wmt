@@ -7,15 +7,15 @@ tabtext base.file	{Document Files}	{Document files (photos, computer files, etc.
     {file_seq		{Sequence}		{A unique number assigned to each new document for a given entity}}
     {file_data		{Data}			{The binary data contained in this document}}
     {file_type		{Type}			{The type of the document} {
-        {photo		{Photograph}		{The document is a photogaph}}
-        {scan		{Scan}			{The document is a scan of a physical document}}
-        {spread		{Spreadsheet}		{The document is a spreadsheet}}
-        {write		{Written}		{The document is a written article, paper, etc}}
+        {image		{Photo/Scan}		{The document is a scanned or photographic image}}
+        {doc		{Document}		{A printable document such as a PDF, PS or similar}}
+        {data		{Data}			{The document contains general structured data such as JSON, XML, HTML, etc.}}
+        {extern		{External}		{The document must generally be handled by an external program such as a word processor or spreadsheet}}
         {other		{Other}			{Some other type of document}}
     }}
-    {file_fmt		{Format}		{A format code to indicate how the data is to be interpreted}}
-    {file_cks		{Checksum}		{A hash or checksum of the data in the document, used to ensure data integrity}}
-    {file_prim		{Primary}		{If checked this is the primary method of this type for contacting this entity}}
+    {file_fmt		{Format}		{A standard format code to indicate how the data is to be interpreted (text, jpeg, git, etc)}}
+    {file_cks		{Checksum}		{A sha256 hash of the data in the document, used primarily to ensure data integrity}}
+    {file_prim		{Primary}		{If checked this is the primary or main document of its type}}
     {file_cmt		{Comment}		{Any other notes about this file}}
     {file_priv		{Private}		{This record should not be shared publicly}}
 } $glob::stampt] -errors {

@@ -30,6 +30,7 @@ table base.ent {base.country} {
   , bank	text
   , _last_addr	int		not null default 0	-- leading '_' makes these invisible to multiview triggers
   , _last_comm	int		not null default 0
+  , _last_file	int		not null default 0
 --  , proxy	text		constraint "!ent.ent.OPR" check (proxy != id)	--Obsolete; use groups or roles instead
 
     subst($base::ent_local)	-- locally defined columns

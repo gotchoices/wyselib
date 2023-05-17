@@ -103,6 +103,9 @@ function base.file_tf_bi() {base.file} {
             perform base.file_make_prim(new.file_ent, new.file_seq, new.file_type);
         end if;
         new.file_prim = false;				-- We don't actually store the status in this field
+        if new.file_cks isnull then			-- Make sure we have a file hash
+          new.file_cks = sha256(new.file_data);
+        end if;
         return new;
     end;
 $$;}
