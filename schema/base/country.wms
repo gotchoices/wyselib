@@ -35,7 +35,7 @@ table base.country {base.currency} {
   , dial_code	varchar(20)
   , iso_3	varchar(4)	not null unique
   , iana	varchar(6)
-}
+} -grant public
 
 # View with added information columns
 #----------------------------------------------------------------
