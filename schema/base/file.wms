@@ -10,7 +10,7 @@ namespace eval base {
     def file_v_in	{file_ent file_type file_data file_fmt file_cmt file_priv file_prim file_cks}
     def file_v_up	[lremove $file_v_in file_ent]
     def file_se		[concat $file_pk $file_v_up $glob::stampfn]
-    def file_types	{photo scan spread write other}
+    def file_types	{bio id photo cert other}
     def file_local	{}
 }
 

@@ -7,13 +7,13 @@ tabtext base.file	{Document Files}	{Document files (photos, computer files, etc.
     {file_seq		{Sequence}		{A unique number assigned to each new document for a given entity}}
     {file_data		{Data}			{The binary data contained in this document}}
     {file_type		{Type}			{The type of the document} {
-        {image		{Photo/Scan}		{The document is a scanned or photographic image}}
-        {doc		{Document}		{A printable document such as a PDF, PS or similar}}
-        {data		{Data}			{The document contains general structured data such as JSON, XML, HTML, etc.}}
-        {extern		{External}		{The document must generally be handled by an external program such as a word processor or spreadsheet}}
+        {bio		{Profile}		{A resume, bio or profile on the person or entity}}
+        {id		{Identification}	{A standard ID such as drivers or business license}}
+        {photo		{Photo}			{A picture of the person or entity}}
+        {cert		{Certification}		{A certificate of qualification or achievement}}
         {other		{Other}			{Some other type of document}}
     }}
-    {file_fmt		{Format}		{A standard format code to indicate how the data is to be interpreted (text, jpeg, git, etc)}}
+    {file_fmt		{Format}		{A standard mimetype format code to indicate how the data is to be interpreted (image/jpeg, video/mp4, etc)}}
     {file_cks		{Checksum}		{A sha256 hash of the data in the document, used primarily to ensure data integrity}}
     {file_prim		{Primary}		{If checked this is the primary or main document of its type}}
     {file_cmt		{Comment}		{Any other notes about this file}}
