@@ -172,6 +172,9 @@ view base.file_v {base.file base.ent_v base.file_prim} {
     select eval(fld_list [lremove $base::file_se file_prim] c)
       , oe.std_name
       , cp.prim_seq is not null and cp.prim_seq = c.file_seq	as file_prim
+      , octet_length(c.file_data) as file_size
+      , (regexp_split_to_array(c.file_fmt, E'/'))[array_length(regexp_split_to_array(c.file_fmt, E'/'), 1)] as file_ext
+      , regexp_replace(trim(trailing from regexp_replace(coalesce(c.file_cmt,c.file_type), E'[\\/:\\s]', '_', 'g')),E'[\s\.]+$', '', 'g') as file_name
 
     from	base.file	c
     join	base.ent_v	oe	on oe.id = c.file_ent
