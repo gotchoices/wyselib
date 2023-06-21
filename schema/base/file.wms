@@ -7,8 +7,8 @@ require base.tcl ../trigview.tcl
 
 namespace eval base {
     def file_pk		{file_ent file_seq}
-    def file_v_in	{file_ent file_type file_data file_fmt file_cmt file_priv file_prim file_cks}
-    def file_v_up	[lremove $file_v_in file_ent]
+    def file_v_in	{file_ent file_seq file_type file_data file_fmt file_cmt file_priv file_prim file_hash}
+    def file_v_up	[lremove $file_v_in file_ent file_seq]
     def file_se		[concat $file_pk $file_v_up $glob::stampfn]
     def file_types	{bio id photo cert other}
     def file_local	{}
@@ -25,14 +25,14 @@ table base.file {base.ent} {
   , file_fmt	text		not null
   , file_cmt	text
   , file_priv	boolean		not null default false
-  , file_cks	bytea		not null
+  , file_hash	bytea		not null
   , unique (file_ent, file_seq, file_type)		-- Needed for file_prim FK to work
-  , constraint "!base.file.USP" unique (file_ent, file_type, file_cks)
+  , constraint "!base.file.USP" unique (file_ent, file_type, file_hash)
     subst($base::file_local)	-- locally defined columns
     subst($glob::stamps)
 }
 index {} base.file file_type
-index {} base.file file_cks
+index {} base.file file_hash
 
 # Stores a pointer indicating which file record is primary for any given type
 #----------------------------------------------------------------
@@ -45,7 +45,7 @@ table base.file_prim {base.file} {
     on update cascade on delete cascade deferrable
 }
 
-# Make the specified file point primary
+# Make the specified file primary
 # -----------------------------------------------------------------
 function {base.file_make_prim(ent text, seq int, typ text)} {base.file base.file_prim} {
   returns void language plpgsql security definer as $$
@@ -58,7 +58,7 @@ function {base.file_make_prim(ent text, seq int, typ text)} {base.file base.file
     end;
 $$;}
     
-# Un-make the specified file point primary
+# Un-make the specified file primary
 # -----------------------------------------------------------------
 function {base.file_remove_prim(ent text, seq int, typ text)} {base.file base.file_prim} {
   returns void language plpgsql security definer as $$
@@ -88,6 +88,9 @@ $$;}
 function base.file_tf_bi() {base.file} {
   returns trigger language plpgsql security definer as $$
     begin
+        if new.file_ent isnull then			-- Default to current user
+          new.file_ent = base.user_id(session_user);
+        end if;
         if new.file_seq is null then			-- Generate unique sequence for new entry
             update base.ent set _last_file = greatest(coalesce(_last_file,0) + 1,
               (select coalesce(max(file_seq),0)+1 from base.file where file_ent = new.file_ent)
@@ -103,8 +106,8 @@ function base.file_tf_bi() {base.file} {
             perform base.file_make_prim(new.file_ent, new.file_seq, new.file_type);
         end if;
         new.file_prim = false;				-- We don't actually store the status in this field
-        if new.file_cks isnull then			-- Make sure we have a file hash
-          new.file_cks = sha256(new.file_data);
+        if new.file_hash isnull then			-- Make sure we have a file hash
+          new.file_hash = sha256(new.file_data);
         end if;
         return new;
     end;

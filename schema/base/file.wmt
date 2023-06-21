@@ -14,7 +14,7 @@ tabtext base.file	{Document Files}	{Document files (photos, computer files, etc.
         {other		{Other}			{Some other type of document}}
     }}
     {file_fmt		{Format}		{A standard mimetype format code to indicate how the data is to be interpreted (image/jpeg, video/mp4, etc)}}
-    {file_cks		{Checksum}		{A sha256 hash of the data in the document, used primarily to ensure data integrity}}
+    {file_hash		{Checksum}		{A sha256 hash of the data in the document, used primarily to ensure data integrity}}
     {file_prim		{Primary}		{If checked this is the primary or main document of its type}}
     {file_cmt		{Comment}		{Any other notes about this file}}
     {file_priv		{Private}		{This record should not be shared publicly}}
