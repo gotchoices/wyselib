@@ -51,7 +51,7 @@ describe("Schema: Build DB schema files", function() {
   it('Should have expected wyselib column text descriptions', function(done) {
     let sql = "select * from wm.column_text where ct_sch = 'base'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 198)
+      assert.equal(res.rows.length, 204)
       done()
     })
   })
@@ -59,7 +59,7 @@ describe("Schema: Build DB schema files", function() {
   it('should have expected wyselib column defaults', function(done) {
     let sql = "select * from wm.column_def where obj ~ '^base.'"
     db.query(sql, null, (e, res) => {if (e) done(e)
-      assert.equal(res.rows.length, 318)
+      assert.equal(res.rows.length, 324)
       done()
     })
   })
@@ -86,7 +86,7 @@ log.debug("res:", res.rows ? JSON.stringify(res.rows) : null)
     let sql = `select sch,tab,col from wm.column_lang where help is null and sch in (${SchemaList}) order by 1,2`
 log.debug("Sql:", sql)
     db.query(sql, (e, res) => {if (e) done(e)
-log.debug("res:", res)
+log.debug("res:", res, 'Rows:', JSON.stringify(res?.rows))
       assert.equal(res.rows.length, 0)
       done()
     })

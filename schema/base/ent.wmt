@@ -36,6 +36,7 @@ tabtext base.ent	{Entities}		{Entities, which can be a person, a company or a gr
     {bank		{Bank Routing}		{Bank routing information: bank_number<:.;,>account_number}}
     {_last_addr		{Addr Sequence}		{A field used internally to generate unique, sequential record numbers for address records}}
     {_last_comm		{Comm Sequence}		{A field used internally to generate unique, sequential record numbers for communication records}}
+    {_last_file		{File Sequence}		{A field used internally to generate unique, sequential record numbers for file records}}
 } $glob::stampt] -messages {
     {CFN		{First Name}		{A first name is required for personal entities}}
     {CMN		{Middle Name}		{A middle name is prohibited for non-personal entities}}

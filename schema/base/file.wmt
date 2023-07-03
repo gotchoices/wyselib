@@ -24,7 +24,12 @@ tabtext base.file	{Document Files}	{Document files (photos, computer files, etc.
 
 tabtext base.file_v	{Document Files}	{View of users' files with additional helpful fields} {
     {std_name		{Entity Name}		{The name of the entity this file pertains to}}
+    {file_name		{Name}			{A suggested filename to use when storing this file externally}}
+    {file_ext		{Extension}		{A suggested extension to use when storing this file externally}}
     {file_prim		{Primary}		{If true this is the primary file of this type}}
+    {file_size		{Size}			{How many bytes long the data is in this file}}
+    {file_data64	{Base64 Data}		{The file data represented as base64 format}}
+    {file_hash64	{Base64 Hash}		{The file hash represented in base64 format}}
 }
 
 tabtext base.file_prim	{Primary Files}		{Internal table to track which file is the main one for each given type} {
