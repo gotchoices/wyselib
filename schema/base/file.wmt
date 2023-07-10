@@ -29,7 +29,6 @@ tabtext base.file_v	{Document Files}	{View of users' files with additional helpf
     {file_prim		{Primary}		{If true this is the primary file of this type}}
     {file_size		{Size}			{How many bytes long the data is in this file}}
     {file_data64	{Base64 Data}		{The file data represented as base64 format}}
-    {file_hash64	{Base64 Hash}		{The file hash represented in base64 format}}
 }
 
 tabtext base.file_prim	{Primary Files}		{Internal table to track which file is the main one for each given type} {
