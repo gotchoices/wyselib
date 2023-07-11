@@ -178,7 +178,21 @@ proc samelist {args} {
     if {[llength $flist] > 1} {
         return "([join $flist { and }])"
     } else {
-        return "([join $flist { and }])"
+        return "[join $flist {}]"
+    }
+}
+
+# Create a clause showing if any of the fields have changed from old to new on an upate
+#----------------------------------------------------------------
+proc difflist {args} {
+    set flist {}
+    foreach f $args {
+        lappend flist "(new.$f is distinct from old.$f)"
+    }
+    if {[llength $flist] > 1} {
+        return "([join $flist { or }])"
+    } else {
+        return "[join $flist {}]"
     }
 }
 
