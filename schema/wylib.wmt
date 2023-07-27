@@ -165,11 +165,11 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {sdcCross		{Cross Reference}	{Wrap the highlighted text with a cross reference.  The text should be a tag name for another section.  That section number will be substituted for the tag name.}}
     {sdcTitle		{Title}			{An optional title for this section or paragraph}}
     {sdcSection		{Section}		{Click to edit text.  Double click at edge for direct editing mode.  Drag at edge to move.}}
-    {sdcTag		{Tag}			{An identifying word that can be used to cross-reference to this section or paragraph}}
+    {sdcName		{Name}			{An identifying word that can be used to cross-reference to this section or paragraph}}
     {sdcText		{Paragraph Text}	{Insert/Edit the raw paragraph text directly here, including entering limited HTML tags, if desired}}
-    {sdcSource		{Source}		{The URL of another document which will be incorporated into this document by reference}}
-    {sdcReference	{Reference}		{The following external document is incorporated by reference, becoming a part of this document}}
-    {sdcTogSource	{Add Reference}		{Use this section to refer to some external document by its URL}}
+    {sdcSource		{Source}		{Specifies an external document or resource to be included at this point in the document}}
+    {sdcResource	{Resource}		{The following resource is included here}}
+    {sdcTogSource	{Toggle Resource}	{Select whether this section holds local content or a reference to an external resource}}
     {sdcEdit		{Direct Editing}	{This section or paragraph is in direct editing mode.  Double click on the background to return to preview mode.}}
     {sdcPreview		{Preview Mode}		{This section or paragraph is in preview mode.  Double click on the background to go to editing mode.}}
     {sdcAdd		{Add Subsection}	{Create a new paragraph or section nested below this one}}
