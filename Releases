@@ -1,6 +1,14 @@
 Change Log:
 
-1.0.3	2023-Mar
+1.0.32	2023-Mar
+	- Update country/currency schema
+	- Include more countries/currencies
+	- Add Spanish language tags
+	- Move language support to subfolder
+	- Transition metadata files to yaml
+	- Add Nepali language tags
+
+1.0.30	2023-Mar
 	- Metadata files in yaml
 	- Improved language support
 	- Improved country, currency support
