@@ -139,7 +139,7 @@ table prod.minr {prod.vers} {
 view prod.prod_v {prod.prod} {
     select 	eval(fld_list $prod::prod_se p), p.oid	as _oid from prod.prod p;
     eval(rule_insert prod.prod_v prod.prod $prod::prod_v_in {} $glob::stampin);
-    eval(rule_update prod.prod_v prod.prod $prod::prod_v_up $prod::prod_pk {where old.curr is null} $glob::stampup);
+    eval(rule_update prod.prod_v prod.prod $prod::prod_v_up $prod::prod_pk {old.curr is null} $glob::stampup);
     eval(rule_delete prod.prod_v prod.prod $prod::prod_pk {where old.curr is null});
 } -grant {
     {prodim	s i {u d}}

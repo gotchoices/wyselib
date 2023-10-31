@@ -205,7 +205,7 @@ $$;}
 view empl.empl_v_pub {empl.empl_v} {
     select eval(fld_list $empl::empl_v_pub_se) from empl.empl_v;
 
-    eval(rule_update empl.empl_v_pub empl.empl_v $empl::empl_v_pub_up $empl::empl_pk {where old.username = session_user} $glob::stampup);	-- a person can update his own proxy
+    eval(rule_update empl.empl_v_pub empl.empl_v $empl::empl_v_pub_up $empl::empl_pk {old.username = session_user} $glob::stampup);	-- a person can update his own proxy
 } -grant {
     public
     {eim	s u}
@@ -223,7 +223,7 @@ view empl.empl_v_sup {empl.empl_v base.priv base.curr_eid()} {
     	or	base.priv_has('admin','limit');
 
 -- Supervisors can update limited info on their people (but not themselves)
-    eval(rule_update empl.empl_v_sup empl.empl_v $empl::empl_v_sup_up $empl::empl_pk {where old.emple != base.curr_eid()} $glob::stampup);
+    eval(rule_update empl.empl_v_sup empl.empl_v $empl::empl_v_sup_up $empl::empl_pk {old.emple != base.curr_eid()} $glob::stampup);
 } -primary {
    emple emplr
 } -grant {

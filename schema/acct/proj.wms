@@ -156,7 +156,7 @@ view acct.proj_v {acct.proj acct.proj_st_c base.ent_v} {
         left join	acct.proj	pp	on pp.code = p.par;
 
 --    e#val(rule_insert acct.proj_v acct.proj $proj::proj_v_in {} "status 'open' $glob::stampin");
---    e#val(rule_update acct.proj_v acct.proj $proj::proj_v_up $proj::proj_pk {where old.status = 'open' or new.status = 'open'} $glob::stampup);
+--    e#val(rule_update acct.proj_v acct.proj $proj::proj_v_up $proj::proj_pk {old.status = 'open' or new.status = 'open'} $glob::stampup);
 --    e#val(rule_delete acct.proj_v acct.proj $proj::proj_pk {where old.status = 'open'});
 } -grant {
     {projman	{} {} {s i u d}}
@@ -426,8 +426,8 @@ view acct.proj_v_me {acct.proj_v proj_passwd_v} {
     select pr.* from acct.proj_v pr where
         session_user = any (pr.rauth);
 
-    eval(rule_insert acct.proj_v_me acct.proj $acct.proj_in) {where exists (select proj_id from proj_v where proj_id = new.par and session_user = any(wauth))} {status 'open' $glob::stampin});		-- anyone can insert a new project if they have write auth on the parent
-    eval(rule_update acct.proj_v_me acct.proj $acct.proj_up) $fields(proj.pk) {where old.status = 'open' and session_user = any(old.wauth)} $glob::stampup);		-- can update only if they have write auth on this project and its open
+    eval(rule_insert acct.proj_v_me acct.proj $acct.proj_in) {exists (select proj_id from proj_v where proj_id = new.par and session_user = any(wauth))} {status 'open' $glob::stampin});		-- anyone can insert a new project if they have write auth on the parent
+    eval(rule_update acct.proj_v_me acct.proj $acct.proj_up) $fields(proj.pk) {old.status = 'open' and session_user = any(old.wauth)} $glob::stampup);		-- can update only if they have write auth on this project and its open
 } -grant {
     {projman	s {i u}}
 }
@@ -456,7 +456,7 @@ view proj.passwd_v_me {proj.passwd_v proj.proj_st_c} {
         session_user = any(pc.wauth);
 
 --    e#val(rule_insert proj_passwd_v_me proj_passwd $fields(proj_passwd.in));    -- anyone can insert a new password for themselves
---    e#val(rule_update proj_passwd_v_me proj_passwd $fields(proj_passwd.up) $fields(proj_passwd.pk) {where old.empl_id = curr_uid()});	-- can only update my own passwords
+--    e#val(rule_update proj_passwd_v_me proj_passwd $fields(proj_passwd.up) $fields(proj_passwd.pk) {old.empl_id = curr_uid()});	-- can only update my own passwords
 --    e#val(rule_delete proj_passwd_v_me proj_passwd $fields(proj_passwd.pk));	-- but I can delete any passwords in the view
 } -grant {
     {projman	{s i u d}}

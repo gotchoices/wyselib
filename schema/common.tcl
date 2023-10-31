@@ -100,7 +100,7 @@ proc rule_insert {view table fields {where {}} {ffields {}}} {
     }
     if {$where != {}} {set rval "create rule [translit . _ $view]_innull as on insert to $view do instead nothing;\n    "}
     append rval "create rule [translit . _ $view]_insert as on insert to $view\n"
-    if {$where != {}} {append rval "        $where" "\n"}
+    if {$where != {}} {append rval "        where $where" "\n"}
     append rval "        do instead insert into $table ([fld_list $fields]) values ([join $fvals {, }])"
     return $rval
 }
@@ -144,7 +144,7 @@ proc rule_update {view table upfields pkfields {where {}} {ffields {}} {sfx {}}}
 
     if {$where != {} && $sfx == {}} {set rval "create rule [translit . _ $view]_upnull as on update to $view do instead nothing;\n    "}
     append rval "create rule [translit . _ $view]_update$sfx as on update to $view\n"
-    if {$where != {}} {append rval "        $where" "\n"}
+    if {$where != {}} {append rval "        where $where" "\n"}
     append rval "        do instead update $table set [join $fvals {, }] where [fld_list_eq $pkfields old { and }]"
     return $rval
 }
@@ -154,7 +154,7 @@ proc rule_update {view table upfields pkfields {where {}} {ffields {}} {sfx {}}}
 proc rule_delete {view table pkfields {where {}} {sfx {}}} {
     if {$where != {} && $sfx == {}} {set rval "create rule [translit . _ $view]_denull as on delete to $view do instead nothing;\n    "}
     append rval "create rule [translit . _ $view]_delete$sfx as on delete to $view\n"
-    if {$where != {}} {append rval "        $where" "\n"}
+    if {$where != {}} {append rval "        where $where" "\n"}
     append rval "        do instead delete from $table where [fld_list_eq $pkfields old { and }]"
     return $rval
 }

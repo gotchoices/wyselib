@@ -23,7 +23,7 @@ view acct.close_v {base.parm base.priv_has(text,text)} {
     from	base.parm
     where parm = 'close' and type = 'date';
 
-    eval(rule_update acct.close_v base.parm $acct::close_v_up $acct::close_v_pk {where new.v_date > old.v_date or base.priv_has('glman','super')} $glob::stampup);
+    eval(rule_update acct.close_v base.parm $acct::close_v_up $acct::close_v_pk {new.v_date > old.v_date or base.priv_has('glman','super')} $glob::stampup);
 } -grant {
     {glman	s u}
 }
