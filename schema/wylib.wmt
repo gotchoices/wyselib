@@ -88,6 +88,7 @@ tabtext wylib.data {GUI Data} {Configuration and preferences data accessed by Wy
     {dbpClear		{Clear Preview}		{Remove contents of the preview window, with no records loaded}}
     {dbpDefault		{Default Columns}	{Set all column display and order to the database default}}
     {dbpFilter		{Filter}		{Load records according to filter criteria}}
+    {dbpLimit		{Load Limit}		{Load at most this many records even if more exist in the database}}
     {dbpAutoLoad	{Auto Execute}		{Automatically execute the top row any time the preview is reloaded}}
     {dbpLoaded		{Loaded Records}	{How many records are currently loaded in the preview}}
     {dbpShowSum		{Show Summaries}	{Show a summary row at the bottom of the preview.  Use context menu in column to determine which summary function for each column.}}
