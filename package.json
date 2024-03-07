@@ -32,6 +32,6 @@
     "tcl": "^3.0.0"
   },
   "dependencies": {
-    "wyseman": "^1.1.9"
+    "wyseman": "^1.1.13"
   }
 }

@@ -1,0 +1,214 @@
+Simplified Accounting module
+
+Overview
+#----------------------------------------------------------------
+The goal of this design is to simplify acct version 3 and to use more standard
+terms for the various tables.
+
+Each debit or credit is identified by two values:
+ - account (required)
+ - label (optional)
+
+The account PK is a compound field consisting of:
+  - entity
+  - account code
+
+The label is used for finer grained description of transactions such as (tax, 
+materials, fuel, etc.) for example.
+
+Accounts are organized hierarchically so each account has a parent.
+
+Account Types
+#----------------------------------------------------------------
+  c Category
+    This type is meant solely as a parent for grouping other accounts.
+    Transactions should not be booked directly to this type.
+
+    Each entity should have 5 top-level category accounts defined:
+    Assets, Liabilities, Income, Expenses, Equity.  A top-level account has no
+    parent specified.
+	
+  t	Transaction
+	Normal transactions are booked to this type of account.
+
+Here is an example chart of accounts
+       1  c Assets				Associated ledgers
+      10  c  Current Assets
+     100  c    Checking
+    1001  t      Citi Checking
+    1002  t      Wells Fargo Checking
+     102  c    Savings
+    1021  c      Citi Savings
+    1022  c      Wells Fargo Savings
+     103  c    Securities			Stock, quantity
+     105  c    Accounts Receivable		Customer entity
+     106  c    Inventory			Stock number
+    1061  t      Raw materials
+    1062  t      Assembled goods
+    1063  t      Replacement parts
+     107  c    Work in Process			Work Order Item
+    1071  t      Light manufacturing
+    1072  t      Assembly
+     108  c    Jobs in Process			Contract
+ 1080001  t      Jones remodel
+ 1080002  t      Mississippi contract
+     109  c    Prepayments
+    1091  t      Deposits
+    1092  t      Prepaid insurance
+     124  c    Loans Receivable			Entity
+    1241  t      Bob
+    1242  t      Fred
+      15  c  Fixed Assets			Asset ID
+     150  c    Capital Equipment
+    1501  t      Software
+    1502  t      Machinery
+     152  c    Real Estate
+    1521  t      Home office
+    1522  t      Warehouse
+   
+       2  Liabilities
+      20  c  Current Liabilities
+     200  c    Credit Line
+    2001	 Wells Fargo Credit Line
+     201  t    Accounts Payable			Entity (vendor)
+     202  t    Payroll Payable			Entity (employee)
+     203  t    Commissions Payable		Entity
+     204  c    Income Tax Payable		Entity (US, State, etc.)
+    2041  t      CA State
+    2049  t      Federal
+     205  t    Social Security Payable		Entity
+     206  t    Medicare Payable	
+     207  c    Sales Tax Payable		Entity
+    2071  t      CA State
+     208  t  Garnishments Payable		Entity (employee or vendor)
+      25  c  Long Term Liabilities
+     250  c    Equipment Loans			Entity, Asset
+   25010  t      Tractor
+   25011  t      Mill
+     251  c    Capital Leases			Entity, Asset
+   25110  t      Truck
+   25111  t      Fork lift
+     252  c    Real Estate Loans		Entity, Asset
+   25210  t      Home office
+     254  c    Loans Payable			Entity
+    2541  t      Stock buyout payable
+   
+       3  c Equity
+      30  c  Beginning Balances
+      32  t  Contributions
+      34  t  Distributions
+      36  c  Member Capital			Entity
+    3601  t    Joe Jones
+    3602  t    Sue Snell
+      38  c  Issued Stock			Entity
+      39  c  Retained Earnings
+     391  t    Adjustments
+   
+       4  c Income
+      40  c  Sales				Project, Entity (customer)
+     400  t    Job Sales
+     401  t    Jip Sales
+     403  t    Ots Sales
+     405  t    Service
+      42  t  Shipping Charges
+      44  t  Gain on Sale of Assets
+      45  t  LT Capital Gains
+      46  t  ST Capital Gains
+       
+       5  c Expenses				Category
+      50  t  Cost of Goods Sold			#gross margin
+      52  t  Commissions on Gross		#gross margin after commissions
+      53  t  Warranty				#gross margin after warranty
+      54  t  Operations Overhead		#EBITDA
+      56  t  Interest				#net margin before depreciation
+      57  t  Commissions on Net			#net margin after commissions
+      58  t  Depreciation			#taxable income
+      59  t  Taxes				#net income
+
+Labels
+#----------------------------------------------------------------
+Traditionally, expenses have been broken down into separate sub-accounts
+representing the kind of thing the expense was for (such as fuel, travel, taxes 
+and so forth).  There are a few problems with this approach.  First, there may be 
+several higher level accounts for which this level of detail is also wanted (such 
+as G&A, Warranty and COGS).  To track each of these kinds in a separate account 
+requires creating numerous new account under each major expense account.
+
+When individual expense kinds are tracked in individual accounts, budgeting
+may also be impacted.  By setting individual budget amounts for fuel and lodging
+it implies that a manager is authorized to spend more money only if it for a 
+certain kind of thing.
+
+A more difficult problem is that often these kinds are also applicable
+to disbursements into balance sheet categorys such as Jobs in Process, Work in 
+Process, Capital Equipment, inventory and so forth.  To create separate accounts
+under each of these balance sheet accountss would unnecessarily complicate 
+reconciliation and presentation.
+
+We will maintain general expense categories such as COGS and overhead.
+A separate label field will indicate the type as follows:
+
+ Number     Description
+    05      Salary and Wages
+    10      Commissions
+    15      Employment tax expense
+    20      Legal
+    25      Other professional contract
+    30      Equipment lease and rentals
+    35      Utilities
+    40      Office supplies
+    45      Tools & Equipment
+    50      Bonding and insurance
+    55      Materials
+    60      Repairs and Maintenance
+    65      Shipping expense
+    70      Sales Tax
+    75      Telecom
+    80      Travel
+    82      Lodging
+    85      Per-diem expense
+    90      Food & Entertainment
+    95      Gas and other fuel
+
+Ledgers
+#----------------------------------------------------------------
+There is a single general journal into which all transactions are entered
+regardless of what sub-module they belong to.  Various views can be
+constructed for accessing the general journal as a sub-journal or an account
+specific ledger.  The general journal consists of a header table and an
+item table.  Each balanced transaction will utilize one header and two or
+more items (splits).
+
+The journal header table contains:
+  - Entity ID      \
+  - Transaction ID /		#PK
+  - Date			#Transaction date
+  - Description
+  - Module			#Hand entry, A/R, A/P, etc.
+  - Posted			#True if locked into GL
+  
+The journal item table contains:
+  - Entity ID      \
+  - Transaction ID /		#FK to header table
+  - Sequence (split 0 .. n)
+  - Reference			#Check, invoice number etc.
+  - Memo
+  - Account ID 			#Entity,Account FK to accounts table
+  - Label
+  - Units			#Integer number of cents (or equivalent)
+  - Reconciled			#FK into reconciliation table
+  
+Reconciliation
+#----------------------------------------------------------------
+Ledgers can be reconciled by referencing a document such as a bank statement.
+This item is entered into a table with the following fields:
+
+  - Entity ID
+  - Account ID
+  - Sequence
+  - Memo			#Comments
+  - Date			#Ending date for the statement
+  - Units			#The balance
+  
+A journal item is included in the reconciliation by entering the sequence
+number of the reconciliation item into the journal item 'reconciled' field.
