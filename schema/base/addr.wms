@@ -21,16 +21,16 @@ table base.addr {base.ent} {
   , addr_seq	int	      , primary key (addr_ent, addr_seq)
   , addr_spec	text		not null
   , addr_type	text		not null check(addr_type in ('eval(join $base::addr_types {','})'))
-  , addr_prim	boolean		not null default false constraint "!base.addr.CPA" check(case when addr_inact is true then addr_prim is false end)
+  , addr_prim	boolean		not null default false constraint "!base.addr:CPA" check(case when addr_inact is true then addr_prim is false end)
   , addr_cmt	text
   , addr_inact	boolean		not null default false
   , addr_priv	boolean		not null default false
   , city	text
   , state	text
   , pcode	text
-  , country	varchar(3)	constraint "!base.addr.CCO" not null default 'US' references base.country on update cascade
+  , country	varchar(3)	constraint "!base.addr:CCO" not null default 'US' references base.country on update cascade
   , unique (addr_ent, addr_seq, addr_type)		-- Needed for addr_prim FK to work
-  , constraint "!base.addr.USP" unique (addr_ent, addr_type, addr_spec)
+  , constraint "!base.addr:USP" unique (addr_ent, addr_type, addr_spec)
     subst($base::addr_local)	-- locally defined columns
     subst($glob::stamps)
 }

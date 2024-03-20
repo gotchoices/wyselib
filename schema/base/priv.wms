@@ -28,7 +28,7 @@ namespace eval base {
 table base.priv {base.ent} {
     grantee	text		references base.ent (username) on update cascade on delete cascade
   , priv	text	      , primary key (grantee, priv)
-  , level	int		constraint "!base.priv.CLV" check(level > 0 and level < 10)
+  , level	int		constraint "!base.priv:CLV" check(level > 0 and level < 10)
   , priv_level	text		not null
   , cmt		text
 }

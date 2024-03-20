@@ -181,7 +181,7 @@ function {base.parm_int(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'int';
---        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm:PNF % %', m, p; end if;
         if not found then return null; end if;
         return r.v_int;
     end;
@@ -195,7 +195,7 @@ function {base.parm_date(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'date';
---        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm:PNF % %', m, p; end if;
         if not found then return null; end if;
         return r.v_date;
     end;
@@ -209,7 +209,7 @@ function {base.parm_text(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'text';
---        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm:PNF % %', m, p; end if;
         if not found then return null; end if;
         return r.v_text;
     end;
@@ -223,7 +223,7 @@ function {base.parm_float(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'float';
---        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm:PNF % %', m, p; end if;
         if not found then return null; end if;
         return r.v_float;
     end;
@@ -237,7 +237,7 @@ function {base.parm_boolean(m text, p text)} {base.parm} {
         r	record;
     begin
         select into r * from base.parm where module = m and parm = p and type = 'boolean';
---        if not found then raise exception '!base.parm.PNF % %', m, p; end if;
+--        if not found then raise exception '!base.parm:PNF % %', m, p; end if;
         if not found then return null; end if;
         return r.v_boolean;
     end;

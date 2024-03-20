@@ -27,7 +27,7 @@ table base.file {base.ent} {
   , file_priv	boolean		not null default false
   , file_hash	bytea		not null
   , unique (file_ent, file_seq, file_type)		-- Needed for file_prim FK to work
-  , constraint "!base.file.USP" unique (file_ent, file_type, file_hash)
+  , constraint "!base.file:USP" unique (file_ent, file_type, file_hash)
     subst($base::file_local)	-- locally defined columns
     subst($glob::stamps)
 }
