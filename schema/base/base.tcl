@@ -4,9 +4,9 @@ require ../common.tcl ../audit.tcl ../glob.tcl
 
 namespace eval base {
     def ent_pk          {id}
-    def ent_v_in        {ent_name ent_type ent_cmt fir_name mid_name pref_name title gender marital born_date username ent_inact country tax_id bank}
-    def ent_v_up        [lremove "$ent_v_in" ent_type]
-    def ent_se          [concat $ent_pk ent_num conn_pub $ent_v_in $glob::stampfn]
+    def ent_v_up        {ent_name ent_cmt fir_name mid_name pref_name title gender marital born_date username ent_inact country tax_id bank}
+    def ent_v_in        [concat ent_type ent_num $ent_v_up]
+    def ent_se          [concat $ent_pk conn_pub $ent_v_in $glob::stampfn]
     def ent_v_se        [concat $ent_se std_name frm_name giv_name cas_name]
     def ent_local       {}
     def ent_audit       "$ent_v_in"
