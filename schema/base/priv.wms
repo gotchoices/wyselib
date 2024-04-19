@@ -133,8 +133,10 @@ trigger base_priv_tr_iugrp {} {
 function base.priv_tf_dgrp() {base.priv} {
   returns trigger security definer language plpgsql as $$
     begin
+      if exists (select from pg_roles where rolname = old.grantee) then
         execute 'revoke "' || old.priv_level || '" from ' || old.grantee;
-        return old;
+      end if;
+      return old;
     end;
 $$;}
 trigger base_priv_tr_dgrp {} {
