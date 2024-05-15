@@ -7,8 +7,8 @@ const assert = require("assert");
 const Fs = require('fs')
 const Path = require('path')
 const Child = require('child_process')
-const { TestDB, DBAdmin, Log, DbClient, SchemaDir, SchemaFile, WmItems } = require('./settings')
-const dbConfig = {database: TestDB, user: DBAdmin, connect: true}
+const { TestDB, DBAdmin, DBHost, DBPort, Log, DbClient, SchemaDir, SchemaFile, WmItems } = require('./settings')
+const dbConfig = {database: TestDB, user: DBAdmin, connect: true, host: DBHost, port: DBPort}
 var log = Log('test-schema')
 var PrimSql = "select addr_seq,addr_type,addr_cmt,addr_prim from base.addr_v where addr_ent = 'o100' and addr_type = 'ship' and addr_prim;"
 

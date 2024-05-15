@@ -7,8 +7,8 @@ const assert = require("assert");
 const Fs = require('fs')
 const Path = require('path')
 const Child = require('child_process')
-const { TestDB, DBAdmin, Log, DbClient, SchemaDir, SchemaFile, WmItems } = require('./settings')
-const dbConfig = {database: TestDB, user: DBAdmin, connect: true}
+const { TestDB, DBAdmin, DBHost, DBPort, Log, DbClient, SchemaDir, SchemaFile, WmItems } = require('./settings')
+const dbConfig = {database: TestDB, user: DBAdmin, connect: true, host: DBHost, port: DBPort}
 const SchemaList = "'wylib','base'"
 var log = Log('test-schema')
 
@@ -16,7 +16,7 @@ describe("Schema: Build DB schema files", function() {
   var db
 
   before('Delete sample database if it exists', function(done) {
-    Child.exec(`dropdb --if-exists -U ${DBAdmin} ${TestDB}`, (e) => done(e))
+    Child.exec(`dropdb --if-exists -U ${DBAdmin} -h ${DBHost} -p ${DBPort} ${TestDB}`, (e) => done(e))
   })
 
   before('Build schema database', function(done) {

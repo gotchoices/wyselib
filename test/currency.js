@@ -10,8 +10,8 @@ const Fetch = require('node-fetch')
 const exchangeURL = "https://open.er-api.com/v6/latest/USD"
 
 //const Child = require('child_process')
-const { TestDB, DBAdmin, Log, DbClient } = require('./settings')
-const dbConfig = {database: TestDB, user: DBAdmin, connect: true}
+const { TestDB, DBAdmin, DBHost, DBPort, Log, DbClient } = require('./settings')
+const dbConfig = {database: TestDB, user: DBAdmin, connect: true, host: DBHost, port: DBPort}
 var log = Log('test-currency')
 var interTest = {}
 

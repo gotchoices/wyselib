@@ -10,7 +10,9 @@ var schemaFile = function(release, extension = '.json') {
 module.exports = {
   TestDB: "wyselibTestDB",
   Module: "wltest",
-  DBAdmin: "admin",
+  DBHost: process.env.WYSELIB_DBHOST || "localhost",
+  DBPort: process.env.WYSELIB_DBPORT || 5432,
+  DBAdmin: process.env.WYSELIB_DBUSER || "admin",
   SchemaDir: SchemaDir,
   Log: require(require.resolve('wyclif/lib/log.js')),
   DbClient: require(require.resolve('wyseman/lib/dbclient.js')),
