@@ -7,12 +7,13 @@ const assert = require("assert");
 const Fs = require('fs')
 const Path = require('path')
 const Child = require('child_process')
-const { TestDB, DBAdmin, DBHost, DBPort, Log, DbClient, SchemaDir, SchemaFile, WmItems } = require('./settings')
+const { TestDB, DBAdmin, DBHost, DBPort, Log, DbClient, SchemaDir, SchemaFile, WmItems, timeLong } = require('./settings')
 const dbConfig = {database: TestDB, user: DBAdmin, connect: true, host: DBHost, port: DBPort}
 const SchemaList = "'wylib','base'"
 var log = Log('test-schema')
 
 describe("Schema: Build DB schema files", function() {
+  this.timeout(timeLong)
   var db
 
   before('Delete sample database if it exists', function(done) {
@@ -20,7 +21,6 @@ describe("Schema: Build DB schema files", function() {
   })
 
   before('Build schema database', function(done) {
-    this.timeout(10000)				//Build may be a little slow
     Child.exec("wyseman objects text defs init", {cwd: __dirname}, (e) => {done(e)})
   })
 
