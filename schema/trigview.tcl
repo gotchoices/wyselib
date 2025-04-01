@@ -60,14 +60,14 @@ proc trigview::upfields {fields ffields {rec new}} {
 set trigview::insfunc {
   returns trigger language plpgsql security definer as \$\$
   declare
-    trec record;					-- temporary record for single table
+    ${ndef}trec record;					-- temporary record for single table
     str  varchar;					-- command string
   begin
-    execute $trigview::dquery1 into str using '$view';	-- get default field assignments from data dictionary
+    ${precall}execute $trigview::dquery1 into str using '$view';	-- get default field assignments from data dictionary
     execute $trigview::dquery2 into trec using new;	-- force nulls to defaults, where appropriate
     insert into $table [infields $fields $ffields trec $keyfield] returning [join $keyfield ,] into [fld_list $keyfield new];
     select into new * from $view where [fld_list_eq $keyfield new { and }];	-- Fill new with any auto-populated values
-    return new;
+    ${postcall}return new;
   end;
 \$\$}
 
@@ -76,9 +76,18 @@ set trigview::insfunc {
 #  keyfield:	columns that form primary key in specified table
 #   ffields:	fields to force to a specified value
 #----------------------------------------------------------------
-proc trigview::insert {view table fields keyfield {ffields {}}} {
-    set func [subst $trigview::insfunc]			;#evaluate function template
+proc trigview::insert {view table fields keyfield {ffields {}} {postfunc {}} {prefunc {}}} {
 #puts "\nfunction ${view}_insfunc() $view $func"
+    if {$prefunc != {}} {
+      set precall "nrec = new; new = ${prefunc}(nrec, null, TG_OP); if new is null then return null; end if;\n    "
+    } else {set precall {}}
+    if {$postfunc != {}} {
+      set postcall "nrec = new; new = ${postfunc}(nrec, null, TG_OP);\n    "
+    } else {set postcall {}}
+    if {$precall != {} || $postcall != {}} {
+      set ndef "nrec ${view};\n    "
+    } else {set ndef {}}
+    set func [subst $trigview::insfunc]			;#evaluate function template
     function "${view}_insfunc()" $view $func
 
     trigger [translit . _ $view]_tr_ins [list ${view}_insfunc()] "instead of insert on $view for each row execute procedure ${view}_insfunc();"
@@ -89,10 +98,10 @@ proc trigview::insert {view table fields keyfield {ffields {}}} {
 #----------------------------------------------------------------
 set trigview::updfunc {
   returns trigger language plpgsql security definer as \$\$
-  begin
-    update $table set [upfields $fields $ffields] where [fld_list_eq $keyfield old { and }] returning [join $keyfield ,] into [fld_list $keyfield new];
+  ${ndef}begin
+    ${precall}update $table set [upfields $fields $ffields] where [fld_list_eq $keyfield old { and }] returning [join $keyfield ,] into [fld_list $keyfield new];
     select into new * from $view where [fld_list_eq $keyfield new { and }];	-- Fill new with any auto-populated values
-    return new;
+    ${postcall}return new;
   end;
 \$\$}
 
@@ -101,7 +110,16 @@ set trigview::updfunc {
 #  keyfield:	columns that form primary key in specified table
 #   ffields:	fields to receive a forced value on each update
 #----------------------------------------------------------------
-proc trigview::update {view table fields keyfield {ffields {}}} {
+proc trigview::update {view table fields keyfield {ffields {}} {postfunc {}} {prefunc {}}} {
+    set precall {}; if {$prefunc != {}} {
+      set precall "nrec = new; orec = old; new = ${prefunc}(nrec, orec, TG_OP); if new is null then return null; end if;\n    "
+    }
+    set postcall {}; if {$postfunc != {}} {
+      set postcall "nrec = new; orec = old; new = ${postfunc}(nrec, orec, TG_OP);\n    "
+    }
+    if {$precall != {} || $postcall != {}} {
+      set ndef "declare\n    nrec ${view}; orec ${view};\n  "
+    } else {set ndef {}}
     set func [subst $trigview::updfunc]		;#evaluate function template
 #puts "\nfunction ${view}_updfunc() $view $func"
     function "${view}_updfunc()" $view $func
