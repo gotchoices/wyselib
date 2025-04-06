@@ -1,5 +1,3 @@
-#Format WMT ver=1
-
 tabtext wm.releases -lang fin {Julkaisut} {Seuraa tietokannan rakenteen jokaisen julkisen julkaisun versionumeroa} {
   {release {Julkaisu} {Julkaisun kokonaisluku, alkaen numerosta 1. Tämän kentän nykyinen numero tarkoittaa aina keskeneräistä työtä. Edellinen numero ilmaisee viimeisimmän julkisen julkaisun.}}
   {committed {Vahvistettu} {Milloin tämä julkaisuversio jäädytettiin viralliseksi julkaisuksi.}}
@@ -187,9 +185,7 @@ tabtext wm.objects_v -lang fin {Objektinäkymä} {Kätevä näkymä objektitieto
   {sel_ver {Valinnan versio} {sel_sql:n versionumero, joka kasvaa joka kerta, kun todellinen valintaskripti muuttuu}}
   {mod_date {Muokattu} {Päivämäärä, jolloin tätä viimeksi muokattiin}}
   {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
-}
-
--message {
+} -message {
   {INP {Virheellinen operaattori} {Määritetty looginen operaattori ei ole ymmärrettävissä}}
   {NRE {Ei tulosta} {Kysely ei tuottanut tuloksia}}
   {KVL {Avainrikkomus} {Määritettyä avainarvoa ei ole olemassa}}

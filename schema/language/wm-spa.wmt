@@ -1,193 +1,189 @@
-#Format WMT ver=1
-
 # Spanish translation for Wyseman schema objects
 
-tabtext wm.releases {Versiones} {Realiza un seguimiento del número de versión de cada lanzamiento público del diseño de la base de datos} {
-  {releaseno}	{Lanzamiento}	{El número entero del lanzamiento, comenzando con 1, que se incrementa cada vez que se realiza un lanzamiento público}
-  {committed}	{Comprometido}	{La fecha y hora en que se confirmó este lanzamiento en la base de datos}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.releases -lang spa {Versiones} {Realiza un seguimiento del número de versión de cada lanzamiento público del diseño de la base de datos} {
+  {releaseno	{Lanzamiento}	{El número entero del lanzamiento, comenzando con 1, que se incrementa cada vez que se realiza un lanzamiento público}}
+  {committed	{Comprometido}	{La fecha y hora en que se confirmó este lanzamiento en la base de datos}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.objects {Objetos} {Mantiene datos de todos los objetos de base de datos como tablas, vistas, funciones, etc.} {
-  {obj_typ}	{Tipo}	{El tipo de objeto de base de datos (tabla, vista, función, etc.)}
-  {obj_nam}	{Nombre}	{El nombre completo del objeto, incluido el esquema}
-  {obj_ver}	{Versión}	{Número de versión interna del objeto, que se incrementa cada vez que se modifica}
-  {obj_kind}	{Clase}	{En el caso de tablas que alojan múltiples tipos de objetos, qué tipo particular se está describiendo en este registro (por ejemplo, check, primary, unique, foreign, etc.)}
-  {obj_seq}	{Secuencia}	{En casos donde hay varios objetos del mismo tipo y nombre, qué número es este (comenzando con 0)}
-  {obj_rep}	{Reporte}	{Un nombre único para hacer referencia a este registro (en lenguajes que no admiten tuplas)}
-  {depend}	{Dependencia}	{Una expresión regular de Tcl que coincida con todos los objetos de los que depende directamente este objeto (excepto el propio objeto)}
-  {obj_parm}	{Parámetros}	{Para objetos como vistas que pueden tener parámetros de alias/sustitución, una lista de dichos parámetros disponibles}
-  {obj_stat}	{Estado}	{Indica cómo se ha compilado este objeto (0:not done, 1:identical, 2:compiled)}
-  {obj_ddl}	{DDL}	{El DDL utilizado para crear el objeto}
-  {releaseno}	{Lanzamiento}	{El número de versión pública en la que se incluyó inicialmente el objeto}
-  {min_rel}	{Lanzamiento Mínimo}	{El objeto solo es compatible con bases de datos ya en o por encima de esta versión}
-  {max_rel}	{Lanzamiento Máximo}	{El objeto solo es compatible con bases de datos por debajo de esta versión}
-  {crt_sql}	{SQL de Creación}	{El script SQL real que se ejecutará para agregar/compilar este objeto a la base de datos}
-  {drp_sql}	{SQL de Eliminación}	{El script SQL real que se ejecutará para eliminar este objeto de la base de datos}
-  {sel_sql}	{SQL de Selección}	{El script SQL real que se ejecutará para seleccionar datos de este objeto}
-  {sel_ver}	{Versión de Selección}	{El número de versión de sel_sql que se incrementará cada vez que cambie el script de selección real}
-  {mod_date}	{Modificado}	{La fecha y hora en que se modificó por última vez}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.objects -lang spa {Objetos} {Mantiene datos de todos los objetos de base de datos como tablas, vistas, funciones, etc.} {
+  {obj_typ	{Tipo}	{El tipo de objeto de base de datos (tabla, vista, función, etc.)}}
+  {obj_nam	{Nombre}	{El nombre completo del objeto, incluido el esquema}}
+  {obj_ver	{Versión}	{Número de versión interna del objeto, que se incrementa cada vez que se modifica}}
+  {obj_kind	{Clase}	{En el caso de tablas que alojan múltiples tipos de objetos, qué tipo particular se está describiendo en este registro (por ejemplo, check, primary, unique, foreign, etc.)}}
+  {obj_seq	{Secuencia}	{En casos donde hay varios objetos del mismo tipo y nombre, qué número es este (comenzando con 0)}}
+  {obj_rep	{Reporte}	{Un nombre único para hacer referencia a este registro (en lenguajes que no admiten tuplas)}}
+  {depend	{Dependencia}	{Una expresión regular de Tcl que coincida con todos los objetos de los que depende directamente este objeto (excepto el propio objeto)}}
+  {obj_parm	{Parámetros}	{Para objetos como vistas que pueden tener parámetros de alias/sustitución, una lista de dichos parámetros disponibles}}
+  {obj_stat	{Estado}	{Indica cómo se ha compilado este objeto (0:not done, 1:identical, 2:compiled)}}
+  {obj_ddl	{DDL}	{El DDL utilizado para crear el objeto}}
+  {releaseno	{Lanzamiento}	{El número de versión pública en la que se incluyó inicialmente el objeto}}
+  {min_rel	{Lanzamiento Mínimo}	{El objeto solo es compatible con bases de datos ya en o por encima de esta versión}}
+  {max_rel	{Lanzamiento Máximo}	{El objeto solo es compatible con bases de datos por debajo de esta versión}}
+  {crt_sql	{SQL de Creación}	{El script SQL real que se ejecutará para agregar/compilar este objeto a la base de datos}}
+  {drp_sql	{SQL de Eliminación}	{El script SQL real que se ejecutará para eliminar este objeto de la base de datos}}
+  {sel_sql	{SQL de Selección}	{El script SQL real que se ejecutará para seleccionar datos de este objeto}}
+  {sel_ver	{Versión de Selección}	{El número de versión de sel_sql que se incrementará cada vez que cambie el script de selección real}}
+  {mod_date	{Modificado}	{La fecha y hora en que se modificó por última vez}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.table_style {Estilos de Tabla} {Contiene datos de estilo para mostrar tablas específicas en la GUI} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla}
-  {tab_name}	{Nombre}	{El nombre de la tabla dentro del esquema}
-  {style}	{Estilo}	{Información de estilo serializada para controlar la apariencia de la tabla}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.table_style -lang spa {Estilos de Tabla} {Contiene datos de estilo para mostrar tablas específicas en la GUI} {
+  {tab_sch	{Esquema}	{El esquema de la tabla}}
+  {tab_name	{Nombre}	{El nombre de la tabla dentro del esquema}}
+  {style	{Estilo}	{Información de estilo serializada para controlar la apariencia de la tabla}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.column_style {Estilos de Columna} {Contiene datos de estilo para mostrar columnas específicas en la GUI} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla que contiene la columna}
-  {tab_name}	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}
-  {col_name}	{Nombre de Columna}	{El nombre de la columna}
-  {style}	{Estilo}	{Información de estilo serializada para controlar la apariencia de la columna}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.column_style -lang spa {Estilos de Columna} {Contiene datos de estilo para mostrar columnas específicas en la GUI} {
+  {tab_sch	{Esquema}	{El esquema de la tabla que contiene la columna}}
+  {tab_name	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}}
+  {col_name	{Nombre de Columna}	{El nombre de la columna}}
+  {style	{Estilo}	{Información de estilo serializada para controlar la apariencia de la columna}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.table_text {Texto de Tabla} {Contiene descripciones que se muestran para tablas específicas en la GUI} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla}
-  {tab_name}	{Nombre}	{El nombre de la tabla dentro del esquema}
-  {language}	{Idioma}	{El idioma en el que se escribe el texto}
-  {title}	{Título}	{Una etiqueta corta para esta tabla}
-  {help}	{Ayuda}	{Una descripción completa de esta tabla}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.table_text -lang spa {Texto de Tabla} {Contiene descripciones que se muestran para tablas específicas en la GUI} {
+  {tab_sch	{Esquema}	{El esquema de la tabla}}
+  {tab_name	{Nombre}	{El nombre de la tabla dentro del esquema}}
+  {language	{Idioma}	{El idioma en el que se escribe el texto}}
+  {title	{Título}	{Una etiqueta corta para esta tabla}}
+  {help	{Ayuda}	{Una descripción completa de esta tabla}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.column_text {Texto de Columna} {Contiene descripciones que se muestran para columnas específicas en la GUI} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla que contiene la columna}
-  {tab_name}	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}
-  {col_name}	{Nombre de Columna}	{El nombre de la columna}
-  {language}	{Idioma}	{El idioma en el que se escribe el texto}
-  {title}	{Título}	{Una etiqueta corta para esta columna}
-  {help}	{Ayuda}	{Una descripción completa de esta columna}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.column_text -lang spa {Texto de Columna} {Contiene descripciones que se muestran para columnas específicas en la GUI} {
+  {tab_sch	{Esquema}	{El esquema de la tabla que contiene la columna}}
+  {tab_name	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}}
+  {col_name	{Nombre de Columna}	{El nombre de la columna}}
+  {language	{Idioma}	{El idioma en el que se escribe el texto}}
+  {title	{Título}	{Una etiqueta corta para esta columna}}
+  {help	{Ayuda}	{Una descripción completa de esta columna}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.value_text {Texto de Valor} {Contiene descripciones que se muestran para valores específicos en la GUI} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla que contiene el valor}
-  {tab_name}	{Nombre de Tabla}	{El nombre de la tabla que contiene el valor}
-  {col_name}	{Nombre de Columna}	{El nombre de la columna a la que pertenece el valor}
-  {value}	{Valor}	{El valor específico que se está describiendo}
-  {language}	{Idioma}	{El idioma en el que se escribe el texto}
-  {title}	{Título}	{Una etiqueta corta para este valor}
-  {help}	{Ayuda}	{Una descripción completa de este valor}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.value_text -lang spa {Texto de Valor} {Contiene descripciones que se muestran para valores específicos en la GUI} {
+  {tab_sch	{Esquema}	{El esquema de la tabla que contiene el valor}}
+  {tab_name	{Nombre de Tabla}	{El nombre de la tabla que contiene el valor}}
+  {col_name	{Nombre de Columna}	{El nombre de la columna a la que pertenece el valor}}
+  {value	{Valor}	{El valor específico que se está describiendo}}
+  {language	{Idioma}	{El idioma en el que se escribe el texto}}
+  {title	{Título}	{Una etiqueta corta para este valor}}
+  {help	{Ayuda}	{Una descripción completa de este valor}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.message_text {Texto de Mensaje} {Contiene descripciones que se muestran para mensajes específicos en la GUI} {
-  {code}	{Código}	{Un código único para hacer referencia a un mensaje específico}
-  {language}	{Idioma}	{El idioma en el que se escribe el texto}
-  {title}	{Título}	{Una etiqueta corta para este mensaje}
-  {help}	{Ayuda}	{Una descripción completa para este mensaje}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.message_text -lang spa {Texto de Mensaje} {Contiene descripciones que se muestran para mensajes específicos en la GUI} {
+  {code	{Código}	{Un código único para hacer referencia a un mensaje específico}}
+  {language	{Idioma}	{El idioma en el que se escribe el texto}}
+  {title	{Título}	{Una etiqueta corta para este mensaje}}
+  {help	{Ayuda}	{Una descripción completa para este mensaje}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.table_data {Datos de Tabla} {Un caché de los datos devueltos por el sistema del catálogo pg para todas las tablas} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla}
-  {tab_name}	{Nombre}	{El nombre de la tabla dentro del esquema}
-  {tab_kind}	{Tipo}	{Tipo de tabla (base, vista, etc.)}
-  {tab_stat}	{Estado}	{Estado interno del objeto}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.table_data -lang spa {Datos de Tabla} {Un caché de los datos devueltos por el sistema del catálogo pg para todas las tablas} {
+  {tab_sch	{Esquema}	{El esquema de la tabla}}
+  {tab_name	{Nombre}	{El nombre de la tabla dentro del esquema}}
+  {tab_kind	{Tipo}	{Tipo de tabla (base, vista, etc.)}}
+  {tab_stat	{Estado}	{Estado interno del objeto}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.column_data {Datos de Columna} {Un caché de los datos devueltos por el sistema del catálogo pg para todas las columnas} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla que contiene la columna}
-  {tab_name}	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}
-  {col_name}	{Nombre de Columna}	{El nombre de la columna dentro de la tabla}
-  {col_count}	{Contador}	{El número de orden de la columna dentro de la tabla}
-  {col_type}	{Tipo}	{El tipo de datos SQL de la columna}
-  {col_length}	{Longitud}	{Para ciertos tipos de datos, el tamaño máximo}
-  {col_prec}	{Precisión}	{La precisión para tipos de datos numéricos}
-  {col_prim}	{Primaria}	{Si esta columna es (parte de) la clave primaria}
-  {col_notn}	{No Nulo}	{Si se permite que la columna sea nula}
-  {col_uniq}	{Único}	{Si cada valor debe ser único}
-  {col_check}	{Comprobar}	{Si hay alguna restricción check en esta columna}
-  {col_indx}	{Índice}	{Si esta columna está indexada}
-  {col_default}	{Predeterminado}	{Cualquier valor predeterminado especificado para esta columna}
-  {col_refer}	{Referencia}	{Si esta columna se refiere a alguna otra tabla/columna}
-  {col_stat}	{Estado}	{Indicador de actualización}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
+tabtext wm.column_data -lang spa {Datos de Columna} {Un caché de los datos devueltos por el sistema del catálogo pg para todas las columnas} {
+  {tab_sch	{Esquema}	{El esquema de la tabla que contiene la columna}}
+  {tab_name	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}}
+  {col_name	{Nombre de Columna}	{El nombre de la columna dentro de la tabla}}
+  {col_count	{Contador}	{El número de orden de la columna dentro de la tabla}}
+  {col_type	{Tipo}	{El tipo de datos SQL de la columna}}
+  {col_length	{Longitud}	{Para ciertos tipos de datos, el tamaño máximo}}
+  {col_prec	{Precisión}	{La precisión para tipos de datos numéricos}}
+  {col_prim	{Primaria}	{Si esta columna es (parte de) la clave primaria}}
+  {col_notn	{No Nulo}	{Si se permite que la columna sea nula}}
+  {col_uniq	{Único}	{Si cada valor debe ser único}}
+  {col_check	{Comprobar}	{Si hay alguna restricción check en esta columna}}
+  {col_indx	{Índice}	{Si esta columna está indexada}}
+  {col_default	{Predeterminado}	{Cualquier valor predeterminado especificado para esta columna}}
+  {col_refer	{Referencia}	{Si esta columna se refiere a alguna otra tabla/columna}}
+  {col_stat	{Estado}	{Indicador de actualización}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
 }
 
-tabtext wm.column_lang {Columnas de Idioma} {Una vista conveniente para mostrar etiquetas de columnas en los idiomas deseados} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla que contiene la columna}
-  {tab_name}	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}
-  {col_name}	{Nombre de Columna}	{El nombre de la columna dentro de la tabla}
-  {language}	{Idioma}	{El lenguaje del título/ayuda si está disponible}
-  {col_count}	{Contador}	{El número de orden de la columna dentro de la tabla}
-  {col_type}	{Tipo}	{El tipo de datos SQL de la columna}
-  {col_length}	{Longitud}	{Para ciertos tipos de datos, el tamaño máximo}
-  {col_prec}	{Precisión}	{La precisión para tipos de datos numéricos}
-  {col_prim}	{Primaria}	{Si esta columna es (parte de) la clave primaria}
-  {col_notn}	{No Nulo}	{Si se permite que la columna sea nula}
-  {col_uniq}	{Único}	{Si cada valor debe ser único}
-  {col_check}	{Comprobar}	{Si hay alguna restricción check en esta columna}
-  {col_indx}	{Índice}	{Si esta columna está indexada}
-  {col_default}	{Predeterminado}	{Cualquier valor predeterminado especificado para esta columna}
-  {col_refer}	{Referencia}	{Si esta columna se refiere a alguna otra tabla/columna}
-  {title}	{Título}	{Una etiqueta corta para esta columna si está disponible}
-  {help}	{Ayuda}	{Una descripción completa de esta columna si está disponible}
-  {style}	{Estilo}	{Información de estilo serializada para controlar la apariencia de la columna si está disponible}
+tabtext wm.column_lang -lang spa {Columnas de Idioma} {Una vista conveniente para mostrar etiquetas de columnas en los idiomas deseados} {
+  {tab_sch	{Esquema}	{El esquema de la tabla que contiene la columna}}
+  {tab_name	{Nombre de Tabla}	{El nombre de la tabla que contiene la columna}}
+  {col_name	{Nombre de Columna}	{El nombre de la columna dentro de la tabla}}
+  {language	{Idioma}	{El lenguaje del título/ayuda si está disponible}}
+  {col_count	{Contador}	{El número de orden de la columna dentro de la tabla}}
+  {col_type	{Tipo}	{El tipo de datos SQL de la columna}}
+  {col_length	{Longitud}	{Para ciertos tipos de datos, el tamaño máximo}}
+  {col_prec	{Precisión}	{La precisión para tipos de datos numéricos}}
+  {col_prim	{Primaria}	{Si esta columna es (parte de) la clave primaria}}
+  {col_notn	{No Nulo}	{Si se permite que la columna sea nula}}
+  {col_uniq	{Único}	{Si cada valor debe ser único}}
+  {col_check	{Comprobar}	{Si hay alguna restricción check en esta columna}}
+  {col_indx	{Índice}	{Si esta columna está indexada}}
+  {col_default	{Predeterminado}	{Cualquier valor predeterminado especificado para esta columna}}
+  {col_refer	{Referencia}	{Si esta columna se refiere a alguna otra tabla/columna}}
+  {title	{Título}	{Una etiqueta corta para esta columna si está disponible}}
+  {help	{Ayuda}	{Una descripción completa de esta columna si está disponible}}
+  {style	{Estilo}	{Información de estilo serializada para controlar la apariencia de la columna si está disponible}}
 }
 
-tabtext wm.table_lang {Tablas de Idioma} {Una vista conveniente para mostrar etiquetas de tablas en los idiomas deseados} {
-  {tab_sch}	{Esquema}	{El esquema de la tabla}
-  {tab_name}	{Nombre}	{El nombre de la tabla dentro del esquema}
-  {language}	{Idioma}	{El lenguaje del título/ayuda si está disponible}
-  {tab_kind}	{Tipo}	{Tipo de tabla (base, vista, etc.)}
-  {title}	{Título}	{Una etiqueta corta para esta tabla si está disponible}
-  {help}	{Ayuda}	{Una descripción completa de esta tabla si está disponible}
-  {style}	{Estilo}	{Información de estilo serializada para controlar la apariencia de la tabla si está disponible}
+tabtext wm.table_lang -lang spa {Tablas de Idioma} {Una vista conveniente para mostrar etiquetas de tablas en los idiomas deseados} {
+  {tab_sch	{Esquema}	{El esquema de la tabla}}
+  {tab_name	{Nombre}	{El nombre de la tabla dentro del esquema}}
+  {language	{Idioma}	{El lenguaje del título/ayuda si está disponible}}
+  {tab_kind	{Tipo}	{Tipo de tabla (base, vista, etc.)}}
+  {title	{Título}	{Una etiqueta corta para esta tabla si está disponible}}
+  {help	{Ayuda}	{Una descripción completa de esta tabla si está disponible}}
+  {style	{Estilo}	{Información de estilo serializada para controlar la apariencia de la tabla si está disponible}}
 }
 
-tabtext wm.language {Idioma} {Vista para enumerar idiomas/etiquetas disponibles en la base de datos} {
-  {fr_lang}	{Desde Idioma}	{El idioma desde el que se tradujo}
-  {language}	{Idioma}	{El código ISO del idioma traducido}
-  {sorter}	{Clasificador}	{Una clave de clasificación para mantener los elementos en un orden específico}
-  {title}	{Título}	{La traducción del texto}
+tabtext wm.language -lang spa {Idioma} {Vista para enumerar idiomas/etiquetas disponibles en la base de datos} {
+  {fr_lang	{Desde Idioma}	{El idioma desde el que se tradujo}}
+  {language	{Idioma}	{El código ISO del idioma traducido}}
+  {sorter	{Clasificador}	{Una clave de clasificación para mantener los elementos en un orden específico}}
+  {title	{Título}	{La traducción del texto}}
 }
 
-tabtext wm.objects_v {Vista de Objetos} {Una vista conveniente para mostrar los datos de los objetos con los nombres de las columnas del esquema/tabla normalizados} {
-  {obj_typ}	{Tipo}	{El tipo de objeto de base de datos (tabla, vista, función, etc.)}
-  {obj_sch}	{Esquema}	{El esquema que contiene el objeto}
-  {obj_name}	{Nombre}	{El nombre del objeto dentro del esquema}
-  {obj_ver}	{Versión}	{Número de versión interna del objeto, que se incrementa cada vez que se modifica}
-  {obj_kind}	{Clase}	{En el caso de tablas que alojan múltiples tipos de objetos, qué tipo particular se está describiendo en este registro (por ejemplo, check, primary, unique, foreign, etc.)}
-  {obj_seq}	{Secuencia}	{En casos donde hay varios objetos del mismo tipo y nombre, qué número es este (comenzando con 0)}
-  {obj_rep}	{Reporte}	{Un nombre único para hacer referencia a este registro (en lenguajes que no admiten tuplas)}
-  {depend}	{Dependencia}	{Una expresión regular de Tcl que coincida con todos los objetos de los que depende directamente este objeto (excepto el propio objeto)}
-  {obj_parm}	{Parámetros}	{Para objetos como vistas que pueden tener parámetros de alias/sustitución, una lista de dichos parámetros disponibles}
-  {obj_stat}	{Estado}	{Indica cómo se ha compilado este objeto (0:not done, 1:identical, 2:compiled)}
-  {obj_ddl}	{DDL}	{El DDL utilizado para crear el objeto}
-  {releaseno}	{Lanzamiento}	{El número de versión pública en la que se incluyó inicialmente el objeto}
-  {min_rel}	{Lanzamiento Mínimo}	{El objeto solo es compatible con bases de datos ya en o por encima de esta versión}
-  {max_rel}	{Lanzamiento Máximo}	{El objeto solo es compatible con bases de datos por debajo de esta versión}
-  {crt_sql}	{SQL de Creación}	{El script SQL real que se ejecutará para agregar/compilar este objeto a la base de datos}
-  {drp_sql}	{SQL de Eliminación}	{El script SQL real que se ejecutará para eliminar este objeto de la base de datos}
-  {sel_sql}	{SQL de Selección}	{El script SQL real que se ejecutará para seleccionar datos de este objeto}
-  {sel_ver}	{Versión de Selección}	{El número de versión de sel_sql que se incrementará cada vez que cambie el script de selección real}
-  {mod_date}	{Modificado}	{La fecha y hora en que se modificó por última vez}
-  {crt_date}	{Creado}	{La fecha y hora en que se creó este registro}
-}
-
--message {
-    {INP}	{Operador Inválido}	{El operador lógico especificado no es comprensible}
-    {NRE}	{Sin Resultado}	{La consulta no arrojó ningún resultado}
-    {KVL}	{Violación de Clave}	{El valor de clave especificado no existe}
-    {IVL}	{Violación de Integridad}	{La operación podría comprometer la integridad de la base de datos}
-    {SVL}	{Violación de Seguridad}	{La operación no está permitida para este usuario/grupo/rol}
-    {ASR}	{Aserción}	{La comprobación de datos con la regla especificada falló}
-    {CFG}	{Configuración Inválida}	{La base de datos tiene inconsistencias en su configuración}
-    {APP}	{Error de Aplicación}	{Ocurrió un error en el procesamiento especial de la aplicación}
-    {SYS}	{Error del Sistema}	{Ocurrió un error del sistema relacionado con el sistema operativo}
-    {DFN}	{Error de Definición}	{La solicitud contenía una definición de objeto inválida}
-    {DPN}	{Error de Dependencia}	{Conflicto con objeto dependiente}
-    {PRM}	{Error de Permisos}	{Falta permiso para esta operación}
-    {IMP}	{Error de Implementación}	{Error de implementación interna}
-    {LNG}	{Idioma no disponible}	{No se pudo encontrar el idioma solicitado}
-    {ACR}	{Sin acceso}	{El rol/usuario no puede acceder al objeto}
-    {SCH}	{Sin esquema}	{No se pudo crear o ubicar el esquema solicitado}
-    {DBV}	{Versión de Base de Datos}	{Versión de base de datos incompatible}
-    {STP}	{Operación detenida}	{La operación se canceló por solicitud del usuario}
+tabtext wm.objects_v -lang spa {Vista de Objetos} {Una vista conveniente para mostrar los datos de los objetos con los nombres de las columnas del esquema/tabla normalizados} {
+  {obj_typ	{Tipo}	{El tipo de objeto de base de datos (tabla, vista, función, etc.)}}
+  {obj_sch	{Esquema}	{El esquema que contiene el objeto}}
+  {obj_name	{Nombre}	{El nombre del objeto dentro del esquema}}
+  {obj_ver	{Versión}	{Número de versión interna del objeto, que se incrementa cada vez que se modifica}}
+  {obj_kind	{Clase}	{En el caso de tablas que alojan múltiples tipos de objetos, qué tipo particular se está describiendo en este registro (por ejemplo, check, primary, unique, foreign, etc.)}}
+  {obj_seq	{Secuencia}	{En casos donde hay varios objetos del mismo tipo y nombre, qué número es este (comenzando con 0)}}
+  {obj_rep	{Reporte}	{Un nombre único para hacer referencia a este registro (en lenguajes que no admiten tuplas)}}
+  {depend	{Dependencia}	{Una expresión regular de Tcl que coincida con todos los objetos de los que depende directamente este objeto (excepto el propio objeto)}}
+  {obj_parm	{Parámetros}	{Para objetos como vistas que pueden tener parámetros de alias/sustitución, una lista de dichos parámetros disponibles}}
+  {obj_stat	{Estado}	{Indica cómo se ha compilado este objeto (0:not done, 1:identical, 2:compiled)}}
+  {obj_ddl	{DDL}	{El DDL utilizado para crear el objeto}}
+  {releaseno	{Lanzamiento}	{El número de versión pública en la que se incluyó inicialmente el objeto}}
+  {min_rel	{Lanzamiento Mínimo}	{El objeto solo es compatible con bases de datos ya en o por encima de esta versión}}
+  {max_rel	{Lanzamiento Máximo}	{El objeto solo es compatible con bases de datos por debajo de esta versión}}
+  {crt_sql	{SQL de Creación}	{El script SQL real que se ejecutará para agregar/compilar este objeto a la base de datos}}
+  {drp_sql	{SQL de Eliminación}	{El script SQL real que se ejecutará para eliminar este objeto de la base de datos}}
+  {sel_sql	{SQL de Selección}	{El script SQL real que se ejecutará para seleccionar datos de este objeto}}
+  {sel_ver	{Versión de Selección}	{El número de versión de sel_sql que se incrementará cada vez que cambie el script de selección real}}
+  {mod_date	{Modificado}	{La fecha y hora en que se modificó por última vez}}
+  {crt_date	{Creado}	{La fecha y hora en que se creó este registro}}
+} -message {
+    {INP	{Operador Inválido}	{El operador lógico especificado no es comprensible}}
+    {NRE	{Sin Resultado}	{La consulta no arrojó ningún resultado}}
+    {KVL	{Violación de Clave}	{El valor de clave especificado no existe}}
+    {IVL	{Violación de Integridad}	{La operación podría comprometer la integridad de la base de datos}}
+    {SVL	{Violación de Seguridad}	{La operación no está permitida para este usuario/grupo/rol}}
+    {ASR	{Aserción}	{La comprobación de datos con la regla especificada falló}}
+    {CFG	{Configuración Inválida}	{La base de datos tiene inconsistencias en su configuración}}
+    {APP	{Error de Aplicación}	{Ocurrió un error en el procesamiento especial de la aplicación}}
+    {SYS	{Error del Sistema}	{Ocurrió un error del sistema relacionado con el sistema operativo}}
+    {DFN	{Error de Definición}	{La solicitud contenía una definición de objeto inválida}}
+    {DPN	{Error de Dependencia}	{Conflicto con objeto dependiente}}
+    {PRM	{Error de Permisos}	{Falta permiso para esta operación}}
+    {IMP	{Error de Implementación}	{Error de implementación interna}}
+    {LNG	{Idioma no disponible}	{No se pudo encontrar el idioma solicitado}}
+    {ACR	{Sin acceso}	{El rol/usuario no puede acceder al objeto}}
+    {SCH	{Sin esquema}	{No se pudo crear o ubicar el esquema solicitado}}
+    {DBV	{Versión de Base de Datos}	{Versión de base de datos incompatible}}
+    {STP	{Operación detenida}	{La operación se canceló por solicitud del usuario}}
 }

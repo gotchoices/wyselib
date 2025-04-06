@@ -185,7 +185,6 @@ tabtext wylib.data -lang spa {Datos de GUI} {Datos de configuración y preferenc
     {svgReset		{Restablecer}		{Borrar gráfico y luego actualizarlo desde los datos de origen}}
     {svgExtent		{Zoom Automático}	{Zoom de gráfico para mostrar todos los nodos}}
     {svgDefaults	{Predeterminados}	{Restaurar ajustes a la configuración predeterminada}}
-    {X		{}		{}}
 }
 
 tabtext wylib.data_v -lang spa {Datos de GUI} {Una vista de datos de configuración y preferencias a los que acceden los widgets de vista Wylib} {
