@@ -1,0 +1,193 @@
+#Copyright WyattERP.org; See license in root of this package
+#----------------------------------------------------------------
+
+tabtext wylib.data -lang spa {Datos de GUI} {Datos de configuración y preferencias a los que acceden los widgets de vista Wylib} {
+    {ruid		{ID de Registro}		{Un número de ID único generado para cada registro de datos}}
+    {component		{Componente}		{La parte de la interfaz gráfica o de otro tipo de usuario que utiliza estos datos}}
+    {name		{Nombre}			{Un nombre que explica la versión o configuración que representan estos datos (es decir, Predeterminado, Búsqueda, Alfabético, Urgente, Activo, etc.)}}
+    {descr		{Descripción}		{Una descripción completa de para qué es esta configuración}}
+    {access		{Acceso}		{Quién puede acceder a estos datos y cómo} {
+        {priv		{Privado}		{Solo el propietario de estos datos puede leer, escribir o eliminarlos}}
+        {read		{Lectura Pública}		{El propietario puede leer y escribir, todos los demás pueden leer o verlo}}
+        {write		{Escritura Pública}		{Cualquiera puede leer, escribir o eliminar estos datos}}
+    }}
+    {owner		{Propietario}			{La entidad de usuario que creó y tiene permiso completo para los datos en este registro}}
+    {data		{Datos JSON}		{Un registro en JSON (JavaScript Object Notation) en un formato conocido y controlado por el módulo de vista u otro módulo de acceso}}
+    {crt_date		{Creado}		{La fecha en que se creó este registro}}
+    {mod_date		{Modificado}		{La fecha de la última modificación de este registro}}
+    {crt_by		{Creado por}		{El usuario que ingresó este registro}}
+    {mod_by		{Modificado Por}	{El usuario que modificó por última vez este registro}}
+} -mess {
+    {IAT		{Tipo de Acceso Inválido}	{El tipo de acceso debe ser: priv, read o write}}
+    {appSave		{Guardar Estado}		{Vuelva a guardar el diseño y el estado operativo de la aplicación en la configuración con nombre actual, si existe}}
+    {appSaveAs		{Guardar Estado Como}	{Guarde el diseño y el estado operativo de la aplicación, y todas sus ventanas subordinadas, utilizando una configuración con nombre}}
+    {appRestore		{Cargar Estado}		{Restaurar el diseño y el estado operativo de la aplicación desde un estado previamente guardado}}
+    {appPrefs		{Preferencias}		{Ver/editar configuraciones para la aplicación o para un subcomponente}}
+    {appDefault		{Estado Predeterminado}	{Recargar la aplicación a su estado predeterminado (¡perderá cualquier estado de configuración no guardado, incluidas las claves de conexión)!}}
+    {appStatePrompt	{Etiqueta de ID de Estado}	{El nombre o las palabras que utilizará para identificar este estado guardado al considerarlo para su posterior recuperación}}
+    {appStateTag	{Etiqueta de Estado}	{La etiqueta es un nombre breve al que se referirá más adelante al cargar el estado guardado}}
+    {appStateDescr	{Descripción de Estado}	{Una descripción completa del estado guardado y para qué lo utiliza}}
+    {appEditState	{Editar Estados}		{Vista previa de una lista de estados guardados para esta aplicación}}
+    {appServer		{Servidor}		{Alternar menú para conectarse a varios servidores}}
+    {appServerURL	{URL del Servidor}	{El dominio y puerto del servidor al que está conectado actualmente}}
+    {appNoConnect	{No Conectado}		{La aplicación no está conectada a un servidor backend}}
+    {appLocalAsk	{Almacenar Datos en Navegador}	{OK significa que la aplicación puede almacenar información sensible en su navegador, incluida su clave de conexión privada. ¡Esto podría ser espiado por otros que puedan tener acceso a esta computadora! ¡Si obtienen su clave, pueden conectarse a sus datos, conectados como usted! Cancelar para no almacenar datos de la aplicación en el navegador.}}
+    {appLocalPrompt	{Solicitud de Inicio de Sesión}	{La aplicación le mostrará esta solicitud cada vez que cargue la aplicación para pedirle su frase de contraseña}}
+    {appLocalP1		{Su Frase de Contraseña}	{Ingrese una frase de contraseña que se utilizará para desbloquear su almacenamiento local, incluidas las claves de conexión. ¡Si deja esto en blanco y presiona OK, sus datos se almacenarán sin cifrar!}}
+    {appLocalP2		{Verificación de Frase de Contraseña}	{Ingrese la frase de contraseña una segunda vez}}
+    {conmenu		{Menú de Conexión}	{Varias funciones auxiliares para controlar cómo se conecta a sitios de servidores y administra sus claves de conexión}}
+    {conTitle		{Claves de Conexión}	{Una lista de credenciales, servidores y puertos donde normalmente se conecta. Obtenga un ticket del administrador del sitio donde desea conectarse.}}
+    {conConnect		{Conectar}		{Intentar conectarse o desconectarse del servidor seleccionado}}
+    {conDelete		{Eliminar}		{Eliminar las conexiones de servidor seleccionadas de la lista}}
+    {conImport		{Importar Claves}	{Arrastre/suelte archivos de clave aquí, o haga clic para importar una clave de conexión o un ticket de conexión de un solo uso}}
+    {conExport		{Exportar Claves}	{Guarde las claves de conexión privadas seleccionadas en un archivo. Elimine estos archivos inmediatamente después de moverlos a un dispositivo de respaldo privado. ¡Nunca los deje en el área de descarga o en un sistema de archivos activo!}}
+    {conRetry		{Reintentando en}	{Intentará reconectarse automáticamente al servidor}}
+    {conExpFile		{Nombre de Archivo de Clave}	{El nombre de archivo que se utilizará para guardar las claves privadas seleccionadas}}
+    {conExpPass		{Frase de Contraseña de Clave}	{Una frase de contraseña secreta para cifrar/descifrar claves privadas almacenadas en un formato externo. Dejar en blanco (tontamente) para no cifrar.}}
+    {conExpPass2	{Volver a Ingresar Frase de Contraseña}	{Ingresar frase de contraseña nuevamente}}
+    {conUsername	{Nombre de Usuario}	{Ingrese el nombre que utilizará para conectarse a la base de datos backend. Si no lo sabe. Pregunte a la persona que emitió su ticket de conexión.}}
+    {conNoCrypto	{Sin Biblioteca Criptográfica}	{Funciones criptográficas no encontradas en la API del navegador. Asegúrese de estar conectado por https o use un navegador más moderno.}}
+    {conCryptErr	{Generando Clave}	{Hubo un error en el navegador al intentar generar una clave de conexión}}
+    {dbe		{Editar Registros}	{Insertar, cambiar y eliminar registros de la vista de la base de datos}}
+    {dbeColMenu		{Columna}		{Operaciones que puede realizar en esta columna de la vista previa}}
+    {dbeMenu		{Edición}		{Un menú de funciones para editar un registro de base de datos}}
+    {dbeInsert		{Agregar Nuevo}		{Insertar un nuevo registro en la tabla de la base de datos}}
+    {dbeUpdate		{Actualizar}		{Modificar campos cambiados en el registro de base de datos existente}}
+    {dbeDelete		{Eliminar}		{Eliminar este registro de base de datos (no se puede deshacer)}}
+    {dbeClear		{Limpiar}		{Vaciar los campos de edición, descontinuar la edición de cualquier registro de base de datos que se haya cargado}}
+    {dbeLoadRec		{Cargar Registro}	{Cargar un registro específico de la base de datos por su clave primaria}}
+    {dbePrimary		{Clave Primaria}	{El valor que identifica de manera única el registro actual entre todas las filas de la tabla de la base de datos}}
+    {dbeActions		{Acciones}		{Realizar varios comandos relacionados con esta vista y registro en particular}}
+    {dbePreview		{Vista Previa de Documento}	{Vista previa de este registro como un documento}}
+    {dbeSubords		{Vista Previa}		{Alternar la visualización de vistas y registros que se relacionan con el registro cargado actualmente}}
+    {dbeLoadPrompt	{Valor(es) de Clave Primaria}	{Ingrese los valores de campo de clave primaria para el registro que desea cargar}}
+    {dbeRecordID	{ID de Registro}	{Cargar un registro especificando directamente sus valores de clave primaria}}
+    {dbePopupErr	{Fallo de Ventana Emergente}	{Error al intentar abrir una ventana emergente. ¿El navegador está bloqueando ventanas emergentes?}}
+    {dbeOption		{Campos Opcionales}	{Mostrar información adicional sobre este registro}}
+    {dbeNoPkey		{Sin Clave Primaria}	{La actualización del informe no pudo determinar los campos de clave primaria para el registro. Cualquier cambio puede perderse.}}
+    {fileImport		{Importar Archivo}	{Arrastre/suelte archivos aquí, o haga clic para importar un archivo desde su dispositivo}}
+    {fileExport		{Exportar Archivo}	{Guardar estos datos en un archivo local en su dispositivo}}
+    {winMenu		{Funciones de Ventana}	{Un menú de funciones para la visualización y operación de esta ventana}}
+    {winSave		{Guardar Estado}	{Vuelva a guardar el diseño y el estado operativo de esta ventana en la configuración con nombre actual, si existe}}
+    {winSaveAs		{Guardar Estado Como}	{Guardar el diseño y el estado operativo de esta ventana, y todas sus ventanas subordinadas, en una configuración con nombre}}
+    {winRestore		{Cargar Estado}		{Restaurar el diseño y el estado operativo de la ventana desde un estado previamente guardado}}
+    {winGeom		{Geometría Predeterminada}	{Dejar que esta ventana se dimensione según su configuración predeterminada}}
+    {winDefault		{Estado Predeterminado}	{Borrar datos de configuración almacenados localmente para esta ventana}}
+    {winModified	{Cerrar Panel Modificado}	{Los cambios pueden perderse si cierra la ventana}}
+    {winPinned		{Ventana Fijada}	{Mantener esta ventana abierta hasta que se cierre explícitamente}}
+    {winClose		{Cerrar Ventana}	{Cerrar esta ventana}}
+    {winToTop		{Mover a la Parte Superior}	{Hacer que esta ventana se muestre por encima de otras de sus pares (también puede hacer doble clic en un encabezado de ventana)}}
+    {winToBottom	{Mover a la Parte Inferior}	{Colocar esta ventana detrás de otras de sus pares}}
+    {winMinimize	{Minimizar}		{Reducir la ventana a un icono mediante el cual se puede volver a abrir}}
+    {winPopUp		{Ventana Emergente Imprimible}	{Hacer una copia, si es posible, de esta ventana en una ventana emergente separada para que se pueda imprimir, separada del resto de la página}}
+    {winPrint		{Imprimir Documento}	{Encontrar el documento independiente más cercano (iframe) dentro de este componente e imprimirlo}}
+    {winUnknown		{Mensaje Desconocido}	{Se generó un error o consulta que no pudo ser entendido por el programa}}
+    {winUnCode		{Código de Error Desconocido}	{Se devolvió un mensaje de error con un código o estado no reconocido}}
+    {dbp		{Vista Previa}		{Una ventana para mostrar los registros de una tabla de base de datos en una cuadrícula como una hoja de cálculo}}
+    {dbpMenu		{Menú de Vista Previa}	{Un menú de funciones para operar en la lista de vista previa a continuación}}
+    {dbpReload		{Recargar}		{Recargar los registros especificados en la carga anterior}}
+    {dbpLoad		{Cargar Predeterminado}	{Cargar los registros que normalmente se muestran en esta vista}}
+    {dbpLoadAll		{Cargar Todo}		{Cargar todos los registros de esta tabla}}
+    {dbpClear		{Limpiar Vista Previa}	{Eliminar el contenido de la ventana de vista previa, sin registros cargados}}
+    {dbpDefault		{Columnas Predeterminadas}	{Establecer toda la visualización y orden de columnas al valor predeterminado de la base de datos}}
+    {dbpFilter		{Filtrar}		{Cargar registros según criterios de filtro}}
+    {dbpLimit		{Límite de Carga}	{Cargar como máximo esta cantidad de registros incluso si existen más en la base de datos}}
+    {dbpAutoLoad	{Ejecución Automática}	{Ejecutar automáticamente la fila superior cada vez que se recarga la vista previa}}
+    {dbpLoaded		{Registros Cargados}	{Cuántos registros están cargados actualmente en la vista previa}}
+    {dbpShowSum		{Mostrar Resúmenes}	{Mostrar una fila de resumen en la parte inferior de la vista previa. Usar menú contextual en columna para determinar qué función de resumen para cada columna.}}
+    {dbpColumn		{Menú de Columna}	{Menú de comandos para controlar esta visualización de columna}}
+    {dbpVisible		{Visible}		{Especificar qué columnas son visibles en la vista previa}}
+    {dbpVisCheck	{Visible}		{Marcar la casilla para hacer visible esta columna}}
+    {dbpColAuto		{Tamaño Automático}	{Ajustar el ancho de esta columna para que sea óptimo para su contenido}}
+    {dbpColHide		{Ocultar Columna}	{Eliminar esta columna de la visualización}}
+    {dbpNext		{Siguiente Registro}	{Mover la selección una línea hacia abajo y ejecutar (normalmente editar) esa nueva línea}}
+    {dbpPrev		{Registro Anterior}	{Mover la selección una línea hacia arriba y ejecutar (normalmente editar) esa nueva línea}}
+    {dbpNoPkey		{Sin Clave Primaria}	{El sistema no pudo determinar los campos de clave primaria para esta tabla o vista}}
+    {dbpExport		{Exportar Registros}	{Guardar los registros seleccionados en un archivo local}}
+    {dbpExportAsk	{Exportar Archivo}	{Proporcionar un nombre de archivo para usar al exportar}}
+    {dbpExportFmt	{Bonito}		{Exportar el archivo con sangría para hacerlo más fácilmente legible por personas}}
+    {X.dbpColSel	{Columnas Visibles}	{Mostrar u ocultar columnas individuales}}
+    {X.dbpFooter	{Pie de Página}		{Marcar la casilla para activar los resúmenes de columnas, en la parte inferior}}
+    {dbs		{Búsqueda con Filtro}	{Cargar registros según criterios de filtro}}
+    {dbsSearch		{Búsqueda de Consulta}	{Ejecutar la consulta de selección configurada, devolviendo registros coincidentes}}
+    {dbsClear		{Limpiar Consulta}	{Limpiar todos los términos lógicos}}
+    {dbsDefault		{Carga Predeterminada}	{Cargar la consulta que indica cómo se cargan normalmente (por defecto) los registros de esta tabla}}
+    {dbsSave		{Guardar Consulta}	{Guardar la consulta actual para uso futuro}}
+    {dbsRecall		{Recordar Consulta}	{Recordar una consulta con nombre que se ha guardado previamente}}
+    {dbsEqual		{=}			{El lado izquierdo y derecho de la comparación son iguales}}
+    {dbsLess		{<}			{El valor izquierdo es menor que el valor a la derecha}}
+    {dbsLessEq		{<=}			{El valor izquierdo es menor o igual al valor a la derecha}}
+    {dbsMore		{>}			{El valor izquierdo es mayor que el valor a la derecha}}
+    {dbsMoreEq		{>=}			{El valor izquierdo es mayor o igual al valor a la derecha}}
+    {dbsRexExp		{~}			{El valor izquierdo coincide con una expresión regular dada por el valor a la derecha}}
+    {dbsDiff		{Diff}			{El lado izquierdo es diferente del derecho, en una comparación donde dos nulos (valores no asignados) pueden considerarse iguales}}
+    {dbsIn		{En}			{El valor izquierdo existe en una lista separada por comas que especifica, o una matriz en otro campo de la base de datos}}
+    {dbsNull		{Nulo}			{El valor a la izquierda es nulo, o no asignado}}
+    {dbsTrue		{Verdadero}		{El valor izquierdo es un booleano con un valor verdadero}}
+    {dbsNop		{<Nop>}			{Esta operación hace que toda la cláusula de comparación sea ignorada}}
+    {diaDialog		{Diálogo}		{Consultar al usuario valores o parámetros específicos de entrada}}
+    {diaReport		{Informe}		{Ventana de informe}}
+    {diaOK		{OK}			{Reconocer que ha visto el mensaje publicado}}
+    {diaYes		{OK}			{Continuar con la operación propuesta y cerrar el diálogo}}
+    {diaCancel		{Cancelar}		{Abandonar la operación asociada con el diálogo}}
+    {diaApply		{Realizar}		{Realizar la acción asociada con este diálogo, pero no cerrarlo}}
+    {diaError		{Error}			{Algo salió mal}}
+    {diaNotice		{Aviso}			{El mensaje es una advertencia o consejo para el usuario}}
+    {diaConfirm		{Confirmar}		{Se pide al usuario que confirme antes de continuar, o cancele para abandonar la operación}}
+    {diaQuery		{Entrada}		{Se pide al usuario ciertos datos de entrada y una confirmación antes de continuar}}
+    {mdewMore		{Más Campos}		{Haga clic para ver más campos de datos relacionados con este registro}}
+    {23505		{Violación de Clave}	{Una operación habría resultado en múltiples registros con datos duplicados, que se requiere que sean únicos}}
+    {subWindow		{Vista Subordinada}	{Abrir una vista previa de registros en otra tabla que se relacionan con el registro cargado actualmente desde esta vista}}
+    {litToSub		{A Subgrupo}		{Mover este elemento a un subgrupo más profundo}}
+    {litLeft		{Lado Izquierdo}	{Especificar un campo de la base de datos para comparar}}
+    {litRight		{Lado Derecho}		{Especificar un campo de la base de datos o entrada manual para comparar}}
+    {litManual		{Entrada Manual}	{Ingresar un valor manualmente a la derecha}}
+    {litRightVal	{Valor Derecho}		{Especificar un valor explícito del lado derecho para la comparación}}
+    {litRemove		{Eliminar Elemento}	{Eliminar este elemento de la lista de comparación}}
+    {litNot		{No}			{Si se afirma, el sentido de la comparación será negado, o se volverá opuesto}}
+    {litCompare		{Comparación}		{Especificar un operador para la comparación}}
+    {lstAndOr		{Y/O}			{Especificar si todas las condiciones deben ser verdaderas (y), o solo una o más (o)}}
+    {lstAddCond		{Agregar Condición}	{Agregar otra condición para comparación}}
+    {lstRemove		{Eliminar Agrupación}	{Eliminar este grupo de condiciones}}
+    {lchAdd		{Lanzar Vista Previa}	{Use este botón para abrir tantas vistas previas de base de datos nuevas como desee}}
+    {lchImport		{Importador}		{Arrastre/suelte archivos aquí, o haga clic y explore, para importar datos desde un archivo con formato JSON}}
+    {sdc		{Documento Estructurado}	{Un editor para documentos estructurados en formato de esquema}}
+    {sdcMenu		{Menú de Documento}	{Un menú de funciones para trabajar con documentos estructurados}}
+    {sdcUpdate		{Actualizar}		{Guardar cambios en este documento de vuelta a la base de datos}}
+    {sdcUndo		{Deshacer}		{Revertir el efecto de una eliminación o movimiento de párrafo}}
+    {sdcClear		{Limpiar}		{Eliminar el contenido del documento en la pantalla. No afecta la base de datos.}}
+    {sdcClearAsk	{Limpiar Espacio de Trabajo}	{¿Está seguro de que desea borrar los datos del documento?}}
+    {sdcImport		{Importar Archivo}	{Cargar el espacio de trabajo desde un archivo guardado externamente}}
+    {sdcImportAsk	{Importar Desde Archivo}	{Seleccione un archivo para importar, o arrástrelo al botón de importación}}
+    {sdcExport		{Exportar a Archivo}	{Guardar el documento en un archivo externo}}
+    {sdcExportAsk	{Exportar Archivo}	{Ingrese un nombre de archivo para usar al exportar}}
+    {sdcExportFmt	{Bonito}		{Exportar el archivo con sangría para hacerlo más fácilmente legible por personas}}
+    {sdcSpell		{Revisión Ortográfica}	{Habilitar/deshabilitar la revisión ortográfica en la pantalla}}
+    {sdcBold		{Negrita}		{Marcar el texto resaltado como negrita}}
+    {sdcItalic		{Cursiva}		{Marcar el texto resaltado como cursiva}}
+    {sdcUnder		{Subrayado}		{Subrayar texto resaltado}}
+    {sdcCross		{Referencia Cruzada}	{Envolver el texto resaltado con una referencia cruzada. El texto debe ser un nombre de etiqueta para otra sección. Ese número de sección se sustituirá por el nombre de la etiqueta.}}
+    {sdcTitle		{Título}		{Un título opcional para esta sección o párrafo}}
+    {sdcSection		{Sección}		{Haga clic para editar texto. Haga doble clic en el borde para el modo de edición directa. Arrastre en el borde para mover.}}
+    {sdcName		{Nombre}		{Una palabra identificativa que se puede utilizar para hacer referencia cruzada a esta sección o párrafo}}
+    {sdcText		{Texto de Párrafo}	{Insertar/Editar el texto del párrafo sin procesar directamente aquí, incluida la entrada de etiquetas HTML limitadas, si se desea}}
+    {sdcSource		{Fuente}		{Especifica un documento o recurso externo que se incluirá en este punto del documento}}
+    {sdcResource	{Recurso}		{El siguiente recurso se incluye aquí}}
+    {sdcTogSource	{Alternar Recurso}	{Seleccionar si esta sección contiene contenido local o una referencia a un recurso externo}}
+    {sdcEdit		{Edición Directa}	{Esta sección o párrafo está en modo de edición directa. Haga doble clic en el fondo para volver al modo de vista previa.}}
+    {sdcPreview		{Modo de Vista Previa}	{Esta sección o párrafo está en modo de vista previa. Haga doble clic en el fondo para ir al modo de edición.}}
+    {sdcAdd		{Agregar Subsección}	{Crear un nuevo párrafo o sección anidada debajo de esta}}
+    {sdcDelete		{Eliminar Sección}	{Eliminar esta sección del documento y todas sus subsecciones}}
+    {sdcEditAll		{Editar Todo}		{Poner todos los párrafos o secciones en modo de edición directa. Esto se puede hacer uno a la vez haciendo doble clic en el párrafo.}}
+    {sdcPrevAll		{Vista Previa de Todo}	{Sacar todos los párrafos o secciones del modo de edición directa y ponerlos en modo de vista previa}}
+    {svgCurve		{Curva de Conector}	{Cuán lejos extender los puntos de control de curva de borde de gráfico}}
+    {svgRefresh		{Actualizar}		{Actualizar gráfico desde sus datos de origen}}
+    {svgReset		{Restablecer}		{Borrar gráfico y luego actualizarlo desde los datos de origen}}
+    {svgExtent		{Zoom Automático}	{Zoom de gráfico para mostrar todos los nodos}}
+    {svgDefaults	{Predeterminados}	{Restaurar ajustes a la configuración predeterminada}}
+    {X		{}		{}}
+}
+
+tabtext wylib.data_v -lang spa {Datos de GUI} {Una vista de datos de configuración y preferencias a los que acceden los widgets de vista Wylib} {
+    {own_name		{Nombre del Propietario}		{El nombre de la persona que guardó estos datos de configuración}}
+}
