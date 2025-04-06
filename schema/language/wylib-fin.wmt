@@ -1,22 +1,66 @@
-# For language testing purposes only
+#Format WMT ver=1
 
-tabtext wylib.data -lang fin {GUI Data} {Wylib-näkymäkomponenttien käyttämät konfigurointi- ja asetustiedot} {
-  {ruid {Tunnistaa} {Kullekin datatietueelle tuotettu yksilöllinen ID-numero}}
-  {component {Komponentti} {GUI:n osa joka käyttää tämä data}}
-  {access {Pääsy} {Kuka saa käyttää näitä tietoja ja miten} {
-    {priv {Yksityinen} {Vain näiden tietojen omistaja voi lukea, kirjoittaa tai poistaa sen}}
-    {read {Julkinen Lukea} {Omistaja voi lukea ja kirjoittaa, kaikki muut voivat lukea tai nähdä sen}}
-    {write {Julkinen Kirjoittaa} {Jokainen voi lukea, kirjoittaa tai poistaa näitä tietoja}}
+tabtext wylib.data -lang fin {Käyttöliittymän tiedot} {Wylib-näkymäkomponenttien käyttämät konfiguraatio- ja asetustiedot} {
+  {ruid {Tietueen tunniste} {Kullekin datatietueelle luotu yksilöllinen tunnistenumero}}
+  {component {Komponentti} {Graafisen tai muun käyttöliittymän osa, joka käyttää näitä tietoja}}
+  {name {Nimi} {Nimi, joka selittää tämän tiedon version tai konfiguraation (esim. Oletus, Haku, Aakkosjärjestys, Kiireellinen, Aktiivinen, jne.)}}
+  {descr {Kuvaus} {Täydellinen kuvaus siitä, mihin tämä konfiguraatio on tarkoitettu}}
+  {access {Käyttöoikeus} {Kuka saa käyttää näitä tietoja ja miten} {
+    {priv {Yksityinen} {Vain näiden tietojen omistaja voi lukea, kirjoittaa tai poistaa ne}}
+    {read {Julkinen luku} {Omistaja voi lukea ja kirjoittaa, kaikki muut voivat vain lukea tietoja}}
+    {write {Julkinen kirjoitus} {Kuka tahansa voi lukea, kirjoittaa tai poistaa näitä tietoja}}
   }}
+  {owner {Omistaja} {Käyttäjäentiteetti, joka loi tämän tietueen ja jolla on täydet oikeudet sen tietoihin}}
+  {data {JSON-tiedot} {Tietue JSON-muodossa (JavaScript Object Notation) näkymän tai muun käyttömoduulin tuntemassa ja hallitsemassa muodossa}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+  {mod_date {Muokattu} {Päivämäärä, jolloin tätä tietuetta viimeksi muokattiin}}
+  {crt_by {Luoja} {Käyttäjä, joka loi tämän tietueen}}
+  {mod_by {Muokkaaja} {Käyttäjä, joka viimeksi muokkasi tätä tietuetta}}
 } -messages {
-  {IAT {Virheellinen käyttötyyppi} {Käytön tyypin on oltava: priv, lukea tai kirjoittaa}}
-  {dbeActions {Tehköjä} {Tehdä muutamia asioita tämän mukaisesti}}
-  {dbpFilter {Suodattaa} {Lataa tietueet suodatuskriteerien mukaisesti}}
-  {dbpFooter {Yhteenveto} {Ota ruutuun käyttöön sarakeyhteenveto}}
-  {dbpLoad {Ladata Oletus} {Aseta tässä näkymässä näkyvät kirjaukset oletuksena}}
-  {dbpLoadAll {Loadata Kaikki} {Lataa kaikki taulukon tiedot}}
+  {IAT {Virheellinen käyttöoikeustyyppi} {Käyttöoikeuden tyypin on oltava: priv, read tai write}}
+  {appSave {Tallenna tila} {Tallenna sovelluksen asettelu ja käyttötila uudelleen nykyiseen nimettyyn konfiguraatioon, jos sellainen on}}
+  {appSaveAs {Tallenna tila nimellä} {Tallenna sovelluksen asettelu ja käyttötila sekä kaikki sen alaikkunat käyttäen nimettyä konfiguraatiota}}
+  {appRestore {Lataa tila} {Palauta sovelluksen asettelu ja käyttötila aiemmin tallennetusta tilasta}}
+  {appPrefs {Asetukset} {Tarkastele/muokkaa sovelluksen tai sen osakomponentin asetuksia}}
+  {appDefault {Oletustila} {Lataa sovellus oletustilaansa (menetät kaikki tallentamattomat konfiguraatiotiedot, mukaan lukien yhteysavaimet)!}}
+  {appStatePrompt {Tilan tunniste} {Nimi tai sanat, joilla tunnistat tämän tallennetun tilan myöhemmin palauttaessasi sen}}
+  {appStateTag {Tilatunniste} {Tunniste on lyhyt nimi, johon viittaat myöhemmin ladatessasi tallennettua tilaa}}
+  {appStateDescr {Tilan kuvaus} {Täydellinen kuvaus tallennetusta tilasta ja mihin käytät sitä}}
+  {appEditState {Muokkaa tiloja} {Esikatsele luettelo tämän sovelluksen tallennetuista tiloista}}
+  {appServer {Palvelin} {Valikko eri palvelimiin yhdistämistä varten}}
+  {appServerURL {Palvelimen URL} {Palvelimen domain ja portti, johon olet tällä hetkellä yhdistettynä}}
+  {appNoConnect {Ei yhteyttä} {Sovellus ei ole yhteydessä taustapalvelimeen}}
+  {appLocalAsk {Tallenna tiedot selaimeen} {OK tarkoittaa, että sovellus voi tallentaa arkaluonteisia tietoja selaimeesi, mukaan lukien yksityisen yhteysavaimesi. Muut, joilla on pääsy tähän tietokoneeseen, saattavat päästä käsiksi näihin tietoihin! Jos he saavat avaimesi, he voivat yhdistää tietoihisi kirjautuneena sinuna! Peruuta, jos et halua tallentaa sovellustietoja selaimeen.}}
+  {appLocalPrompt {Kirjautumiskehote} {Sovellus näyttää tämän kehotteen joka kerta kun lataat sovelluksen pyytääkseen salasanaasi}}
+  {appLocalP1 {Salasanasi} {Anna salasana, jota käytetään paikallisten tietojesi, mukaan lukien yhteysavainten, avaamiseen. Jos jätät tämän tyhjäksi ja painat OK, tietosi tallennetaan salaamattomina!}}
+  {appLocalP2 {Salasanan tarkistus} {Anna salasana toisen kerran}}
+  {conmenu {Yhteysvalikko} {Erilaisia aputoimintoja, joilla hallitaan yhdistämistä palvelinsivustoihin ja yhteysavaimia}}
+  {conTitle {Yhteysavaimet} {Luettelo tunnistetiedoista, palvelimista ja porteista, joihin yleensä yhdistät. Hanki lippu sen sivuston järjestelmänvalvojalta, johon haluat yhdistää.}}
+  {conConnect {Yhdistä} {Yritä yhdistää valittuun palvelimeen tai katkaise yhteys}}
+  {conDelete {Poista} {Poista valitut palvelinyhteydet luettelosta}}
+  {conImport {Tuo avaimet} {Vedä ja pudota avaintiedostot tähän tai napsauta tuodaksesi yhteysavaimen tai kertakäyttöisen yhteyslipun}}
+  {conExport {Vie avaimet} {Tallenna valitut yksityiset yhteysavaimet tiedostoon. Poista nämä tiedostot välittömästi siirrettyäsi ne yksityiseen varmuuskopiointilaitteeseen. Älä koskaan jätä niitä latauskansioon tai aktiiviseen tiedostojärjestelmään!}}
+  {conRetry {Yritetään uudelleen} {Yrittää automaattisesti muodostaa yhteyden palvelimeen uudelleen}}
+  {conExpFile {Avaintiedoston nimi} {Tiedostonimi, jota käytetään valittujen yksityisten avainten tallentamiseen}}
+  {conExpPass {Avaimen salasana} {Salainen salasana ulkoisessa muodossa tallennettujen yksityisten avainten salaamiseen/purkamiseen. Jätä tyhjäksi (harkitsemattomasti) ilman salausta.}}
+  {conExpPass2 {Salasana uudelleen} {Anna salasana uudelleen}}
+  {conUsername {Käyttäjätunnus} {Anna nimi, jota käytät yhdistäessäsi taustatietokantaan. Jos et tiedä, kysy henkilöltä, joka antoi sinulle yhteyslipun.}}
+  {conNoCrypto {Ei salauskirjastoa} {Salausfunktioita ei löydy selaimen API:sta. Varmista, että olet yhteydessä https:n kautta tai käytä uudempaa selainta.}}
+  {conCryptErr {Avaimen luonti} {Selaimessa tapahtui virhe yritettäessä luoda yhteysavainta}}
+  {dbe {Muokkaa tietueita} {Lisää, muuta ja poista tietueita tietokantanäkymästä}}
+  {dbeColMenu {Sarake} {Toiminnot, joita voit suorittaa tässä esikatselun sarakkeessa}}
+  {dbeMenu {Muokkaus} {Valikko tietokantatietueen muokkaustoiminnoista}}
+  {dbeActions {Toiminnot} {Suorita erilaisia toimintoja tämän näkymän mukaisesti}}
+  {dbpFilter {Suodata} {Lataa tietueet suodatuskriteerien mukaisesti}}
+  {dbpFooter {Yhteenveto} {Ota käyttöön sarakeyhteenveto näkymän alaosassa}}
+  {dbpLoad {Lataa oletus} {Määritä tässä näkymässä näytettävät tietueet oletuksena}}
+  {dbpLoadAll {Lataa kaikki} {Lataa kaikki taulukon tiedot}}
   {dbpMenu {Esikatselu} {Toimintojen valikko, joka toimii alla olevassa esikatselussa}}
-  {dbpReload {Ladata} {Päivitä edellisessä kuormassa määritetyt tietueet}}
-  {dbpVisCheck {Ilmoita näkyvyydestä} {Kirjoita tämä ruutu näkyviin, jotta tämä sarake voidaan näyttää}}
-  {dbpVisible {Näkyvyys} {Sarakkeiden valikko, josta voit päättää, mitkä näkyvät esikatselussa}}
+  {dbpReload {Lataa uudelleen} {Päivitä edellisessä latauksessa määritetyt tietueet}}
+  {dbpVisCheck {Näkyvyyden valinta} {Valitse tämä ruutu, jotta tämä sarake näytetään}}
+  {dbpVisible {Näkyvyys} {Sarakkeiden valikko, josta päätät, mitkä näkyvät esikatselussa}}
+}
+
+tabtext wylib.data_v -lang fin {Käyttöliittymätiedot} {Näkymä konfiguraatio- ja asetustiedoista, joita Wylib-näkymäkomponentit käyttävät} {
+  {std_name {Omistajan nimi} {Sen käyttäjän nimi, joka omistaa tämän tietueen}}
 }

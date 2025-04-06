@@ -1,0 +1,211 @@
+#Format WMT ver=1
+
+tabtext wm.releases -lang fin {Julkaisut} {Seuraa tietokannan rakenteen jokaisen julkisen julkaisun versionumeroa} {
+  {release {Julkaisu} {Julkaisun kokonaisluku, alkaen numerosta 1. Tämän kentän nykyinen numero tarkoittaa aina keskeneräistä työtä. Edellinen numero ilmaisee viimeisimmän julkisen julkaisun.}}
+  {committed {Vahvistettu} {Milloin tämä julkaisuversio jäädytettiin viralliseksi julkaisuksi.}}
+  {sver_2 {BS-versio} {Valepylväs, jonka nimi ilmaisee näiden käynnistystaulukoiden version (joita wyseman itse ei voi hallita).}}
+}
+
+tabtext wm.objects -lang fin {Objektit} {Säilyttää tietoja tietokantataulukoista, näkymistä, funktioista jne. kertoen, miten rakentaa tai pudottaa kukin objekti ja miten se liittyy muihin tietokannan objekteihin.} {
+  {obj_typ {Tyyppi} {Objektin tyyppi, esimerkiksi: taulukko, funktio, liipaisin, jne.}}
+  {obj_nam {Nimi} {Objektin skeema ja nimi, sellaisena kuin se tunnetaan kyseisessä skeemassa}}
+  {obj_ver {Versio} {Peräkkäinen kokonaisluku, joka näyttää, kuinka monta kertaa tätä objektia on muokattu virallisen julkaisun osana. Nykyisen (työ)julkaisun muutokset eivät kasvata tätä numeroa.}}
+  {checkit {Tarkista} {Tämän tietueen riippuvuudet ja johdonmukaisuus on tarkistettava}}
+  {build {Rakenna} {Objekti on rakennettava uudelleen päivitetyn määrittelyn mukaisesti}}
+  {built {Rakennettu} {Tämän tietueen edustama objekti on rakennettu ja ajan tasalla tämän luontiskriptin mukaisesti}}
+  {module {Moduuli} {Sen koodimoduulin (paketin) nimi, johon tämä objekti kuuluu}}
+  {deps {Riippuvuudet} {Luettelo tämän objektin laajentamattomista riippuvuuksista, täsmälleen sellaisena kuin ne on ilmaistu lähdetiedostossa}}
+  {ndeps {Normaalit riippuvuudet} {Laajennettu ja normalisoitu riippuvuuksien taulukko, jonka taataan olevan olemassa taulukon toisessa tietueessa}}
+  {grants {Oikeudet} {Löydetyt käyttöoikeudet, jotka koskevat tätä objektia}}
+  {col_data {Näyttö} {Löydetyt kytkimet, jotka ilmaisevat sarakkeiden ensisijaisia näyttöominaisuuksia, olettaen että tämä on näkymä- tai taulukko-objekti}}
+  {delta {Deltat} {JSON-luettelo taulukon muutoskomennoista, joita käytetään siirryttäessä yhdestä taulukkoversiosta seuraavaan}}
+  {del_idx {Delta-indeksi} {Osoittaa seuraavaan siirtymiskomentoon, jota ei ole vielä otettu käyttöön}}
+  {crt_sql {Luo} {SQL-koodi tämän objektin rakentamiseen}}
+  {drp_sql {Pudota} {SQL-koodi tämän objektin pudottamiseen}}
+  {min_rel {Minimi} {Vanhin julkaisu, johon tämä objektin versio kuuluu}}
+  {max_rel {Maksimi} {Uusin julkaisu, johon tämä objektin versio kuuluu}}
+  {crt_date {Luotu} {Milloin tämä objektitietue luotiin ensimmäisen kerran}}
+  {mod_date {Muokattu} {Milloin tätä objektitietuetta viimeksi muokattiin}}
+}
+
+tabtext wm.objects_v -lang fin {Julkaisuobjektit} {Laajennettu näkymä objektitaulukosta, joka näyttää täyden objektimäärittimen ja kunkin erillisen julkaisun, johon tämä objektin versio kuuluu} {
+  {object {Objekti} {Tämän objektin täysi tyyppi ja nimi}}
+  {release {Julkaisu} {Julkaisu, johon objektin tämä versio kuuluu}}
+}
+
+tabtext wm.objects_v_depth -lang fin {Riippuvuusobjektit} {Laajennettu näkymä objektitaulukosta, joka näyttää täyden objektin määrittimen, kunkin erillisen julkaisun, johon tämä objektin versio kuuluu, sekä sen maksimisyvyyden missä tahansa riippuvuuspuun polulla.} {
+  {depth {Maksimisyvyys} {Tämän objektin maksimisyvyys millä tahansa riippuvuuspuun polulla}}
+}
+
+tabtext wm.objects_v_dep -lang fin {Riippuvuudet} {Rekursiivinen näkymä, joka näyttää, mitkä tietokantaobjektit riippuvat (on luotava jälkeen) muista tietokantaobjekteista.} {
+  {object {Objekti} {Täysi objektin tyyppi ja nimi (tyyppi:nimi)}}
+  {od_typ {Tyyppi} {Funktio, näkymä, taulukko, jne.}}
+  {od_nam {Nimi} {Objektin skeema ja nimi, sellaisena kuin se tunnetaan kyseisessä skeemassa}}
+  {od_release {Julkaisu} {Julkaisu, johon tämä objekti kuuluu}}
+  {cycle {Sykli} {Estää rekursiivisen näkymän joutumisen loputtomaan silmukkaan}}
+  {depend {Riippuu kohteesta} {Toinen objekti, joka on luotava ennen tätä objektia}}
+  {depth {Syvyys} {Riippuvuuspuun syvyys, kun seurataan tätä tiettyä riippuvuutta takaisin juureen.}}
+  {path {Polku} {Riippuvuuspuun polku tämän objektin yläpuolella}}
+}
+
+tabtext wm.table_style -lang fin {Taulukon tyylit} {Sisältää tyylitietoja tiettyjen taulukoiden näyttämiseen graafisessa käyttöliittymässä} {
+  {tab_sch {Skeema} {Taulukon skeema}}
+  {tab_name {Nimi} {Taulukon nimi skeeman sisällä}}
+  {style {Tyyli} {Sarjallistetut tyylitiedot taulukon ulkoasun hallitsemiseksi}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.column_style -lang fin {Sarakkeen tyylit} {Sisältää tyylitietoja tiettyjen sarakkeiden näyttämiseen graafisessa käyttöliittymässä} {
+  {tab_sch {Skeema} {Sen taulukon skeema, joka sisältää sarakkeen}}
+  {tab_name {Taulukon nimi} {Sen taulukon nimi, joka sisältää sarakkeen}}
+  {col_name {Sarakkeen nimi} {Sarakkeen nimi}}
+  {style {Tyyli} {Sarjallistetut tyylitiedot sarakkeen ulkoasun hallitsemiseksi}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.table_text -lang fin {Taulukon teksti} {Sisältää kuvauksia, jotka näytetään tietyille taulukoille graafisessa käyttöliittymässä} {
+  {tab_sch {Skeema} {Taulukon skeema}}
+  {tab_name {Nimi} {Taulukon nimi skeeman sisällä}}
+  {language {Kieli} {Kieli, jolla teksti on kirjoitettu}}
+  {title {Otsikko} {Lyhyt selite tälle taululle}}
+  {help {Ohje} {Täydellinen kuvaus tästä taulukosta}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.column_text -lang fin {Sarakkeen teksti} {Sisältää kuvauksia, jotka näytetään tietyille sarakkeille graafisessa käyttöliittymässä} {
+  {tab_sch {Skeema} {Sen taulukon skeema, joka sisältää sarakkeen}}
+  {tab_name {Taulukon nimi} {Sen taulukon nimi, joka sisältää sarakkeen}}
+  {col_name {Sarakkeen nimi} {Sarakkeen nimi}}
+  {language {Kieli} {Kieli, jolla teksti on kirjoitettu}}
+  {title {Otsikko} {Lyhyt selite tälle sarakkeelle}}
+  {help {Ohje} {Täydellinen kuvaus tästä sarakkeesta}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.value_text -lang fin {Arvon teksti} {Sisältää kuvauksia, jotka näytetään tietyille arvoille graafisessa käyttöliittymässä} {
+  {tab_sch {Skeema} {Sen taulukon skeema, joka sisältää arvon}}
+  {tab_name {Taulukon nimi} {Sen taulukon nimi, joka sisältää arvon}}
+  {col_name {Sarakkeen nimi} {Sen sarakkeen nimi, johon arvo kuuluu}}
+  {value {Arvo} {Tietty arvo, jota kuvataan}}
+  {language {Kieli} {Kieli, jolla teksti on kirjoitettu}}
+  {title {Otsikko} {Lyhyt selite tälle arvolle}}
+  {help {Ohje} {Täydellinen kuvaus tästä arvosta}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.message_text -lang fin {Viestin teksti} {Sisältää kuvauksia, jotka näytetään tietyille viesteille graafisessa käyttöliittymässä} {
+  {code {Koodi} {Yksilöllinen koodi tiettyyn viestiin viittaamiseksi}}
+  {language {Kieli} {Kieli, jolla teksti on kirjoitettu}}
+  {title {Otsikko} {Lyhyt selite tälle viestille}}
+  {help {Ohje} {Täydellinen kuvaus tälle viestille}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.table_data -lang fin {Taulukon tiedot} {Välimuisti pg-järjestelmän luettelosta palautetuista tiedoista kaikille taulukoille} {
+  {tab_sch {Skeema} {Taulukon skeema}}
+  {tab_name {Nimi} {Taulukon nimi skeeman sisällä}}
+  {tab_kind {Tyyppi} {Taulukon tyyppi (perustaulukko, näkymä, jne.)}}
+  {tab_stat {Tila} {Objektin sisäinen tila}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.column_data -lang fin {Sarakkeen tiedot} {Välimuisti pg-järjestelmän luettelosta palautetuista tiedoista kaikille sarakkeille} {
+  {tab_sch {Skeema} {Sen taulukon skeema, joka sisältää sarakkeen}}
+  {tab_name {Taulukon nimi} {Sen taulukon nimi, joka sisältää sarakkeen}}
+  {col_name {Sarakkeen nimi} {Sarakkeen nimi taulukon sisällä}}
+  {col_count {Laskuri} {Sarakkeen järjestysnumero taulukossa}}
+  {col_type {Tyyppi} {Sarakkeen SQL-tietotyyppi}}
+  {col_length {Pituus} {Tiettyjen tietotyyppien maksimikoko}}
+  {col_prec {Tarkkuus} {Tarkkuus numeerisille tietotyypeille}}
+  {col_prim {Pääavain} {Jos tämä sarake on (osa) pääavainta}}
+  {col_notn {Ei tyhjä} {Jos sarake ei saa olla tyhjä}}
+  {col_uniq {Yksilöllinen} {Jos jokaisen arvon on oltava yksilöllinen}}
+  {col_check {Tarkista} {Jos tähän sarakkeeseen kohdistuu check-rajoituksia}}
+  {col_indx {Indeksi} {Jos tämä sarake on indeksoitu}}
+  {col_default {Oletusarvo} {Tälle sarakkeelle määritetty oletusarvo}}
+  {col_refer {Viittaus} {Jos tämä sarake viittaa johonkin toiseen taulukkoon/sarakkeeseen}}
+  {col_stat {Tila} {Päivitysindikaattori}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+tabtext wm.column_lang -lang fin {Kielisarakkeet} {Kätevä näkymä sarakeotsikkojen näyttämiseen halutuilla kielillä} {
+  {tab_sch {Skeema} {Sen taulukon skeema, joka sisältää sarakkeen}}
+  {tab_name {Taulukon nimi} {Sen taulukon nimi, joka sisältää sarakkeen}}
+  {col_name {Sarakkeen nimi} {Sarakkeen nimi taulukon sisällä}}
+  {language {Kieli} {Otsikon/ohjeen kieli, jos saatavilla}}
+  {col_count {Laskuri} {Sarakkeen järjestysnumero taulukossa}}
+  {col_type {Tyyppi} {Sarakkeen SQL-tietotyyppi}}
+  {col_length {Pituus} {Tiettyjen tietotyyppien maksimikoko}}
+  {col_prec {Tarkkuus} {Tarkkuus numeerisille tietotyypeille}}
+  {col_prim {Pääavain} {Jos tämä sarake on (osa) pääavainta}}
+  {col_notn {Ei tyhjä} {Jos sarake ei saa olla tyhjä}}
+  {col_uniq {Yksilöllinen} {Jos jokaisen arvon on oltava yksilöllinen}}
+  {col_check {Tarkista} {Jos tähän sarakkeeseen kohdistuu check-rajoituksia}}
+  {col_indx {Indeksi} {Jos tämä sarake on indeksoitu}}
+  {col_default {Oletusarvo} {Tälle sarakkeelle määritetty oletusarvo}}
+  {col_refer {Viittaus} {Jos tämä sarake viittaa johonkin toiseen taulukkoon/sarakkeeseen}}
+  {title {Otsikko} {Lyhyt selite tälle sarakkeelle, jos saatavilla}}
+  {help {Ohje} {Täydellinen kuvaus tästä sarakkeesta, jos saatavilla}}
+  {style {Tyyli} {Sarjallistetut tyylitiedot sarakkeen ulkoasun hallitsemiseksi, jos saatavilla}}
+}
+
+tabtext wm.table_lang -lang fin {Kielitaulukot} {Kätevä näkymä taulukoiden otsikoiden näyttämiseen halutuilla kielillä} {
+  {tab_sch {Skeema} {Taulukon skeema}}
+  {tab_name {Nimi} {Taulukon nimi skeeman sisällä}}
+  {language {Kieli} {Otsikon/ohjeen kieli, jos saatavilla}}
+  {tab_kind {Tyyppi} {Taulukon tyyppi (perustaulukko, näkymä, jne.)}}
+  {title {Otsikko} {Lyhyt selite tälle taulukolle, jos saatavilla}}
+  {help {Ohje} {Täydellinen kuvaus tästä taulukosta, jos saatavilla}}
+  {style {Tyyli} {Sarjallistetut tyylitiedot taulukon ulkoasun hallitsemiseksi, jos saatavilla}}
+}
+
+tabtext wm.language -lang fin {Kieli} {Näkymä tietokannassa saatavilla olevien kielten/selitteiden listaamiseen} {
+  {fr_lang {Lähdekieli} {Kieli, josta käännettiin}}
+  {language {Kieli} {Käännetyn kielen ISO-koodi}}
+  {sorter {Lajittelija} {Lajitteluavain kohteiden pitämiseksi tietyssä järjestyksessä}}
+  {title {Otsikko} {Tekstin käännös}}
+}
+
+tabtext wm.objects_v -lang fin {Objektinäkymä} {Kätevä näkymä objektitietojen näyttämiseen normalisoiduilla skeema-/taulukkosarakkeiden nimillä} {
+  {obj_typ {Tyyppi} {Tietokantaobjektin tyyppi (taulukko, näkymä, funktio, jne.)}}
+  {obj_sch {Skeema} {Skeema, joka sisältää objektin}}
+  {obj_name {Nimi} {Objektin nimi skeeman sisällä}}
+  {obj_ver {Versio} {Sisäinen versionumero, joka kasvaa joka kerta, kun objektia muokataan}}
+  {obj_kind {Laji} {Taulukkotyyppi, joka isännöi useita objektityyppejä, mitä tiettyä tässä tietueessa kuvataan (esim. check, primary, unique, foreign, jne.)}}
+  {obj_seq {Järjestys} {Tapauksissa, joissa on useita saman tyyppisiä ja nimisiä objekteja, mikä numero tämä on (alkaen 0:sta)}}
+  {obj_rep {Raportti} {Yksilöllinen nimi tähän tietueeseen viittaamiseksi (kielissä, jotka eivät tue tuploja)}}
+  {depend {Riippuvuus} {Tcl-säännöllinen lauseke, joka vastaa kaikkia objekteja, joista tämä objekti suoraan riippuu (paitsi itse objekti)}}
+  {obj_parm {Parametrit} {Objekteille, kuten näkymille, jotka voivat sisältää alias-/korvaavat parametrit, luettelo tällaisista saatavilla olevista parametreista}}
+  {obj_stat {Tila} {Osoittaa, miten tämä objekti on käännetty (0:not done, 1:identical, 2:compiled)}}
+  {obj_ddl {DDL} {DDL, jota käytetään objektin luomiseen}}
+  {releaseno {Julkaisu} {Julkisen version numero, johon objekti alun perin sisällytettiin}}
+  {min_rel {Minimi julkaisu} {Objekti on yhteensopiva vain tietokantojen kanssa, jotka ovat jo tällä tai korkeammalla versiolla}}
+  {max_rel {Maksimi julkaisu} {Objekti on yhteensopiva vain tietokantojen kanssa, jotka ovat tämän version alapuolella}}
+  {crt_sql {Luonti SQL} {Todellinen SQL-skripti, joka suoritetaan tämän objektin lisäämiseksi/kääntämiseksi tietokantaan}}
+  {drp_sql {Poisto SQL} {Todellinen SQL-skripti, joka suoritetaan tämän objektin poistamiseksi tietokannasta}}
+  {sel_sql {Valinta SQL} {Todellinen SQL-skripti, joka suoritetaan tietojen valitsemiseksi tästä objektista}}
+  {sel_ver {Valinnan versio} {sel_sql:n versionumero, joka kasvaa joka kerta, kun todellinen valintaskripti muuttuu}}
+  {mod_date {Muokattu} {Päivämäärä, jolloin tätä viimeksi muokattiin}}
+  {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+}
+
+-message {
+  {INP {Virheellinen operaattori} {Määritetty looginen operaattori ei ole ymmärrettävissä}}
+  {NRE {Ei tulosta} {Kysely ei tuottanut tuloksia}}
+  {KVL {Avainrikkomus} {Määritettyä avainarvoa ei ole olemassa}}
+  {IVL {Eheyden rikkomus} {Toiminto voisi vaarantaa tietokannan eheyden}}
+  {SVL {Turvallisuusrikkomus} {Toiminto ei ole sallittu tälle käyttäjälle/ryhmälle/roolille}}
+  {ASR {Väite} {Tietojen tarkistus määritetyllä säännöllä epäonnistui}}
+  {CFG {Virheellinen konfiguraatio} {Tietokannassa on epäjohdonmukaisuuksia sen konfiguraatiossa}}
+  {APP {Sovellusvirhe} {Sovelluksen erikoiskäsittelyssä tapahtui virhe}}
+  {SYS {Järjestelmävirhe} {Tapahtui käyttöjärjestelmään liittyvä järjestelmävirhe}}
+  {DFN {Määrittelyvirhe} {Pyyntö sisälsi virheellisen objektimäärittelyn}}
+  {DPN {Riippuvuusvirhe} {Konflikti riippuvan objektin kanssa}}
+  {PRM {Käyttöoikeusvirhe} {Tämän toiminnon suorittamiseen puuttuu käyttöoikeus}}
+  {IMP {Toteutusvirhe} {Sisäinen toteutusvirhe}}
+  {LNG {Kieli ei saatavilla} {Pyydettyä kieltä ei löytynyt}}
+  {ACR {Ei pääsyä} {Rooli/käyttäjä ei voi käyttää objektia}}
+  {SCH {Ei skeemaa} {Pyydettyä skeemaa ei voitu luoda tai löytää}}
+  {DBV {Tietokantaversio} {Yhteensopimaton tietokantaversio}}
+  {STP {Toiminto pysäytetty} {Toiminto peruutettiin käyttäjän pyynnöstä}}
+}

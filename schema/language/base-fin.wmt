@@ -1,0 +1,188 @@
+#Format WMT ver=1
+
+tabtext base.addr -lang fin {Osoitteet} {Entiteetteihin liittyvät osoitteet (koti, posti, jne.)} {
+    {addr_ent {Entiteetti ID} {Entiteetin tunnusnumero, johon tämä osoite liittyy}}
+    {addr_seq {Järjestysnumero} {Yksilöllinen numero, joka annetaan jokaiselle uudelle osoitteelle tiettyä entiteettiä varten}}
+    {addr_spec {Osoite} {Katuosoite tai postilokero. Tämä voi tarvittaessa käsittää useita rivejä}}
+    {addr_type {Tyyppi} {Osoitteen tyyppi} {
+        {phys {Fyysinen} {Missä entiteetillä on asukkaita tai työntekijöitä}}
+        {mail {Postitus} {Minne posti ja kirjeenvaihto vastaanotetaan}}
+        {ship {Toimitus} {Mistä materiaalit noudetaan tai toimitetaan}}
+        {bill {Laskutus} {Minne laskut ja muut kirjanpitotiedot lähetetään}}
+    }}
+    {addr_prim {Ensisijainen} {Jos valittu, tämä on ensisijainen osoite tämän entiteetin tavoittamiseksi}}
+    {addr_cmt {Kommentti} {Muita huomautuksia tästä osoitteesta}}
+    {city {Kaupunki} {Sen kaupungin nimi, jossa tämä osoite sijaitsee}}
+    {state {Osavaltio/Maakunta} {Sen osavaltion tai maakunnan nimi, jossa tämä osoite sijaitsee}}
+    {pcode {Postinumero} {Tähän osoitteeseen soveltuva postinumero tai muu postituskoodi}}
+    {country {Maa} {Sen maan nimi, jossa tämä osoite sijaitsee. Käytä kansainvälisiä standardimaakoodilyhenteitä}}
+    {addr_inact {Epäaktiivinen} {Tämä osoite ei ole enää voimassa oleva osoite}}
+    {addr_priv {Yksityinen} {Tätä osoitetta ei pitäisi jakaa julkisesti}}
+    {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+    {mod_date {Muokattu} {Päivämäärä, jolloin tätä tietuetta viimeksi muokattiin}}
+    {crt_by {Luonut} {Käyttäjä, joka syötti tämän tietueen}}
+    {mod_by {Muokannut} {Käyttäjä, joka viimeksi muokkasi tätä tietuetta}}
+} -errors {
+    {CCO {Maa} {Maa on aina määritettävä (ja standardimuodossa)}}
+    {CPA {Ensisijainen} {Vähintään yksi osoite on merkittävä ensisijaiseksi}}
+    {USP {Kaksoiskappale} {Kullekin erilliselle tyypille ja osoitteelle tulisi olla vain yksi tietue}}
+}
+
+tabtext base.addr_v -lang fin {Osoitteet} {Näkymä entiteetteihin liittyvistä osoitteista (koti, postitus, jne.) lisäkentillä} {
+    {addr_prim {Ensisijainen} {Jos tosi, tämä on ensisijainen osoite tämän entiteetin tavoittamiseksi}}
+    {std_name {Entiteetin nimi} {Sen entiteetin nimi, johon tämä osoite kuuluu}}
+}
+
+tabtext base.addr_prim -lang fin {Ensisijainen osoite} {Sisäinen taulukko, joka seuraa, mikä osoite on pääasiallinen kullekin annetulle tyypille} {
+    {prim_ent {Entiteetti} {Pääosoitteen entiteetin tunnusnumero}}
+    {prim_seq {Järjestysnumero} {Pääosoitteen järjestysnumero}}
+    {prim_type {Tyyppi} {Osoitteen tyyppi, johon tämä tietue liittyy}}
+}
+
+tabtext base.addr_v_flat -lang fin {Entiteetit litteä} {Litistetty näkymä entiteeteistä, joka näyttää niiden ensisijaiset vakio-osoitteet} {
+    {bill_addr {Laskutusosoite} {Laskutusosoitteen ensimmäinen rivi}}
+    {bill_city {Laskutuskaupunki} {Laskutusosoitteen kaupunki}}
+    {bill_state {Laskutusosavaltio} {Laskutusosoitteen osavaltio}}
+    {bill_country {Laskutusmaa} {Laskutusosoitteen maa}}
+    {bill_pcode {Laskutuspostinumero} {Laskutusosoitteen postinumero}}
+    {ship_addr {Toimitusosoite} {Toimitusosoitteen ensimmäinen rivi}}
+    {ship_city {Toimituskaupunki} {Toimitusosoitteen kaupunki}}
+    {ship_state {Toimitusosavaltio} {Toimitusosoitteen osavaltio}}
+    {ship_country {Toimitusmaa} {Toimitusosoitteen maa}}
+    {ship_pcode {Toimituspostinumero} {Toimitusosoitteen postinumero}}
+    {phys_addr {Fyysinen osoite} {Fyysisen osoitteen ensimmäinen rivi}}
+    {phys_city {Fyysinen kaupunki} {Fyysisen osoitteen kaupunki}}
+    {phys_state {Fyysinen osavaltio} {Fyysisen osoitteen osavaltio}}
+    {phys_country {Fyysinen maa} {Fyysisen osoitteen maa}}
+    {phys_pcode {Fyysinen postinumero} {Fyysisen osoitteen postinumero}}
+    {mail_addr {Postiosoite} {Postiosoitteen ensimmäinen rivi}}
+    {mail_city {Postikaupunki} {Postiosoitteen kaupunki}}
+    {mail_state {Postiosavaltio} {Postiosoitteen osavaltio}}
+    {mail_country {Postimaa} {Postiosoitteen maa}}
+    {mail_pcode {Postipostinumero} {Postiosoitteen postinumero}}
+}
+
+# Now adding communications table definition
+tabtext base.comm -lang fin {Viestintä} {Entiteettien viestintäpisteet (puhelin, sähköposti, faksi, jne.)} {
+    {comm_ent {Entiteetti ID} {Sen entiteetin tunnusnumero, johon tämä viestintäpiste kuuluu}}
+    {comm_seq {Järjestysnumero} {Yksilöllinen numero, joka annetaan jokaiselle uudelle viestintäpisteelle tiettyä entiteettiä varten}}
+    {comm_spec {Numero/Osoite} {Numero tai osoite, jota käytetään viestinnässä tämän menetelmän ja pisteen kautta}}
+    {comm_type {Viestintätapa} {Viestintämenetelmä} {
+        {phone {Puhelin} {Tapa ottaa yhteyttä entiteettiin puhelimitse}}
+        {cell {Matkapuhelin} {Tapa ottaa yhteyttä entiteettiin matkapuhelimella}}
+        {fax {Faksi} {Tapa ottaa yhteyttä entiteettiin faksilla}}
+        {email {Sähköposti} {Tapa ottaa yhteyttä entiteettiin sähköpostitse}}
+        {pager {Hakulaite} {Tapa ottaa yhteyttä entiteettiin hakulaitteella}}
+        {text {Teksti} {Tapa ottaa yhteyttä entiteettiin tekstiviesteillä}}
+        {web {Web} {Entiteetin verkkosivun URL-osoite}}
+        {other {Muu} {Jokin muu tapa ottaa yhteyttä entiteettiin}}
+    }}
+    {comm_prim {Ensisijainen} {Jos valittu, tämä on ensisijainen menetelmä tämän tyypin viestintäpisteille}}
+    {comm_cmt {Kommentti} {Muita huomautuksia tästä viestintäpisteestä}}
+    {comm_inact {Epäaktiivinen} {Tämä tietue ei ole enää aktiivisessa käytössä}}
+    {comm_priv {Yksityinen} {Tätä tietoja ei pitäisi jakaa julkisesti}}
+    {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+    {mod_date {Muokattu} {Päivämäärä, jolloin tätä tietuetta viimeksi muokattiin}}
+    {crt_by {Luonut} {Käyttäjä, joka syötti tämän tietueen}}
+    {mod_by {Muokannut} {Käyttäjä, joka viimeksi muokkasi tätä tietuetta}}
+} -errors {
+    {CPC {Ensisijainen} {Vähintään yksi kunkin tyypin viestintäpiste on merkittävä ensisijaiseksi}}
+    {USP {Kaksoiskappale} {Kullekin erilliselle tyypille ja numerolle/osoitteelle tulisi olla vain yksi viestintätietue}}
+}
+
+tabtext base.language -lang fin {Kielet} {Tietoja kansainvälisistä ISO-kielikoodeista} {
+    {code {Koodi} {Kielen ISO-koodi}}
+    {name {Nimi} {Kielen englanninkielinen nimi}}
+    {native {Natiivi} {Kielen nimi sen omalla kielellä}}
+    {default {Oletus} {Jos tosi, tämä on järjestelmän oletuskieli}}
+}
+
+tabtext base.parm -lang fin {Parametrit} {Sisältää erilaisia parametriasetuksia useiden tietokannan moduulien määrittämiseen ja ohjaamiseen} {
+    {module {Moduuli} {Moduuli, johon parametri kuuluu}}
+    {parm {Parametri} {Parametrin nimi}}
+    {value {Arvo} {Parametrin arvo}}
+    {descr {Kuvaus} {Parametrin tarkoituksen kuvaus}}
+}
+
+tabtext base.priv -lang fin {Käyttöoikeudet} {Käyttöoikeudet, jotka on määritetty kullekin järjestelmän käyttäjälle määrittämään, mitä tehtäviä he voivat suorittaa ja mihin tietokannan objekteihin he voivat päästä} {
+    {priv {Käyttöoikeus} {Käyttöoikeuden nimi}}
+    {grantor {Myöntäjä} {Taho, joka myöntää käyttöoikeuden}}
+    {grantee {Saaja} {Taho, jolle käyttöoikeus myönnetään}}
+    {level {Taso} {Myönnetyn käyttöoikeuden taso}}
+    {descr {Kuvaus} {Käyttöoikeuden kuvaus ja tarkoitus}}
+} -errors {
+    {CLV {Virheellinen taso} {Käyttöoikeustason on oltava tyhjä tai positiivinen kokonaisluku välillä 1-9}}
+}
+
+tabtext base.file -lang fin {Tiedostot} {Entiteetteihin liittyvät asiakirjatiedostot (valokuvat, tietokonetiedostot, jne.)} {
+    {file_ent {Entiteetti} {Sen entiteetin tunnusnumero, johon tämä tiedosto liittyy}}
+    {file_seq {Järjestysnumero} {Yksilöllinen numero, joka annetaan jokaiselle uudelle tiedostolle tiettyä entiteettiä varten}}
+    {file_data {Data} {Tähän asiakirjaan sisältyvät binääritiedot}}
+    {file_type {Tyyppi} {Asiakirjan tyyppi} {
+        {photo {Valokuva} {Asiakirja on valokuva}}
+        {scan {Skannaus} {Asiakirja on skannaus fyysisestä asiakirjasta}}
+        {spread {Laskentataulukko} {Asiakirja on laskentataulukko}}
+        {write {Kirjoitus} {Asiakirja on kirjoitettu artikkeli, asiakirja, jne.}}
+        {other {Muu} {Jokin muu asiakirjatyyppi}}
+    }}
+    {file_prim {Ensisijainen} {Jos valittu, tämä on ensisijainen tiedosto tätä tyyppiä varten}}
+    {file_fmt {Muoto} {Muotokoodi, joka ilmaisee, miten data tulkitaan}}
+    {file_cmt {Kommentti} {Muita huomautuksia tästä asiakirjasta}}
+    {file_priv {Yksityinen} {Tätä tietoja ei pitäisi jakaa julkisesti}}
+    {file_cks {Tarkistussumma} {Asiakirjan tietojen hash tai tarkistussumma, jota käytetään tietojen eheyden varmistamiseen}}
+    {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+    {mod_date {Muokattu} {Päivämäärä, jolloin tätä tietuetta viimeksi muokattiin}}
+    {crt_by {Luonut} {Käyttäjä, joka syötti tämän tietueen}}
+    {mod_by {Muokannut} {Käyttäjä, joka viimeksi muokkasi tätä tietuetta}}
+} -errors {
+    {USP {Kaksoiskappale} {Kullekin erilliselle tyypille ja tarkistussummalle tulisi olla vain yksi tiedosto}}
+}
+
+tabtext base.ent -lang fin {Entiteetit} {Entiteetit, jotka voivat olla henkilö, yritys tai ryhmä} {
+    {id {Entiteetti ID} {Kullekin entiteetille määritetty yksilöllinen koodi, joka koostuu entiteetin tyypistä ja numerosta}}
+    {ent_num {Entiteettinumero} {Kullekin entiteetille määritetty numero, joka on yksilöllinen kyseisen entiteettityypin samassa ryhmässä}}
+    {ent_type {Entiteettityyppi} {Tämän tietueen edustaman entiteetin tyyppi} {
+        {p {Henkilö} {Entiteetti on yksilö}}
+        {o {Organisaatio} {Entiteetti on organisaatio (kuten yritys tai yhdistys), joka voi työllistää tai sisältää yksittäisiä henkilöitä tai muita organisaatioita}}
+        {g {Ryhmä} {Entiteetti on ryhmä henkilöitä, yrityksiä ja/tai muita ryhmiä}}
+        {r {Rooli} {Entiteetti on rooli tai asema, joka ei välttämättä vastaa tiettyä henkilöä tai yhtiötä}}
+    }}
+    {ent_name {Entiteetin nimi} {Yritysnimi, henkilön sukunimi tai ryhmän nimi}}
+    {fir_name {Etunimi} {Ensimmäinen annettu nimi (Robert, Susan, William, jne.) vain henkilöentiteeteille}}
+    {mid_name {Toinen nimi} {Yksi tai useampi toinen etunimi tai tyttönimi, vain henkilöentiteeteille}}
+    {pref_name {Kutsumanimi} {Suositeltu nimi (Bob, Sue, Bill, jne.) vain henkilöentiteeteille}}
+    {title {Titteli} {Nimeä edeltävä titteli (Herra, Päällikkö, Tohtori, jne.)}}
+    {gender {Sukupuoli} {Onko henkilö mies (m) vai nainen (f)} {
+        { {Ei sovellettavissa} {Sukupuoli ei ole sovellettavissa (kuten organisaatioille tai ryhmille)}}
+        {f {Nainen} {Henkilö on nainen}}
+        {m {Mies} {Henkilö on mies}}
+    }}
+    {marital {Siviilisääty} {Onko henkilö naimisissa (m) vai naimaton (s)} {
+        { {Ei sovellettavissa} {Siviilisääty ei ole sovellettavissa (kuten organisaatioille tai ryhmille)}}
+        {m {Naimisissa} {Henkilö on nykyisessä avioliitossa}}
+        {s {Naimaton} {Henkilö ei ole koskaan ollut naimisissa, tai on eronnut, tai on kuolleen puolison jälkeenjäänyt}}
+    }}
+    {ent_cmt {Entiteetin kommentti} {Muut huomautukset, jotka liittyvät tähän entiteettiin}}
+    {born_date {Syntymäaika} {Syntymäaika henkilöentiteeteille tai vaihtoehtoisesti perustamispäivä yrityksille}}
+    {username {Käyttäjätunnus} {Tämän henkilön kirjautumisnimi, jos hän on tämän järjestelmän käyttäjä}}
+    {conn_pub {Yhteysavain} {Julkinen avain, jota tämä käyttäjä käyttää valtuuttaakseen yhteyden tietokantaan}}
+    {ent_inact {Epäaktiivinen} {Lippu, joka osoittaa, että tämä entiteetti ei ole enää voimassa, liiketoiminnassa, elossa, jne.}}
+    {country {Maa} {Ensisijainen kansalaisuuden maa (henkilöille) tai oikeudellinen organisaatio (yrityksille)}}
+    {tax_id {Verotunnus} {Numero, jolla maa tunnistaa tämän henkilön tai yrityksen verotusta varten}}
+    {bank {Pankkireititys} {Pankin reititystiedot: pankki_numero<:.;,>tilinumero}}
+    {_last_addr {Osoitteen järjestysnumero} {Kenttä, jota käytetään sisäisesti luomaan yksilöllisiä tietuenumeroita osoitetietueille}}
+    {_last_comm {Viestinnän järjestysnumero} {Kenttä, jota käytetään sisäisesti luomaan yksilöllisiä tietuenumeroita viestintätietueille}}
+    {crt_date {Luotu} {Päivämäärä, jolloin tämä tietue luotiin}}
+    {mod_date {Muokattu} {Päivämäärä, jolloin tätä tietuetta viimeksi muokattiin}}
+    {crt_by {Luonut} {Käyttäjä, joka syötti tämän tietueen}}
+    {mod_by {Muokannut} {Käyttäjä, joka viimeksi muokkasi tätä tietuetta}}
+} -errors {
+    {CBD {Syntymäaika} {Syntymäaika vaaditaan sisäisille henkilöille}}
+    {CFN {Etunimi} {Etunimi vaaditaan henkilöentiteeteille}}
+    {CGN {Sukupuoli} {Sukupuolta ei pidä määrittää muille kuin henkilöentiteeteille}}
+    {CMN {Toinen nimi} {Toinen nimi on kielletty muille kuin henkilöentiteeteille}}
+    {CMS {Siviilisääty} {Siviilisäätyä ei pidä määrittää muille kuin henkilöentiteeteille}}
+    {CPA {Ensisijainen osoite} {Ensisijaisen osoitteen on oltava aktiivinen}}
+    {CPN {Kutsumanimi} {Kutsumanimi on kielletty muille kuin henkilöentiteeteille}}
+    {CTI {Titteli} {Etuliitetitteli on kielletty muille kuin henkilöentiteeteille}}
+}
