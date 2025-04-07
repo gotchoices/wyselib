@@ -39,7 +39,7 @@ describe("Test installed currencies", function() {
       select ex.key as code, ex.value::numeric as rate, c.cur_code
         from ex left join base.currency c on c.cur_code = ex.key
         where c.cur_code isnull`
-//log.debug("Sql:", sql)
+log.debug("Sql:", sql)
     db.query(sql, [interTest.json.rates], (e, res) => {if (e) done(e)
       let rows = res?.rows		//;log.debug("rows:", rows)
       if (rows.length > 0) {

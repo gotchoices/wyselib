@@ -26,16 +26,18 @@ const cuCsvFields = [				//Fields we pull from datahub file
   'curName',
   'curNum'
 ]
-const CurPlug = [
+const CurPlug = [   //Currencies that are not in the datahub file
+  "  ('ANG', 'Netherlands Antillean Guilder', '532')",
   "  ('BTN', 'Bhutanese ngultrum', '064')",
-  "  ('FKP', 'Falkland Islands pound', '238')",
   "  ('FOK', 'Faroese króna', null)",
   "  ('GGP', 'Guernsey Pounds', null)",
   "  ('IMP', 'Manx pound', null)",
+  "  ('HRK', 'Croatian Kuna', null)",
   "  ('JEP', 'Jersey pound', null)",
   "  ('KID', 'Kiribati dollar', null)",
-  "  ('SLE', 'Sierra Leonean Leone', '925')",
+  "  ('SLL', 'Sierra Leonean Leone', '925')",
   "  ('TVD', 'Tuvaluan dollar', null)",
+  "  ('ZWL', 'Zimbabwean dollar', '932')",
   "  ('XDR', 'Special Drawing Rights', '960')",
   "  ('XAG', 'Silver, Troy oz', '961')",
   "  ('XAU', 'Gold, Troy oz', '959')",
@@ -45,10 +47,12 @@ const CurPlug = [
 ]
 
 async function main() {
-  let outRows = []
+  let contents
+    , outRows = []
     , curRows = CurPlug.slice()
-    , currencies = {}
-    , contents
+    , currencies = curRows.reduce((acc, line) => {
+      acc[line.match(/\('([^']+)'/)[1]] = true; return acc;
+    }, {})
 
   if (Fs.existsSync(fileCache)) {		//If we have the file cached
     contents = Fs.readFileSync(fileCache)	//Just read it
