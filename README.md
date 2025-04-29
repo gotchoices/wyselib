@@ -9,17 +9,33 @@ the [Wyseman](http://github.com/gotchoices/wyseman) schema manager.
 You can make your own objects and add them on top of the basic design provided 
 by Wyselib.  And you only need to use the parts of the library you want.
 
+## Documentation
+
+Comprehensive documentation for the schema components is available in the [doc](doc/) directory:
+
+- [Overview and Introduction](doc/README.md)
+- [Schema Structure and Conventions](doc/schema-structure.md)
+- [Base Components](doc/base-components.md)
+- [Other Components](doc/other-components.md)
+- [Contributing Guidelines](doc/contributing.md)
+
+## Runtime Components
+
 Wyselib also includes a number of run-time control-layer functions for handling
 pre-defined actions, associated with the database tables and views that are 
 built by this schema.  These are typically used for generating reports or 
 calling stored procedures in the database.  Action handlers for javascript can 
 be accessed by requiring them from this package:
 
+```javascript
 let { actions } = require('wyselib')
+```
 
 There is also a small parser you can access as:
 
+```javascript
 let { Parser } = require('wyselib')
+```
 
 that is good for digesting your own action handlers you may define for your
 own tables and views.  It is called with an object you will use to store
@@ -27,6 +43,8 @@ your action lookup table, and an array of objects required from your own
 handler files.  See the index.js file in this package for an example of how
 this is done.
 
-Wyselib also includes a number of legacy run-time modules targetd for Tcl/Tk.
+## Legacy Components
+
+Wyselib also includes a number of legacy run-time modules targeted for Tcl/Tk.
 These are not needed for new application development in a browser using 
 [Wylib](http://github.com/gotchoices/wylib).

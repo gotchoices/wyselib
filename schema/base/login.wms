@@ -66,19 +66,25 @@ view base.token_v {base.token base.ent_v} {
 
 # Determine if a token presented is valid for a specified user
 #----------------------------------------------------------------
-function {base.token_valid(uname text, tok text, pub jsonb)} {base.token_v} {
+function {base.token_valid(uname text, tok text, pub jsonb, path text[] = array['default'])} {base.token_v} {
   returns boolean language plpgsql as $$
     declare
       trec	record;
     begin
       select into trec valid,token,allows,token_ent,token_seq from base.token_v where username = uname and allows = 'login' order by token_seq desc limit 1;	-- Get last token for this user
+
+      -- Check if token matches and is valid
       if found and trec.valid and tok = trec.token then
+
+        -- Mark token as used
         update base.token set used = current_timestamp where token_ent = trec.token_ent and token_seq = trec.token_seq;
-        if (pub->'tag') notnull and (pub->'key') notnull then		-- Remember user's new public key
-          update base.ent set conn_pub[tag] = (pub->'key') where id = trec.token_ent;	-- Key with ID tag
-        else
-          update base.ent set conn_pub = pub where id = trec.token_ent;			-- Lone key or array of keys
-        end if;
+
+        -- Store the provided public key/credential data at the specified path location
+        -- Assumes storage_path is non-null if key storage is intended
+        update base.ent
+        set conn_pub = jsonb_set(COALESCE(conn_pub, '{}'::jsonb), path, pub, true)
+        where id = trec.token_ent;
+
         return true;
       end if;
       return false;
@@ -91,6 +97,8 @@ view base.token_v_ticket {base.token base.parm_int(text,text) base.parm_text(tex
     select token_ent, allows, token, expires
       , base.parm_text('wyseman','host') as host
       , base.parm_int('wyseman','port') as port
+      , base.parm_text('wyseman','addr') as addr
+      , base.parm_text('wyseman','boot') as boot
     from	base.token	t
 }
 
